@@ -1,14 +1,12 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { createRazorpayOrder, handlePaymentSuccess } from '@/lib/razorpay';
+import { useAuth } from '@/context/auth-context';
 import type { UserData } from '@/app/dashboard/page';
 
 declare global {
@@ -28,30 +26,10 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
     const router = useRouter();
     const pathname = usePathname();
     const { toast } = useToast();
-    const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
-    const [userData, setUserData] = useState<UserData | null>(null);
-    const [authLoading, setAuthLoading] = useState(true);
+    const { firebaseUser, userData, loading: authLoading } = useAuth();
     const [paymentProcessing, setPaymentProcessing] = useState(false);
 
     const isTelugu = pathname.startsWith('/te');
-
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-            if (currentUser) {
-                setFirebaseUser(currentUser);
-                const userDocRef = doc(db, "users", currentUser.uid);
-                const userDoc = await getDoc(userDocRef);
-                if (userDoc.exists()) {
-                    setUserData(userDoc.data() as UserData);
-                }
-            } else {
-                setFirebaseUser(null);
-                setUserData(null);
-            }
-            setAuthLoading(false);
-        });
-        return () => unsubscribe();
-    }, []);
 
     const loadRazorpayScript = () => {
         return new Promise((resolve) => {
@@ -64,6 +42,8 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
     };
     
     const handlePayment = async () => {
+        if (authLoading) return; // Prevent action while auth state is loading
+
         setPaymentProcessing(true);
         if (!firebaseUser || !userData) {
             router.push(`${isTelugu ? '/te' : ''}/signup?plan=${plan}`);

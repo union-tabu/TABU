@@ -11,7 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { usePathname } from 'next/navigation';
 import {
   DropdownMenu,
@@ -19,22 +19,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useAuth } from '@/context/auth-context';
 
 
 export function Header() {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated } = useAuth();
   const pathname = usePathname();
   const isTelugu = pathname.startsWith('/te');
-
-  useEffect(() => {
-    // In a real app, you'd check a token or session.
-    // For this prototype, we'll simulate it with localStorage.
-    if (typeof window !== 'undefined') {
-        const authStatus = localStorage.getItem('isAuthenticated') === 'true';
-        setIsAuthenticated(authStatus);
-    }
-  }, [pathname]); // Rerun on path change to update state
 
   const navLinks = isTelugu ? [
     { href: '/te#benefits', label: 'ప్రయోజనాలు' },
