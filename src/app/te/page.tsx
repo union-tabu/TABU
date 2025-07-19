@@ -39,7 +39,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-primary/10"></div>
         <div className="container px-4 md:px-6 z-10">
           <div className="max-w-3xl mx-auto">
-            <h1 className="text-4xl font-bold tracking-tight text-primary-foreground sm:text-5xl md:text-6xl font-headline">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-primary-foreground font-headline">
               సంఘిక సమాఖ్యకు స్వాగతం
             </h1>
             <p className="mt-6 text-lg leading-8 text-foreground/80">
@@ -58,7 +58,7 @@ export default function Home() {
       <section id="benefits" className="w-full py-16 md:py-24 bg-background">
         <div className="container px-4 md:px-6">
           <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl font-headline">మాతో ఎందుకు చేరాలి?</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-primary-foreground font-headline">మాతో ఎందుకు చేరాలి?</h2>
             <p className="mt-4 text-lg text-muted-foreground">
               సంఘిక సమాఖ్యలో సభ్యత్వం మీ పని జీవితాన్ని రక్షించడానికి మరియు మెరుగుపరచడానికి అనేక ప్రయోజనాలను అందిస్తుంది.
             </p>
@@ -116,7 +116,7 @@ export default function Home() {
       <section id="pricing" className="w-full py-16 md:py-24 bg-secondary">
         <div className="container px-4 md:px-6">
           <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl font-headline">సభ్యత్వ ప్రణాళికలు</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-primary-foreground font-headline">సభ్యత్వ ప్రణాళికలు</h2>
             <p className="mt-4 text-lg text-muted-foreground">
               మీకు సరిపోయే ప్రణాళికను ఎంచుకోండి. అన్ని ప్రణాళికలు పూర్తి ప్రయోజనాలను అందిస్తాయి.
             </p>
@@ -169,7 +169,7 @@ export default function Home() {
       <section id="testimonials" className="w-full py-16 md:py-24 bg-background">
         <div className="container px-4 md:px-6">
           <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl font-headline">మా సభ్యుల నుండి</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-primary-foreground font-headline">మా సభ్యుల నుండి</h2>
             <p className="mt-4 text-lg text-muted-foreground">
               యూనియన్ ప్రభావం గురించి మా సభ్యులు ఏమి చెబుతున్నారో వినండి.
             </p>
@@ -227,7 +227,7 @@ export default function Home() {
       {/* Contact Section */}
       <section id="contact" className="w-full py-16 md:py-24 bg-secondary">
         <div className="container px-4 md:px-6 text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl font-headline">సంప్రదించండి</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-primary-foreground font-headline">సంప్రదించండి</h2>
             <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
               మేము సహాయం చేయడానికి ఇక్కడ ఉన్నాము. ఏవైనా ప్రశ్నలు లేదా ఆందోళనలతో మమ్మల్ని సంప్రదించండి.
             </p>

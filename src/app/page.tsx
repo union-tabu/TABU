@@ -39,7 +39,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-primary/10"></div>
         <div className="container px-4 md:px-6 z-10">
           <div className="max-w-3xl mx-auto">
-            <h1 className="text-4xl font-bold tracking-tight text-primary-foreground sm:text-5xl md:text-6xl font-headline">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-primary-foreground font-headline">
               Welcome to Sanghika Samakhya
             </h1>
             <p className="mt-6 text-lg leading-8 text-foreground/80">
@@ -58,7 +58,7 @@ export default function Home() {
       <section id="benefits" className="w-full py-16 md:py-24 bg-background">
         <div className="container px-4 md:px-6">
           <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl font-headline">Why Join Us?</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-primary-foreground font-headline">Why Join Us?</h2>
             <p className="mt-4 text-lg text-muted-foreground">
               Membership in Sanghika Samakhya offers numerous benefits to protect and enhance your work life.
             </p>
@@ -116,7 +116,7 @@ export default function Home() {
       <section id="pricing" className="w-full py-16 md:py-24 bg-secondary">
         <div className="container px-4 md:px-6">
           <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl font-headline">Membership Plans</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-primary-foreground font-headline">Membership Plans</h2>
             <p className="mt-4 text-lg text-muted-foreground">
               Choose a plan that works for you. All plans offer full benefits.
             </p>
@@ -169,7 +169,7 @@ export default function Home() {
       <section id="testimonials" className="w-full py-16 md:py-24 bg-background">
         <div className="container px-4 md:px-6">
           <div className="text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl font-headline">From Our Members</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-primary-foreground font-headline">From Our Members</h2>
             <p className="mt-4 text-lg text-muted-foreground">
               Hear what our members have to say about the impact of the union.
             </p>
@@ -227,7 +227,7 @@ export default function Home() {
       {/* Contact Section */}
       <section id="contact" className="w-full py-16 md:py-24 bg-secondary">
         <div className="container px-4 md:px-6 text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-primary-foreground sm:text-4xl font-headline">Get In Touch</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-primary-foreground font-headline">Get In Touch</h2>
             <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
               We are here to help. Contact us with any questions or concerns.
             </p>

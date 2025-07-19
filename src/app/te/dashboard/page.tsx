@@ -28,7 +28,7 @@ export default function DashboardPage() {
         </div>
       </div>
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 md:w-fit md:grid-cols-4 mb-6">
+        <TabsList className="grid w-full grid-cols-2 md:w-fit md:grid-cols-4 mb-6 h-auto">
           <TabsTrigger value="profile">ప్రొఫైల్</TabsTrigger>
           <TabsTrigger value="subscription">చందా</TabsTrigger>
           <TabsTrigger value="payment">చెల్లింపు చరిత్ర</TabsTrigger>
