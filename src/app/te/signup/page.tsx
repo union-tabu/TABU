@@ -9,13 +9,15 @@ import { Label } from '@/components/ui/label';
 import { auth, db } from '@/lib/firebase';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { add } from 'date-fns';
 
 export default function SignupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
 
@@ -41,6 +43,9 @@ export default function SignupPage() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      
+      const plan = searchParams.get('plan') || 'yearly';
+      const renewalDate = plan === 'monthly' ? add(new Date(), { months: 1 }) : add(new Date(), { years: 1 });
 
       // Add user to "users" collection in Firestore
       await setDoc(doc(db, "users", user.uid), {
@@ -48,7 +53,13 @@ export default function SignupPage() {
         lastName: lastName,
         email: email,
         phone: phone,
+        address: "42 మెయిన్ స్ట్రీట్, వర్కర్స్ సిటీ", // Default address
         createdAt: new Date(),
+        subscription: {
+          plan: plan,
+          status: 'active',
+          renewalDate: renewalDate,
+        }
       });
       
       await sendEmailVerification(user);
