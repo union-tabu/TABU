@@ -7,16 +7,45 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRouter } from 'next/navigation';
+import { auth } from '@/lib/firebase';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { useToast } from '@/hooks/use-toast';
+import React from 'react';
+
 
 export default function LoginPage() {
     const router = useRouter();
+    const { toast } = useToast();
 
-    const handleLogin = (event: React.FormEvent) => {
+    const handleLogin = async (event: React.FormEvent) => {
         event.preventDefault();
-        // In a real app, you would verify credentials here.
-        // For this prototype, we'll just set a value in localStorage.
-        localStorage.setItem('isAuthenticated', 'true');
-        router.push('/te/dashboard');
+        const form = event.target as HTMLFormElement;
+        const email = (form.elements.namedItem('email') as HTMLInputElement).value;
+        const password = (form.elements.namedItem('password') as HTMLInputElement).value;
+        
+        try {
+          const userCredential = await signInWithEmailAndPassword(auth, email, password);
+          
+          if (userCredential.user.emailVerified) {
+            localStorage.setItem('isAuthenticated', 'true');
+            router.push('/te/dashboard');
+          } else {
+            await signOut(auth);
+            localStorage.removeItem('isAuthenticated');
+            toast({
+              title: "ఇమెయిల్ ధృవీకరించబడలేదు",
+              description: "దయచేసి లాగిన్ చేయడానికి ముందు మీ ఇమెయిల్‌ను ధృవీకరించండి.",
+              variant: "destructive",
+            });
+          }
+        } catch (error: any) {
+          console.error("Login Error:", error);
+          toast({
+            title: "లాగిన్ విఫలమైంది",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
     };
 
   return (
