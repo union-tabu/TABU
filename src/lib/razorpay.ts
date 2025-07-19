@@ -6,8 +6,6 @@ import { z } from 'zod';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { add } from 'date-fns';
-import 'dotenv/config';
-
 
 const OrderOptionsSchema = z.object({
   amount: z.number(),
@@ -22,11 +20,6 @@ const OrderOptionsSchema = z.object({
 
 type OrderOptions = z.infer<typeof OrderOptionsSchema>;
 
-const razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID!,
-    key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
-
 export async function createRazorpayOrder(options: OrderOptions) {
     const validatedOptions = OrderOptionsSchema.safeParse(options);
 
@@ -35,6 +28,11 @@ export async function createRazorpayOrder(options: OrderOptions) {
     }
 
     const { amount, userId, plan, user } = validatedOptions.data;
+
+    const razorpay = new Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID!,
+        key_secret: process.env.RAZORPAY_KEY_SECRET!,
+    });
     
     const orderOptions = {
         amount: amount * 100, // amount in the smallest currency unit
@@ -69,7 +67,7 @@ const PaymentSuccessSchema = z.object({
     razorpay_order_id: z.string(),
     razorpay_signature: z.string(),
     userId: z.string(),
-    plan: z.enum(['monthly', 'yearly']),
+  plan: z.enum(['monthly', 'yearly']),
     amount: z.number()
 });
 
