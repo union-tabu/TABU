@@ -1,11 +1,37 @@
+
+"use client";
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowRight, Check, HeartHandshake, Megaphone, ShieldCheck, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    // In a real app, you'd check a token or session.
+    // For this prototype, we'll simulate it with localStorage.
+     if (typeof window !== 'undefined') {
+        const authStatus = localStorage.getItem('isAuthenticated') === 'true';
+        setIsAuthenticated(authStatus);
+    }
+  }, []);
+
+  const handlePlanSelection = (planUrl: string) => {
+    if (isAuthenticated) {
+      router.push(planUrl);
+    } else {
+      router.push('/login');
+    }
+  };
+
+
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -109,8 +135,8 @@ export default function Home() {
                 </ul>
               </CardContent>
               <CardFooter className="p-8">
-                <Button asChild size="lg" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Link href="/signup">Choose Monthly</Link>
+                <Button size="lg" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => handlePlanSelection('/signup?plan=monthly')}>
+                  Choose Monthly
                 </Button>
               </CardFooter>
             </Card>
@@ -130,8 +156,8 @@ export default function Home() {
                 </ul>
               </CardContent>
               <CardFooter className="p-8">
-                <Button asChild size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                  <Link href="/signup">Choose Yearly</Link>
+                 <Button size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => handlePlanSelection('/signup?plan=yearly')}>
+                  Choose Yearly
                 </Button>
               </CardFooter>
             </Card>

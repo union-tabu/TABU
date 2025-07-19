@@ -1,11 +1,24 @@
 
+"use client";
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+    const router = useRouter();
+
+    const handleLogin = (event: React.FormEvent) => {
+        event.preventDefault();
+        // In a real app, you would verify credentials here.
+        // For this prototype, we'll just set a value in localStorage.
+        localStorage.setItem('isAuthenticated', 'true');
+        router.push('/te/dashboard');
+    };
+
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-14rem)] bg-background px-4 py-12">
       <Card className="mx-auto max-w-sm w-full shadow-xl">
@@ -14,7 +27,7 @@ export default function LoginPage() {
           <CardDescription>మీ ఖాతాలోకి లాగిన్ అవ్వడానికి మీ ఇమెయిల్‌ను నమోదు చేయండి</CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="grid gap-4">
+          <form className="grid gap-4" onSubmit={handleLogin}>
             <div className="grid gap-2">
               <Label htmlFor="email">ఇమెయిల్</Label>
               <Input
@@ -22,6 +35,7 @@ export default function LoginPage() {
                 type="email"
                 placeholder="m@example.com"
                 required
+                defaultValue="r.kumar@example.com"
               />
             </div>
             <div className="grid gap-2">
@@ -31,7 +45,7 @@ export default function LoginPage() {
                   మీ పాస్‌వర్డ్ మర్చిపోయారా?
                 </Link>
               </div>
-              <Input id="password" type="password" required />
+              <Input id="password" type="password" required defaultValue="password" />
             </div>
             <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
               లాగిన్

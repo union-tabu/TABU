@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Languages, Menu, Users } from 'lucide-react';
+import { Languages, Menu, Users, LayoutDashboard } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -11,7 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import {
   DropdownMenu,
@@ -23,25 +23,35 @@ import {
 
 export function Header() {
   const [isOpen, setIsOpen] = React.useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const pathname = usePathname();
   const isTelugu = pathname.startsWith('/te');
+
+  useEffect(() => {
+    // In a real app, you'd check a token or session.
+    // For this prototype, we'll simulate it with localStorage.
+    if (typeof window !== 'undefined') {
+        const authStatus = localStorage.getItem('isAuthenticated') === 'true';
+        setIsAuthenticated(authStatus);
+    }
+  }, [pathname]); // Rerun on path change to update state
 
   const navLinks = isTelugu ? [
     { href: '/te#benefits', label: 'ప్రయోజనాలు' },
     { href: '/te#pricing', label: 'ధర' },
     { href: '/te#testimonials', label: 'టెస్టిమోనియల్స్' },
-    { href: '/te/dashboard', label: 'డాష్‌బోర్డ్' },
   ] : [
     { href: '/#benefits', label: 'Benefits' },
     { href: '/#pricing', label: 'Pricing' },
     { href: '/#testimonials', label: 'Testimonials' },
-    { href: '/dashboard', label: 'Dashboard' },
   ];
   
   const loginLink = isTelugu ? '/te/login' : '/login';
   const signupLink = isTelugu ? '/te/signup' : '/signup';
+  const dashboardLink = isTelugu ? '/te/dashboard' : '/dashboard';
   const loginText = isTelugu ? 'లాగిన్' : 'Login';
   const joinNowText = isTelugu ? 'ఇప్పుడే చేరండి' : 'Join Now';
+  const goToDashboardText = isTelugu ? 'డాష్‌బోర్డ్‌కి వెళ్లండి' : 'Go to Dashboard';
   const homeLink = isTelugu ? '/te' : '/';
 
   const otherLang = isTelugu ? 'en' : 'te';
@@ -84,12 +94,20 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button asChild variant="outline" className="hidden md:flex">
-            <Link href={loginLink}>{loginText}</Link>
-          </Button>
-          <Button asChild className="hidden md:flex bg-accent text-accent-foreground hover:bg-accent/90">
-             <Link href={signupLink}>{joinNowText}</Link>
-          </Button>
+          {isAuthenticated ? (
+             <Button asChild className="hidden md:flex">
+                <Link href={dashboardLink}><LayoutDashboard className="mr-2" />{goToDashboardText}</Link>
+             </Button>
+          ) : (
+            <>
+              <Button asChild variant="outline" className="hidden md:flex">
+                <Link href={loginLink}>{loginText}</Link>
+              </Button>
+              <Button asChild className="hidden md:flex bg-accent text-accent-foreground hover:bg-accent/90">
+                 <Link href={signupLink}>{joinNowText}</Link>
+              </Button>
+            </>
+          )}
 
           {/* Mobile Navigation */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -115,12 +133,20 @@ export function Header() {
                   </Link>
                 ))}
                 <div className="mt-6 flex flex-col gap-3">
-                   <Button asChild variant="outline" size="lg">
-                      <Link href={loginLink} onClick={() => setIsOpen(false)}>{loginText}</Link>
-                    </Button>
-                    <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
-                      <Link href={signupLink} onClick={() => setIsOpen(false)}>{joinNowText}</Link>
-                    </Button>
+                    {isAuthenticated ? (
+                         <Button asChild size="lg">
+                            <Link href={dashboardLink} onClick={() => setIsOpen(false)}><LayoutDashboard className="mr-2"/>{goToDashboardText}</Link>
+                         </Button>
+                    ) : (
+                        <>
+                            <Button asChild variant="outline" size="lg">
+                                <Link href={loginLink} onClick={() => setIsOpen(false)}>{loginText}</Link>
+                            </Button>
+                            <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
+                                <Link href={signupLink} onClick={() => setIsOpen(false)}>{joinNowText}</Link>
+                            </Button>
+                        </>
+                    )}
                 </div>
               </div>
             </SheetContent>
