@@ -6,6 +6,8 @@ import { z } from 'zod';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { add } from 'date-fns';
+import 'dotenv/config';
+
 
 const OrderOptionsSchema = z.object({
   amount: z.number(),
