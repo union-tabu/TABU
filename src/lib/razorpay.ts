@@ -4,7 +4,7 @@
 import Razorpay from 'razorpay';
 import { z } from 'zod';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, updateDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { doc, updateDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { add } from 'date-fns';
 
 const OrderOptionsSchema = z.object({
@@ -21,7 +21,7 @@ const OrderOptionsSchema = z.object({
 type OrderOptions = z.infer<typeof OrderOptionsSchema>;
 
 const razorpay = new Razorpay({
-    key_id: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+    key_id: process.env.RAZORPAY_KEY_ID!,
     key_secret: process.env.RAZORPAY_KEY_SECRET!,
 });
 
