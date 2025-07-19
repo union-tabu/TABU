@@ -4,29 +4,24 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, collection, query, where, orderBy } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import type { Timestamp } from 'firebase/firestore';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FileDown, History, Languages } from 'lucide-react';
+import { FileDown, CreditCard, History, Languages, UserCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 
 import { ProfileTab } from '@/components/dashboard/profile-tab-te';
 import { SubscriptionTab } from '@/components/dashboard/subscription-tab-te';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-
-const paymentHistory = [
-  { id: 'TRN001', date: '2024-06-01', plan: 'వార్షిక', amount: '₹600.00' },
-  { id: 'TRN002', date: '2023-06-01', plan: 'వార్షిక', amount: '₹600.00' },
-  { id: 'TRN003', date: '2022-05-15', plan: 'నెలవారీ', amount: '₹50.00' },
-  { id: 'TRN004', date: '2022-04-15', plan: 'నెలవారీ', amount: '₹50.00' },
-];
+import { format } from 'date-fns';
+import { te } from 'date-fns/locale';
 
 export interface UserData {
   firstName: string;
@@ -42,11 +37,21 @@ export interface UserData {
   }
 }
 
+export interface Payment {
+    id: string;
+    paymentDate: Timestamp;
+    plan: string;
+    amount: number;
+}
+
+
 export default function DashboardPageTe() {
   const router = useRouter();
   const [user, setUser] = useState<UserData | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
@@ -54,7 +59,7 @@ export default function DashboardPageTe() {
         setFirebaseUser(currentUser);
         const userDocRef = doc(db, "users", currentUser.uid);
         
-        const unsubscribeSnapshot = onSnapshot(userDocRef, (doc) => {
+        const unsubscribeUser = onSnapshot(userDocRef, (doc) => {
           if (doc.exists()) {
             const data = doc.data();
             setUser({
@@ -73,7 +78,26 @@ export default function DashboardPageTe() {
           setLoading(false);
         });
 
-        return () => unsubscribeSnapshot();
+        const paymentsQuery = query(
+            collection(db, "payments"), 
+            where("userId", "==", currentUser.uid), 
+            orderBy("paymentDate", "desc")
+        );
+
+        const unsubscribePayments = onSnapshot(paymentsQuery, (snapshot) => {
+            const paymentsData = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as Payment));
+            setPayments(paymentsData);
+            setPaymentsLoading(false);
+        });
+
+        return () => {
+            unsubscribeUser();
+            unsubscribePayments();
+        };
+
       } else {
         router.push('/te/login');
         setLoading(false);
@@ -139,10 +163,10 @@ export default function DashboardPageTe() {
       </div>
       <Tabs defaultValue="profile" className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:w-fit md:grid-cols-4 mb-6 h-auto">
-          <TabsTrigger value="profile">ప్రొఫైల్</TabsTrigger>
-          <TabsTrigger value="subscription">చందా</TabsTrigger>
-          <TabsTrigger value="payment">చెల్లింపు చరిత్ర</TabsTrigger>
-          <TabsTrigger value="settings">సెట్టింగ్‌లు</TabsTrigger>
+          <TabsTrigger value="profile"><UserCircle className="w-4 h-4 mr-2"/>ప్రొఫైల్</TabsTrigger>
+          <TabsTrigger value="subscription"><CreditCard className="w-4 h-4 mr-2"/>చందా</TabsTrigger>
+          <TabsTrigger value="payment"><History className="w-4 h-4 mr-2"/>చెల్లింపు చరిత్ర</TabsTrigger>
+          <TabsTrigger value="settings"><Languages className="w-4 h-4 mr-2"/>సెట్టింగ్‌లు</TabsTrigger>
         </TabsList>
         
         {user && firebaseUser && (
@@ -164,33 +188,41 @@ export default function DashboardPageTe() {
               <CardDescription>మీ గత లావాదేవీల రికార్డు.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>లావాదేవీ ID</TableHead>
-                    <TableHead>తేదీ</TableHead>
-                    <TableHead>ప్రణాళిక</TableHead>
-                    <TableHead>మొత్తం</TableHead>
-                    <TableHead className="text-right">రసీదు</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paymentHistory.map((payment) => (
-                    <TableRow key={payment.id}>
-                      <TableCell className="font-medium">{payment.id}</TableCell>
-                      <TableCell>{payment.date}</TableCell>
-                      <TableCell>{payment.plan}</TableCell>
-                      <TableCell>{payment.amount}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="icon">
-                          <FileDown className="h-4 w-4" />
-                          <span className="sr-only">రసీదును డౌన్‌లోడ్ చేయండి</span>
-                        </Button>
-                      </TableCell>
+               {paymentsLoading ? (
+                 <Skeleton className="h-40 w-full" />
+               ) : payments.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>లావాదేవీ ID</TableHead>
+                      <TableHead>తేదీ</TableHead>
+                      <TableHead>ప్రణాళిక</TableHead>
+                      <TableHead>మొత్తం</TableHead>
+                      <TableHead className="text-right">రసీదు</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {payments.map((payment) => (
+                      <TableRow key={payment.id}>
+                        <TableCell className="font-medium">{payment.id.substring(0,10)}...</TableCell>
+                        <TableCell>{format(payment.paymentDate.toDate(), "MMMM d, yyyy", { locale: te })}</TableCell>
+                        <TableCell className="capitalize">{payment.plan === 'yearly' ? 'వార్షిక' : 'నెలవారీ'}</TableCell>
+                        <TableCell>₹{payment.amount.toFixed(2)}</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="icon">
+                            <FileDown className="h-4 w-4" />
+                            <span className="sr-only">రసీదును డౌన్‌లోడ్ చేయండి</span>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+               ) : (
+                 <div className="text-center py-10">
+                   <p className="text-muted-foreground">చెల్లింపు చరిత్ర కనుగొనబడలేదు.</p>
+                 </div>
+               )}
             </CardContent>
           </Card>
         </TabsContent>

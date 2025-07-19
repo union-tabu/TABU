@@ -4,30 +4,23 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, collection, query, where, orderBy } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import type { Timestamp } from 'firebase/firestore';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FileDown, CreditCard, History, Languages } from 'lucide-react';
+import { FileDown, CreditCard, History, Languages, UserCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 
 import { ProfileTab } from '@/components/dashboard/profile-tab';
 import { SubscriptionTab } from '@/components/dashboard/subscription-tab';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-
-// NOTE: Payment history is still static as we don't have a payments collection yet.
-const paymentHistory = [
-  { id: 'TRN001', date: '2024-06-01', plan: 'Yearly', amount: '₹600.00' },
-  { id: 'TRN002', date: '2023-06-01', plan: 'Yearly', amount: '₹600.00' },
-  { id: 'TRN003', date: '2022-05-15', plan: 'Monthly', amount: '₹50.00' },
-  { id: 'TRN004', date: '2022-04-15', plan: 'Monthly', amount: '₹50.00' },
-];
+import { format } from 'date-fns';
 
 export interface UserData {
   firstName: string;
@@ -43,11 +36,20 @@ export interface UserData {
   }
 }
 
+export interface Payment {
+    id: string;
+    paymentDate: Timestamp;
+    plan: string;
+    amount: number;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<UserData | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
@@ -55,7 +57,7 @@ export default function DashboardPage() {
         setFirebaseUser(currentUser);
         const userDocRef = doc(db, "users", currentUser.uid);
         
-        const unsubscribeSnapshot = onSnapshot(userDocRef, (doc) => {
+        const unsubscribeUser = onSnapshot(userDocRef, (doc) => {
           if (doc.exists()) {
             const data = doc.data();
             setUser({
@@ -74,7 +76,25 @@ export default function DashboardPage() {
           setLoading(false);
         });
 
-        return () => unsubscribeSnapshot();
+        const paymentsQuery = query(
+          collection(db, "payments"), 
+          where("userId", "==", currentUser.uid), 
+          orderBy("paymentDate", "desc")
+        );
+        
+        const unsubscribePayments = onSnapshot(paymentsQuery, (snapshot) => {
+            const paymentsData = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as Payment));
+            setPayments(paymentsData);
+            setPaymentsLoading(false);
+        });
+
+        return () => {
+            unsubscribeUser();
+            unsubscribePayments();
+        };
       } else {
         router.push('/login');
         setLoading(false);
@@ -140,10 +160,10 @@ export default function DashboardPage() {
       </div>
       <Tabs defaultValue="profile" className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:w-fit md:grid-cols-4 mb-6 h-auto">
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="subscription">Subscription</TabsTrigger>
-          <TabsTrigger value="payment">Payment History</TabsTrigger>
-          <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsTrigger value="profile"><UserCircle className="w-4 h-4 mr-2"/>Profile</TabsTrigger>
+          <TabsTrigger value="subscription"><CreditCard className="w-4 h-4 mr-2"/>Subscription</TabsTrigger>
+          <TabsTrigger value="payment"><History className="w-4 h-4 mr-2"/>Payment History</TabsTrigger>
+          <TabsTrigger value="settings"><Languages className="w-4 h-4 mr-2"/>Settings</TabsTrigger>
         </TabsList>
         
         {user && firebaseUser && (
@@ -165,33 +185,41 @@ export default function DashboardPage() {
               <CardDescription>A record of all your past transactions.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Transaction ID</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Plan</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead className="text-right">Receipt</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paymentHistory.map((payment) => (
-                    <TableRow key={payment.id}>
-                      <TableCell className="font-medium">{payment.id}</TableCell>
-                      <TableCell>{payment.date}</TableCell>
-                      <TableCell>{payment.plan}</TableCell>
-                      <TableCell>{payment.amount}</TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="icon">
-                          <FileDown className="h-4 w-4" />
-                          <span className="sr-only">Download receipt</span>
-                        </Button>
-                      </TableCell>
+               {paymentsLoading ? (
+                 <Skeleton className="h-40 w-full" />
+               ) : payments.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Transaction ID</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Plan</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead className="text-right">Receipt</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {payments.map((payment) => (
+                      <TableRow key={payment.id}>
+                        <TableCell className="font-medium">{payment.id.substring(0,10)}...</TableCell>
+                        <TableCell>{format(payment.paymentDate.toDate(), "MMMM d, yyyy")}</TableCell>
+                        <TableCell className="capitalize">{payment.plan}</TableCell>
+                        <TableCell>₹{payment.amount.toFixed(2)}</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="icon">
+                            <FileDown className="h-4 w-4" />
+                            <span className="sr-only">Download receipt</span>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+               ) : (
+                <div className="text-center py-10">
+                  <p className="text-muted-foreground">No payment history found.</p>
+                </div>
+               )}
             </CardContent>
           </Card>
         </TabsContent>
