@@ -22,6 +22,16 @@ export default function SignupPage() {
     const email = (form.elements.namedItem('email') as HTMLInputElement).value;
     const password = (form.elements.namedItem('password') as HTMLInputElement).value;
 
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
+    if (!passwordRegex.test(password)) {
+      toast({
+        title: "బలహీనమైన పాస్‌వర్డ్",
+        description: "పాస్‌వర్డ్ కనీసం 8 అక్షరాలు ఉండాలి మరియు కనీసం ఒక పెద్ద అక్షరం, ఒక చిన్న అక్షరం, ఒక సంఖ్య, మరియు ఒక ప్రత్యేక అక్షరం కలిగి ఉండాలి.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await sendEmailVerification(userCredential.user);
@@ -83,6 +93,9 @@ export default function SignupPage() {
             <div className="grid gap-2">
               <Label htmlFor="password">పాస్‌వర్డ్</Label>
               <Input id="password" type="password" required />
+              <p className="text-xs text-muted-foreground">
+                పెద్ద, చిన్న అక్షరం, సంఖ్య, మరియు ప్రత్యేక అక్షరంతో 8+ అక్షరాలు ఉండాలి.
+              </p>
             </div>
             <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
               ఖాతాను సృష్టించండి

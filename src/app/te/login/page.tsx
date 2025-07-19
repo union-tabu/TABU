@@ -70,7 +70,7 @@ export default function LoginPage() {
             <div className="grid gap-2">
               <div className="flex items-center">
                 <Label htmlFor="password">పాస్‌వర్డ్</Label>
-                <Link href="#" className="ml-auto inline-block text-sm underline hover:text-primary">
+                <Link href="/te/forgot-password" className="ml-auto inline-block text-sm underline hover:text-primary">
                   మీ పాస్‌వర్డ్ మర్చిపోయారా?
                 </Link>
               </div>

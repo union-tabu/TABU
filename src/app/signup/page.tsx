@@ -22,6 +22,16 @@ export default function SignupPage() {
     const email = (form.elements.namedItem('email') as HTMLInputElement).value;
     const password = (form.elements.namedItem('password') as HTMLInputElement).value;
 
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
+    if (!passwordRegex.test(password)) {
+      toast({
+        title: "Weak Password",
+        description: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       await sendEmailVerification(userCredential.user);
@@ -83,6 +93,9 @@ export default function SignupPage() {
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" required />
+              <p className="text-xs text-muted-foreground">
+                Must be 8+ characters with uppercase, lowercase, number, and special character.
+              </p>
             </div>
             <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
               Create an account
