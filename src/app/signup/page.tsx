@@ -25,6 +25,7 @@ export default function SignupPage() {
     const firstName = (form.elements.namedItem('first-name') as HTMLInputElement).value;
     const lastName = (form.elements.namedItem('last-name') as HTMLInputElement).value;
     const email = (form.elements.namedItem('email') as HTMLInputElement).value;
+    const phone = (form.elements.namedItem('phone') as HTMLInputElement).value;
     const password = (form.elements.namedItem('password') as HTMLInputElement).value;
 
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
@@ -46,6 +47,7 @@ export default function SignupPage() {
         firstName: firstName,
         lastName: lastName,
         email: email,
+        phone: phone,
         createdAt: new Date(),
       });
 
