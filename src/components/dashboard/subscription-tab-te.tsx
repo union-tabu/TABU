@@ -14,6 +14,20 @@ interface SubscriptionTabProps {
 }
 
 export function SubscriptionTab({ user }: SubscriptionTabProps) {
+    if (!user.subscription) {
+      return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><CreditCard className="text-primary" /> చందా స్థితి</CardTitle>
+                <CardDescription>మీ ప్రస్తుత సభ్యత్వ ప్రణాళిక మరియు స్థితి.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p>చందా సమాచారం కనుగొనబడలేదు.</p>
+            </CardContent>
+        </Card>
+      )
+    }
+    
     const { plan, status, renewalDate } = user.subscription;
     const formattedRenewalDate = renewalDate ? format(renewalDate.toDate(), "MMMM d, yyyy", { locale: te }) : 'N/A';
     const isPlanActive = status === 'active';

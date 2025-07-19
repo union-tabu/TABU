@@ -13,6 +13,20 @@ interface SubscriptionTabProps {
 }
 
 export function SubscriptionTab({ user }: SubscriptionTabProps) {
+    if (!user.subscription) {
+      return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><CreditCard className="text-primary" /> Subscription Status</CardTitle>
+                <CardDescription>Your current membership plan and status.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p>No subscription information found.</p>
+            </CardContent>
+        </Card>
+      )
+    }
+
     const { plan, status, renewalDate } = user.subscription;
     const formattedRenewalDate = renewalDate ? format(renewalDate.toDate(), "MMMM d, yyyy") : 'N/A';
     const isPlanActive = status === 'active';
