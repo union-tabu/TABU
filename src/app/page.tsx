@@ -1,37 +1,14 @@
 
 "use client";
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowRight, Check, HeartHandshake, Megaphone, ShieldCheck, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { PaymentButton } from '@/components/payment-button';
 
 export default function Home() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const router = useRouter();
-
-  useEffect(() => {
-    // In a real app, you'd check a token or session.
-    // For this prototype, we'll simulate it with localStorage.
-     if (typeof window !== 'undefined') {
-        const authStatus = localStorage.getItem('isAuthenticated') === 'true';
-        setIsAuthenticated(authStatus);
-    }
-  }, []);
-
-  const handlePlanSelection = (planUrl: string) => {
-    if (isAuthenticated) {
-      router.push(planUrl);
-    } else {
-      router.push('/login');
-    }
-  };
-
-
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -135,9 +112,7 @@ export default function Home() {
                 </ul>
               </CardContent>
               <CardFooter className="p-8">
-                <Button size="lg" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" onClick={() => handlePlanSelection('/signup?plan=monthly')}>
-                  Choose Monthly
-                </Button>
+                <PaymentButton plan="monthly" amount={50} buttonText="Choose Monthly" />
               </CardFooter>
             </Card>
             <Card className="flex flex-col rounded-2xl border-2 border-accent shadow-2xl hover:scale-105 transition-transform duration-300 relative">
@@ -156,9 +131,7 @@ export default function Home() {
                 </ul>
               </CardContent>
               <CardFooter className="p-8">
-                 <Button size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => handlePlanSelection('/signup?plan=yearly')}>
-                  Choose Yearly
-                </Button>
+                 <PaymentButton plan="yearly" amount={600} buttonText="Choose Yearly" variant="accent" />
               </CardFooter>
             </Card>
           </div>
