@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import React from 'react';
@@ -19,6 +20,8 @@ export default function SignupPage() {
   const handleSignup = async (event: React.FormEvent) => {
     event.preventDefault();
     const form = event.target as HTMLFormElement;
+    const firstName = (form.elements.namedItem('first-name') as HTMLInputElement).value;
+    const lastName = (form.elements.namedItem('last-name') as HTMLInputElement).value;
     const email = (form.elements.namedItem('email') as HTMLInputElement).value;
     const password = (form.elements.namedItem('password') as HTMLInputElement).value;
 
@@ -34,7 +37,17 @@ export default function SignupPage() {
 
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      await sendEmailVerification(userCredential.user);
+      const user = userCredential.user;
+
+      // Add user to "users" collection in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        createdAt: new Date(),
+      });
+      
+      await sendEmailVerification(user);
       
       toast({
         title: "ధృవీకరణ ఇమెయిల్ పంపబడింది",
