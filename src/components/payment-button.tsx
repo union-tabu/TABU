@@ -30,7 +30,8 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
     const { toast } = useToast();
     const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
     const [userData, setUserData] = useState<UserData | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [authLoading, setAuthLoading] = useState(true);
+    const [paymentProcessing, setPaymentProcessing] = useState(false);
 
     const isTelugu = pathname.startsWith('/te');
 
@@ -47,6 +48,7 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
                 setFirebaseUser(null);
                 setUserData(null);
             }
+            setAuthLoading(false);
         });
         return () => unsubscribe();
     }, []);
@@ -62,16 +64,16 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
     };
     
     const handlePayment = async () => {
-        setLoading(true);
+        setPaymentProcessing(true);
         if (!firebaseUser || !userData) {
-            router.push(isTelugu ? '/te/login' : '/login');
+            router.push(`${isTelugu ? '/te' : ''}/signup?plan=${plan}`);
             return;
         }
 
         const scriptLoaded = await loadRazorpayScript();
         if (!scriptLoaded) {
             toast({ title: 'Error', description: 'Could not load payment gateway.', variant: 'destructive' });
-            setLoading(false);
+            setPaymentProcessing(false);
             return;
         }
 
@@ -88,7 +90,7 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
 
         if (!orderResponse.success || !orderResponse.order) {
             toast({ title: 'Error', description: orderResponse.error || 'Could not create payment order.', variant: 'destructive' });
-            setLoading(false);
+            setPaymentProcessing(false);
             return;
         }
 
@@ -115,6 +117,7 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
                 } else {
                     toast({ title: 'Payment Failed', description: paymentResult.error, variant: 'destructive' });
                 }
+                setPaymentProcessing(false);
             },
             prefill: {
                 name: order.userName,
@@ -126,26 +129,38 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             },
             theme: {
                 color: "#FF9900"
+            },
+            modal: {
+                ondismiss: () => {
+                    setPaymentProcessing(false);
+                }
             }
         };
 
         const rzp = new window.Razorpay(options);
         rzp.on('payment.failed', (response: any) => {
              toast({ title: 'Payment Failed', description: response.error.description, variant: 'destructive' });
+             setPaymentProcessing(false);
         });
 
         rzp.open();
-        setLoading(false);
     };
 
     const buttonClass = variant === 'accent'
         ? "w-full bg-accent text-accent-foreground hover:bg-accent/90"
         : "w-full bg-primary text-primary-foreground hover:bg-primary/90";
 
+    if (authLoading) {
+         return (
+            <Button size="lg" className={buttonClass} disabled>
+                Loading...
+            </Button>
+        );
+    }
+
     return (
-        <Button size="lg" className={buttonClass} onClick={handlePayment} disabled={loading}>
-            {loading ? 'Processing...' : buttonText}
+        <Button size="lg" className={buttonClass} onClick={handlePayment} disabled={paymentProcessing}>
+            {paymentProcessing ? 'Processing...' : (firebaseUser ? buttonText : (isTelugu ? 'చెల్లించడానికి సైన్ అప్ చేయండి' : 'Sign up to Pay'))}
         </Button>
     );
 }
-
