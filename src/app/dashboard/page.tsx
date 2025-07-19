@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { FileDown, UserCircle, CreditCard, History, Languages } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import Link from 'next/link';
 
 const paymentHistory = [
   { id: 'TRN001', date: '2024-06-01', plan: 'Yearly', amount: '₹600.00' },
@@ -119,8 +120,12 @@ export default function DashboardPage() {
             <CardContent className="space-y-4">
                <div className="flex items-center space-x-2">
                  <p className="text-sm font-medium">Select Language:</p>
-                <Button variant="outline">English</Button>
-                <Button variant="ghost">తెలుగు</Button>
+                <Button variant="outline" asChild>
+                    <Link href="/dashboard">English</Link>
+                </Button>
+                <Button variant="ghost" asChild>
+                    <Link href="/te/dashboard">తెలుగు</Link>
+                </Button>
               </div>
               <Separator />
                <p className="text-sm text-muted-foreground">More settings will be available here in the future.</p>
