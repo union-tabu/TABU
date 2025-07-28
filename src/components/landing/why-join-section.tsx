@@ -1,13 +1,14 @@
+
 "use client";
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { DollarSign, ShieldCheck, FileText } from 'lucide-react';
+import { IndianRupee, ShieldCheck, FileText } from 'lucide-react';
 
 const benefits = [
   {
-    icon: <DollarSign className="h-8 w-8" />,
+    icon: <IndianRupee className="h-8 w-8" />,
     title: 'Financial Support',
     description: 'Your family gets immediate support of ₹10,000 if something unfortunate happens. We stand by your loved ones when it matters most.',
   },
