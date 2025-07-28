@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useAuth } from "@/context/auth-context";
@@ -7,7 +8,7 @@ import { DashboardHeader } from "@/components/layout/dashboard-header";
 import { DashboardHeaderTe } from "@/components/layout/dashboard-header-te";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function DashboardLayout({
+export default function ProtectedRouteLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -26,7 +27,7 @@ export default function DashboardLayout({
   }, [isAuthenticated, loading, router, isTelugu]);
 
   // While loading, show a skeleton UI
-  if (loading) {
+  if (loading || !isAuthenticated) {
     return (
       <div className="flex min-h-screen w-full flex-col">
         {/* Skeleton Header */}
@@ -49,17 +50,12 @@ export default function DashboardLayout({
   }
 
   // If authenticated, render the actual dashboard
-  if (isAuthenticated) {
-    return (
-      <div className="flex min-h-screen w-full flex-col">
-        {isTelugu ? <DashboardHeaderTe /> : <DashboardHeader />}
-        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-          {children}
-        </main>
-      </div>
-    );
-  }
-
-  // Return null or a loader while redirecting
-  return null;
+  return (
+    <div className="flex min-h-screen w-full flex-col">
+      {isTelugu ? <DashboardHeaderTe /> : <DashboardHeader />}
+      <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+        {children}
+      </main>
+    </div>
+  );
 }
