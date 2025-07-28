@@ -128,11 +128,11 @@ export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolea
                          <Clock className="h-8 w-8 text-primary" />
                         <div>
                             <span className="font-semibold text-muted-foreground">{statusLabel}</span>
-                             <p className="text-lg font-bold">
+                             <div className="text-lg font-bold">
                                 <Badge variant={statusBadgeVariant} className={statusBadgeClass}>
                                     {currentStatus}
                                 </Badge>
-                            </p>
+                            </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -147,4 +147,3 @@ export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolea
         </Card>
     );
 }
-
