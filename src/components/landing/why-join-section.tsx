@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { DollarSign, ShieldCheck, FileText } from 'lucide-react';
@@ -42,21 +42,23 @@ export function WhyJoinSection() {
           {/* Benefits Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mb-16">
             {benefits.map((benefit, index) => (
-              <div key={index} className="text-center group">
-                <div className="mb-6">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm group-hover:shadow-md transition-shadow duration-200">
-                    <div className="text-gray-700">
-                      {benefit.icon}
+              <Card key={index} className="text-center group bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-200">
+                <CardContent className="flex flex-col items-center p-0">
+                  <div className="mb-6">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                      <div className="text-gray-700">
+                        {benefit.icon}
+                      </div>
                     </div>
                   </div>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
-                  {benefit.title}
-                </h3>
-                <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
-                  {benefit.description}
-                </p>
-              </div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+                    {benefit.title}
+                  </h3>
+                  <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
+                    {benefit.description}
+                  </p>
+                </CardContent>
+              </Card>
             ))}
           </div>
           
