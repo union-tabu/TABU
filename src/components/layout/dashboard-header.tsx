@@ -13,20 +13,17 @@ import {
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/auth-context';
 import { usePathname, useRouter } from 'next/navigation';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 
 export function DashboardHeader() {
-  const { userData, loading } = useAuth();
+  const { userData, loading, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
-      localStorage.removeItem('isAuthenticated');
+      await logout();
       toast({
         title: "Logged Out",
         description: "You have been successfully logged out.",
