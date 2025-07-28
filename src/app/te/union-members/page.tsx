@@ -77,33 +77,30 @@ export default function UnionMembersPageTe() {
         e.preventDefault();
     };
     
-    const renderSkeleton = (key: number) => {
-        if (isMobile) {
-            return (
-                <Card key={key} className="mb-4">
-                    <CardHeader>
-                        <Skeleton className="h-6 w-3/4 mb-2" />
-                        <Skeleton className="h-4 w-1/2" />
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                        <Skeleton className="h-5 w-full" />
-                        <Skeleton className="h-5 w-5/6" />
-                        <Skeleton className="h-5 w-2/3" />
-                    </CardContent>
-                </Card>
-            )
-        }
-        return (
-            <TableRow key={key}>
-                <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-48" /></TableCell>
-            </TableRow>
-        );
-    }
+    const renderMobileSkeleton = (key: number) => (
+        <Card key={key} className="mb-4">
+            <CardHeader>
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/2" />
+            </CardHeader>
+            <CardContent className="space-y-3">
+                <Skeleton className="h-5 w-full" />
+                <Skeleton className="h-5 w-5/6" />
+                <Skeleton className="h-5 w-2/3" />
+            </CardContent>
+        </Card>
+    );
+
+    const renderDesktopSkeleton = (key: number) => (
+        <TableRow key={key}>
+            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+            <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+            <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+            <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+        </TableRow>
+    );
     
     return (
         <div className="space-y-6">
@@ -134,7 +131,7 @@ export default function UnionMembersPageTe() {
                     {/* Mobile Card View */}
                     <div className="md:hidden">
                         {loading ? (
-                             Array.from({ length: 5 }).map((_, i) => renderSkeleton(i))
+                             Array.from({ length: 5 }).map((_, i) => renderMobileSkeleton(i))
                         ) : paginatedUsers.length > 0 ? (
                             paginatedUsers.map((user) => (
                                 <Card key={user.id} className="mb-4">
@@ -181,7 +178,7 @@ export default function UnionMembersPageTe() {
                             </TableHeader>
                             <TableBody>
                                 {loading ? (
-                                    Array.from({ length: USERS_PER_PAGE }).map((_, i) => renderSkeleton(i))
+                                    Array.from({ length: USERS_PER_PAGE }).map((_, i) => renderDesktopSkeleton(i))
                                 ) : paginatedUsers.length > 0 ? (
                                     paginatedUsers.map((user) => (
                                         <TableRow key={user.id}>
@@ -240,4 +237,3 @@ export default function UnionMembersPageTe() {
         </div>
     );
 }
-
