@@ -1,3 +1,4 @@
+
 "use client";
 
 import { createContext, useContext, useEffect, useState, useRef } from 'react';
@@ -301,25 +302,4 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-};
-
-// Utility functions for manual sync (if needed)
-export const forceAuthSync = () => {
-  const authState = localStorage.getItem(STORAGE_KEYS.AUTH_STATE);
-  const userData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
-  
-  window.dispatchEvent(new CustomEvent(STORAGE_KEYS.AUTH_EVENT, {
-    detail: { 
-      authState: authState ? JSON.parse(authState) : null, 
-      userData: userData ? JSON.parse(userData) : null,
-      timestamp: Date.now()
-    }
-  }));
-};
-
-export const clearAuthStorage = () => {
-  localStorage.removeItem(STORAGE_KEYS.AUTH_STATE);
-  localStorage.removeItem(STORAGE_KEYS.USER_DATA);
-  localStorage.removeItem(STORAGE_KEYS.AUTH_EVENT);
-  localStorage.removeItem(STORAGE_KEYS.LOGOUT_EVENT);
 };
