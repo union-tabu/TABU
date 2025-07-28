@@ -43,7 +43,13 @@ export function WhyJoinSection() {
           {/* Benefits Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mb-16">
             {benefits.map((benefit, index) => (
-              <Card key={index} className="text-center group bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-200">
+              <Card 
+                key={index} 
+                className={`
+                  text-center group bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-200
+                  ${index === 0 ? 'md:col-span-2 lg:col-span-1' : ''}
+                `}
+              >
                 <CardContent className="flex flex-col items-center p-0">
                   <div className="mb-6">
                     <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
