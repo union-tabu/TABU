@@ -43,14 +43,18 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
+    // If not loading and already authenticated, redirect immediately.
     if (!loading && isAuthenticated) {
       router.replace('/dashboard');
     }
   }, [isAuthenticated, loading, router]);
 
+  // While checking auth or if user is authenticated, render nothing to make redirection feel faster.
+  // The user will see a blank screen for a moment instead of a skeleton loader.
   if (loading || isAuthenticated) {
-    return <LoginSkeleton />;
+    return null;
   }
   
+  // Only show the login form if the user is not authenticated and the auth state has been loaded.
   return <LoginForm />;
 }

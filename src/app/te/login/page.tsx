@@ -49,7 +49,7 @@ export default function LoginPageTe() {
     }, [isAuthenticated, loading, router]);
 
     if (loading || isAuthenticated) {
-        return <LoginSkeleton />;
+        return null;
     }
 
     return <LoginFormTe />;

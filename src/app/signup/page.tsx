@@ -56,7 +56,7 @@ export default function SignupPage() {
     }, [isAuthenticated, loading, router]);
 
     if (loading || isAuthenticated) {
-        return <SignupSkeleton />;
+        return null;
     }
 
     return <SignupForm />;

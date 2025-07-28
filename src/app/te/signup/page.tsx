@@ -56,7 +56,7 @@ export default function SignupPageTe() {
   }, [isAuthenticated, loading, router]);
 
   if (loading || isAuthenticated) {
-    return <SignupSkeleton />;
+    return null;
   }
 
   return <SignupFormTe />;
