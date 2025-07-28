@@ -27,7 +27,7 @@ export default function ProfilePage() {
                     </div>
                     <Skeleton className="h-10 w-32" />
                 </CardContent>
-            </Card>>
+            </Card>
         )
     }
 
