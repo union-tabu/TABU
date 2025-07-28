@@ -1,23 +1,18 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Users Collection
-    // - Authenticated users can read the full list of members.
-    // - A user can create, update their own document.
     match /users/{userId} {
+      // Allow users to read all other user profiles
       allow read: if request.auth != null;
+      // Allow users to create their own profile and update it
       allow create, update: if request.auth.uid == userId;
-      allow delete: if false; // Nobody can delete user documents
     }
 
-    // Payments Collection
-    // - A user can create and read their own payments.
-    // - Nobody can see anyone else's payments.
     match /payments/{paymentId} {
-      allow read, create: if request.auth.uid == request.resource.data.userId;
-      allow update, delete: if false; // Nobody can update or delete payments
+      // Allow users to read and create their own payment documents
+      allow read, create: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
   }
 }
