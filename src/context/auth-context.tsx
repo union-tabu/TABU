@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       dataUnsubscribe();
       setDataUnsubscribe(null);
     }
-  }, [dataUnsubscribe]);
+  }, []);
 
   useEffect(() => {
     const authUnsubscribe = onAuthStateChanged(auth, (user) => {
