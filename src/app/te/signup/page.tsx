@@ -11,7 +11,7 @@ import { createUserWithEmailAndPassword, UserCredential } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { add } from 'date-fns';
 
 // This is a workaround domain for phone+password auth.
@@ -23,6 +23,14 @@ export default function SignupPage() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [plan, setPlan] = useState('yearly');
+
+  useEffect(() => {
+    const planFromUrl = searchParams.get('plan');
+    if (planFromUrl === 'monthly' || planFromUrl === 'yearly') {
+      setPlan(planFromUrl);
+    }
+  }, [searchParams]);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -60,7 +68,6 @@ export default function SignupPage() {
         const userCredential: UserCredential = await createUserWithEmailAndPassword(auth, email, formData.password);
         const user = userCredential.user;
 
-        const plan = searchParams.get('plan') || 'yearly';
         const renewalDate = plan === 'monthly' ? add(new Date(), { months: 1 }) : add(new Date(), { years: 1 });
         
         const nameParts = formData.fullName.trim().split(' ');
