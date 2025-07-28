@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isUpdatingFromStorage = useRef(false);
 
   // Utility function to update localStorage
-  const updateAuthStorage = (user: FirebaseUser | null, userData: UserData | null = null) => {
+  const updateAuthStorage = (user: FirebaseUser | null, newUserData: UserData | null = null) => {
     if (isUpdatingFromStorage.current) return;
 
     const authState: AuthState = {
@@ -64,15 +64,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       currentAuthState.current = authState;
       localStorage.setItem(STORAGE_KEYS.AUTH_STATE, JSON.stringify(authState));
       
-      if (userData) {
-        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+      if (newUserData) {
+        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(newUserData));
       } else if (!user) {
         localStorage.removeItem(STORAGE_KEYS.USER_DATA);
       }
 
       // Dispatch custom event for immediate cross-tab sync
       window.dispatchEvent(new CustomEvent(STORAGE_KEYS.AUTH_EVENT, {
-        detail: { authState, userData, timestamp: Date.now() }
+        detail: { authState, userData: newUserData, timestamp: Date.now() }
       }));
     }
   };
