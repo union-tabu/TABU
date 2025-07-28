@@ -2,21 +2,18 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Users Collection Rules
-    // 1. Allow any authenticated user to read user data (for union-members page).
-    // 2. Allow a user to create and update only their own document.
     match /users/{userId} {
+      // Allow any authenticated user to read user profiles (for union members page)
       allow read: if request.auth != null;
-      allow create, update: if request.auth.uid == userId;
+      
+      // Allow a user to create and update their own document.
+      // This is the key rule that allows post-payment subscription updates.
+      allow create, update: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Payments Collection Rules
-    // 1. Allow a user to create a payment document for themselves.
-    // 2. Allow a user to read only their own payment documents.
     match /payments/{paymentId} {
-      allow create: if request.auth.uid == request.resource.data.userId;
-      allow read: if request.auth.uid == resource.data.userId;
+      // A user can only create and read their own payment documents.
+      allow create, read: if request.auth != null && request.resource.data.userId == request.auth.uid;
     }
   }
 }
