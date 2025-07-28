@@ -6,9 +6,14 @@ export interface UserData {
   phone: string;
   address: string;
   subscription?: {
-    plan?: 'monthly' | 'yearly';
+    plan: 'monthly' | 'yearly';
     status: 'active' | 'inactive' | 'cancelled' | 'not subscribed';
-    renewalDate?: {
+    renewalDate: {
+      seconds: number;
+      nanoseconds: number;
+    };
+    lastPaymentId?: string;
+    updatedAt?: {
       seconds: number;
       nanoseconds: number;
     };

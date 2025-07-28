@@ -72,9 +72,13 @@ export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolea
         );
     }
     
-    if (!userData?.subscription || userData.subscription.status === 'not subscribed') {
+    const userStatus = userData?.subscription?.status || 'not subscribed';
+
+    if (userStatus === 'not subscribed' || userStatus === 'inactive') {
         const subscribeLink = isTelugu ? '/te/dashboard/subscribe' : '/dashboard/subscribe';
-        const titleText = isTelugu ? "సభ్యత్వం పొందలేదు" : "You are not subscribed";
+        const titleText = isTelugu 
+            ? (userStatus === 'inactive' ? "మీ సభ్యత్వం నిష్క్రియంగా ఉంది" : "సభ్యత్వం పొందలేదు")
+            : (userStatus === 'inactive' ? "Your Subscription is Inactive" : "You are not subscribed");
         const descriptionText = isTelugu ? "అన్ని ప్రయోజనాలను అన్‌లాక్ చేయడానికి మరియు క్రియాశీల సభ్యులుగా మారడానికి సభ్యత్వాన్ని పొందండి." : "Get a subscription to unlock all benefits and become an active member.";
         const buttonText = isTelugu ? "ఇప్పుడే సభ్యత్వాన్ని పొందండి" : "Subscribe Now";
 

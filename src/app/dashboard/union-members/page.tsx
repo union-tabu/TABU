@@ -47,7 +47,8 @@ export default function UnionMembersPage() {
     const filteredUsers = useMemo(() => {
         return users.filter(user => {
             const matchesSearch = `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) || user.phone.includes(searchTerm);
-            const matchesStatus = filterStatus === 'all' || user.subscription?.status === filterStatus;
+            const status = user.subscription?.status || 'not subscribed';
+            const matchesStatus = filterStatus === 'all' || status === filterStatus;
             return matchesSearch && matchesStatus;
         });
     }, [users, searchTerm, filterStatus]);
@@ -77,11 +78,12 @@ export default function UnionMembersPage() {
             <Card>
                 <CardHeader>
                     <div className="flex justify-between items-center">
-                        <Tabs defaultValue="all" onValueChange={setFilterStatus}>
+                        <Tabs defaultValue="all" onValueChange={(value) => { setFilterStatus(value); setCurrentPage(1); }}>
                             <TabsList>
                                 <TabsTrigger value="all">All</TabsTrigger>
                                 <TabsTrigger value="active">Active</TabsTrigger>
                                 <TabsTrigger value="inactive">Inactive</TabsTrigger>
+                                <TabsTrigger value="not subscribed">Not Subscribed</TabsTrigger>
                             </TabsList>
                         </Tabs>
                         <form onSubmit={handleSearch} className="flex gap-2">
@@ -118,8 +120,8 @@ export default function UnionMembersPage() {
                                         <TableCell>{user.phone}</TableCell>
                                         <TableCell>
                                             <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
-                                                className={user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                                                {user.subscription?.status || 'N/A'}
+                                                className={user.subscription?.status === 'active' ? 'bg-green-100 text-green-800 capitalize' : 'bg-red-100 text-red-800 capitalize'}>
+                                                {user.subscription?.status || 'not subscribed'}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
@@ -133,7 +135,7 @@ export default function UnionMembersPage() {
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={6} className="text-center">
-                                        No members found.
+                                        No members found for the selected filter.
                                     </TableCell>
                                 </TableRow>
                             )}

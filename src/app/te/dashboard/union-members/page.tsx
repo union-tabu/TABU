@@ -29,6 +29,14 @@ export default function UnionMembersPageTe() {
     const statusMap: { [key: string]: string } = {
         'active': 'క్రియాశీలం',
         'inactive': 'నిష్క్రియం',
+        'not subscribed': 'సభ్యత్వం లేదు'
+    };
+    
+    const filterMap: { [key: string]: string } = {
+        'all': 'అన్నీ',
+        'active': 'క్రియాశీలం',
+        'inactive': 'నిష్క్రియం',
+        'not subscribed': 'సభ్యత్వం లేదు'
     };
 
     useEffect(() => {
@@ -53,7 +61,8 @@ export default function UnionMembersPageTe() {
     const filteredUsers = useMemo(() => {
         return users.filter(user => {
             const matchesSearch = `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) || user.phone.includes(searchTerm);
-            const matchesStatus = filterStatus === 'all' || user.subscription?.status === filterStatus;
+            const status = user.subscription?.status || 'not subscribed';
+            const matchesStatus = filterStatus === 'all' || status === filterStatus;
             return matchesSearch && matchesStatus;
         });
     }, [users, searchTerm, filterStatus]);
@@ -82,11 +91,12 @@ export default function UnionMembersPageTe() {
             <Card>
                 <CardHeader>
                     <div className="flex justify-between items-center">
-                        <Tabs defaultValue="all" onValueChange={setFilterStatus}>
+                        <Tabs defaultValue="all" onValueChange={(value) => { setFilterStatus(value); setCurrentPage(1); }}>
                             <TabsList>
-                                <TabsTrigger value="all">అన్నీ</TabsTrigger>
-                                <TabsTrigger value="active">క్రియాశీలం</TabsTrigger>
-                                <TabsTrigger value="inactive">నిష్క్రియం</TabsTrigger>
+                                <TabsTrigger value="all">{filterMap['all']}</TabsTrigger>
+                                <TabsTrigger value="active">{filterMap['active']}</TabsTrigger>
+                                <TabsTrigger value="inactive">{filterMap['inactive']}</TabsTrigger>
+                                <TabsTrigger value="not subscribed">{filterMap['not subscribed']}</TabsTrigger>
                             </TabsList>
                         </Tabs>
                         <form onSubmit={handleSearch} className="flex gap-2">
@@ -124,7 +134,7 @@ export default function UnionMembersPageTe() {
                                         <TableCell>
                                             <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
                                                 className={user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                                                {statusMap[user.subscription?.status] || 'N/A'}
+                                                {statusMap[user.subscription?.status || 'not subscribed'] || user.subscription?.status}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
@@ -138,7 +148,7 @@ export default function UnionMembersPageTe() {
                             ) : (
                                 <TableRow>
                                     <TableCell colSpan={6} className="text-center">
-                                        సభ్యులు కనుగొనబడలేదు.
+                                        ఎంచుకున్న ఫిల్టర్ కోసం సభ్యులు కనుగొనబడలేదు.
                                     </TableCell>
                                 </TableRow>
                             )}
