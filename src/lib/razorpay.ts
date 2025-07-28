@@ -5,7 +5,7 @@ import Razorpay from 'razorpay';
 import { z } from 'zod';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { add } from 'date-fns';
+import { add, startOfMonth, addMonths, addYears } from 'date-fns';
 import crypto from 'crypto';
 
 const OrderOptionsSchema = z.object({
@@ -171,7 +171,11 @@ export async function handlePaymentSuccess(data: PaymentSuccessData) {
         });
         
         const userDocRef = doc(db, "users", userId);
-        const renewalDate = plan === 'monthly' ? add(new Date(), { months: 1 }) : add(new Date(), { years: 1 });
+        const now = new Date();
+        const firstDayOfCurrentMonth = startOfMonth(now);
+        const renewalDate = plan === 'monthly' 
+            ? addMonths(firstDayOfCurrentMonth, 1) 
+            : addYears(firstDayOfCurrentMonth, 1);
         
         await updateDoc(userDocRef, {
             subscription: {

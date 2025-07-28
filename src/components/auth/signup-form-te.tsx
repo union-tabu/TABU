@@ -12,7 +12,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect } from 'react';
-import { add } from 'date-fns';
+import { startOfMonth, addMonths, addYears } from 'date-fns';
 
 // This is a workaround domain for phone+password auth.
 const FAKE_EMAIL_DOMAIN = '@sanghika.samakhya';
@@ -68,7 +68,11 @@ export default function SignupFormTe() {
         const userCredential: UserCredential = await createUserWithEmailAndPassword(auth, email, formData.password);
         const user = userCredential.user;
 
-        const renewalDate = plan === 'monthly' ? add(new Date(), { months: 1 }) : add(new Date(), { years: 1 });
+        const now = new Date();
+        const firstDayOfCurrentMonth = startOfMonth(now);
+        const renewalDate = plan === 'monthly' 
+            ? addMonths(firstDayOfCurrentMonth, 1) 
+            : addYears(firstDayOfCurrentMonth, 1);
         
         const nameParts = formData.fullName.trim().split(' ');
         const firstName = nameParts[0] || '';
