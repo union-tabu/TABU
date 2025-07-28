@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, User as FirebaseUser, signOut } from 'firebase/auth';
 import { doc, onSnapshot, collection, query, where, orderBy } from 'firebase/firestore';
@@ -52,9 +52,14 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [paymentsLoading, setPaymentsLoading] = useState(true);
+  const listenersRef = useRef<(() => void)[]>([]);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+      // Clear previous listeners
+      listenersRef.current.forEach(unsubscribe => unsubscribe());
+      listenersRef.current = [];
+
       if (currentUser) {
         setFirebaseUser(currentUser);
         const userDocRef = doc(db, "users", currentUser.uid);
@@ -73,9 +78,13 @@ export default function DashboardPage() {
             });
           } else {
             console.error("No user document found in Firestore!");
-            router.push('/login');
+            // This might happen if user is deleted, log them out
+            signOut(auth);
           }
           setLoading(false);
+        }, (error) => {
+            console.error("Error fetching user document:", error);
+            setLoading(false);
         });
 
         const paymentsQuery = query(
@@ -91,22 +100,30 @@ export default function DashboardPage() {
             } as Payment));
             setPayments(paymentsData);
             setPaymentsLoading(false);
+        }, (error) => {
+            console.error("Error fetching payments:", error);
+            setPaymentsLoading(false);
         });
 
-        return () => {
-            unsubscribeUser();
-            unsubscribePayments();
-        };
+        listenersRef.current.push(unsubscribeUser, unsubscribePayments);
+
       } else {
         router.push('/login');
         setLoading(false);
       }
     });
 
-    return () => unsubscribeAuth();
+    return () => {
+        unsubscribeAuth();
+        listenersRef.current.forEach(unsubscribe => unsubscribe());
+    };
   }, [router]);
 
   const handleLogout = async () => {
+    // First, detach all listeners to prevent permission errors
+    listenersRef.current.forEach(unsubscribe => unsubscribe());
+    listenersRef.current = [];
+
     try {
       await signOut(auth);
       localStorage.removeItem('isAuthenticated');
@@ -114,7 +131,7 @@ export default function DashboardPage() {
         title: "Logged Out",
         description: "You have been successfully logged out.",
       });
-      router.push('/');
+      // The onAuthStateChanged listener will handle the redirect
     } catch (error) {
       console.error("Logout Error:", error);
       toast({
@@ -273,3 +290,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
