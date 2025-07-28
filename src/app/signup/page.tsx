@@ -7,30 +7,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { auth, db } from '@/lib/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, UserCredential } from 'firebase/auth';
+import { createUserWithEmailAndPassword, UserCredential } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { add } from 'date-fns';
 
-declare global {
-  interface Window {
-    recaptchaVerifier?: RecaptchaVerifier;
-    confirmationResult?: any;
-  }
-}
+// This is a workaround domain for phone+password auth.
+const FAKE_EMAIL_DOMAIN = '@sanghika.samakhya';
 
 export default function SignupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const [step, setStep] = useState<'details' | 'otp'>('details');
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
+    password: '',
+    confirmPassword: '',
     address: '',
     city: '',
     state: '',
@@ -38,65 +35,35 @@ export default function SignupPage() {
     pin: '',
   });
 
-  const [otp, setOtp] = useState('');
-
-  useEffect(() => {
-    // Render recaptcha verifier
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': (response: any) => {
-            // reCAPTCHA solved, allow signInWithPhoneNumber.
-        }
-    });
-
-    return () => {
-        window.recaptchaVerifier?.clear();
-    };
-}, []);
-
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({...prev, [id]: value}));
   }
 
-  const handleSendOtp = async (event: React.FormEvent) => {
+  const handleSignup = async (event: React.FormEvent) => {
     event.preventDefault();
-    setLoading(true);
-    
-    try {
-        const formattedPhone = `+91${formData.phone}`;
-        const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier!);
-        window.confirmationResult = confirmationResult;
-        setStep('otp');
+
+    if (formData.password !== formData.confirmPassword) {
         toast({
-          title: "Verification Code Sent",
-          description: "Please enter the code sent to your phone.",
-        });
-    } catch (error: any) {
-        console.error("OTP Send Error:", error);
-        toast({
-            title: "Error Sending Code",
-            description: error.message,
+            title: "Passwords do not match",
+            description: "Please check your password and try again.",
             variant: "destructive",
         });
-    } finally {
-        setLoading(false);
+        return;
     }
-  };
 
-  const handleVerifyOtpAndSignup = async (event: React.FormEvent) => {
-    event.preventDefault();
     setLoading(true);
 
     try {
-        const userCredential: UserCredential = await window.confirmationResult.confirm(otp);
+        // Construct a fake email from the phone number
+        const email = `${formData.phone}${FAKE_EMAIL_DOMAIN}`;
+        
+        const userCredential: UserCredential = await createUserWithEmailAndPassword(auth, email, formData.password);
         const user = userCredential.user;
 
         const plan = searchParams.get('plan') || 'yearly';
         const renewalDate = plan === 'monthly' ? add(new Date(), { months: 1 }) : add(new Date(), { years: 1 });
         
-        // Split full name into first and last
         const nameParts = formData.fullName.trim().split(' ');
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
@@ -104,7 +71,7 @@ export default function SignupPage() {
         await setDoc(doc(db, "users", user.uid), {
             firstName: firstName,
             lastName: lastName,
-            email: null, // No email in this flow
+            email: email, // Store the fake email
             phone: formData.phone,
             address: `${formData.address}, ${formData.city}, ${formData.state}, ${formData.country} - ${formData.pin}`,
             createdAt: new Date(),
@@ -117,16 +84,22 @@ export default function SignupPage() {
         
         toast({
             title: "Account Created!",
-            description: "You have been successfully registered.",
+            description: "You have been successfully registered. Please login.",
         });
 
-        router.push('/dashboard');
+        router.push('/login');
 
     } catch (error: any) {
         console.error("Signup Error:", error);
+        let errorMessage = "An unknown error occurred.";
+        if (error.code === 'auth/email-already-in-use') {
+            errorMessage = "This phone number is already registered. Please login instead.";
+        } else if (error.code === 'auth/weak-password') {
+            errorMessage = "The password is too weak. Please use at least 6 characters.";
+        }
         toast({
             title: "Signup Failed",
-            description: "The verification code was incorrect or another error occurred.",
+            description: errorMessage,
             variant: "destructive",
         });
     } finally {
@@ -141,72 +114,60 @@ export default function SignupPage() {
         <CardHeader>
           <CardTitle className="text-2xl font-headline">Create New Account</CardTitle>
           <CardDescription>
-            {step === 'details' 
-              ? "Enter your information to create an account." 
-              : "Enter the OTP sent to your phone to complete registration."}
+            Enter your information to create an account.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {step === 'details' ? (
-            <form className="grid gap-4" onSubmit={handleSendOtp}>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                      <Label htmlFor="fullName">Full Name</Label>
-                      <Input id="fullName" placeholder="Pietro Schirano" required onChange={handleInputChange} value={formData.fullName} />
-                  </div>
-                  <div className="grid gap-2">
-                      <Label htmlFor="phone">Phone</Label>
-                      <Input id="phone" type="tel" placeholder="987-654-3210" required onChange={handleInputChange} value={formData.phone}/>
-                  </div>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="address">Address</Label>
-                <Input id="address" placeholder="11-2-333, Landmark" required onChange={handleInputChange} value={formData.address} />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                      <Label htmlFor="city">City</Label>
-                      <Input id="city" placeholder="Hyderabad" required onChange={handleInputChange} value={formData.city}/>
-                  </div>
-                  <div className="grid gap-2">
-                      <Label htmlFor="state">State</Label>
-                      <Input id="state" placeholder="Telangana" required onChange={handleInputChange} value={formData.state}/>
-                  </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                      <Label htmlFor="country">Country</Label>
-                      <Input id="country" placeholder="India" required onChange={handleInputChange} value={formData.country}/>
-                  </div>
-                  <div className="grid gap-2">
-                      <Label htmlFor="pin">Pin</Label>
-                      <Input id="pin" placeholder="500089" required onChange={handleInputChange} value={formData.pin}/>
-                  </div>
-              </div>
-              
-              <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading}>
-                {loading ? 'Sending OTP...' : 'Send Verification Code'}
-              </Button>
-            </form>
-          ) : (
-             <form className="grid gap-4" onSubmit={handleVerifyOtpAndSignup}>
+          <form className="grid gap-4" onSubmit={handleSignup}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                    <Label htmlFor="otp">Verification Code</Label>
-                    <Input
-                        id="otp"
-                        type="text"
-                        placeholder="Enter 6-digit code"
-                        required
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value)}
-                    />
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input id="fullName" placeholder="Pietro Schirano" required onChange={handleInputChange} value={formData.fullName} />
                 </div>
-                <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading}>
-                    {loading ? 'Verifying...' : 'Create Account'}
-                </Button>
-                <Button variant="link" onClick={() => setStep('details')}>Back to details</Button>
-            </form>
-          )}
+                <div className="grid gap-2">
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input id="phone" type="tel" placeholder="987-654-3210" required onChange={handleInputChange} value={formData.phone}/>
+                </div>
+            </div>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input id="password" type="password" required onChange={handleInputChange} value={formData.password} />
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Input id="confirmPassword" type="password" required onChange={handleInputChange} value={formData.confirmPassword}/>
+                </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="address">Address</Label>
+              <Input id="address" placeholder="11-2-333, Landmark" required onChange={handleInputChange} value={formData.address} />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="city">City</Label>
+                    <Input id="city" placeholder="Hyderabad" required onChange={handleInputChange} value={formData.city}/>
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="state">State</Label>
+                    <Input id="state" placeholder="Telangana" required onChange={handleInputChange} value={formData.state}/>
+                </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="country">Country</Label>
+                    <Input id="country" placeholder="India" required onChange={handleInputChange} value={formData.country}/>
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="pin">Pin</Label>
+                    <Input id="pin" placeholder="500089" required onChange={handleInputChange} value={formData.pin}/>
+                </div>
+            </div>
+            
+            <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading}>
+              {loading ? 'Creating Account...' : 'Create Account'}
+            </Button>
+          </form>
 
           <div className="mt-4 text-center text-sm">
             Already have an account?{' '}
@@ -216,7 +177,6 @@ export default function SignupPage() {
           </div>
         </CardContent>
       </Card>
-      <div id="recaptcha-container"></div>
     </div>
   );
 }

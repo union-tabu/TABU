@@ -8,69 +8,30 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
-import { signInWithPhoneNumber, RecaptchaVerifier } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-declare global {
-  interface Window {
-    recaptchaVerifier?: RecaptchaVerifier;
-    confirmationResult?: any;
-  }
-}
+// This is a workaround domain for phone+password auth.
+const FAKE_EMAIL_DOMAIN = '@sanghika.samakhya';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [step, setStep] = useState<'phone' | 'otp'>('phone');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-      'size': 'invisible',
-      'callback': (response: any) => {
-        // reCAPTCHA solved, allow signInWithPhoneNumber.
-      }
-    });
-
-    return () => {
-      window.recaptchaVerifier?.clear();
-    };
-  }, []);
-
-  const handleSendOtp = async (event: React.FormEvent) => {
+  const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
 
     try {
-      const formattedPhone = `+91${phone}`;
-      const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier!);
-      window.confirmationResult = confirmationResult;
-      setStep('otp');
-      toast({
-        title: "OTP Sent",
-        description: "An OTP has been sent to your phone number.",
-      });
-    } catch (error: any) {
-      console.error("OTP Send Error:", error);
-      toast({
-        title: "Failed to Send OTP",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-        setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setLoading(true);
-
-    try {
-      await window.confirmationResult.confirm(otp);
+      // Construct the fake email from the phone number
+      const email = `${phone}${FAKE_EMAIL_DOMAIN}`;
+      
+      await signInWithEmailAndPassword(auth, email, password);
+      
       localStorage.setItem('isAuthenticated', 'true');
       router.push('/dashboard');
       toast({
@@ -78,10 +39,14 @@ export default function LoginPage() {
         description: "You have been successfully logged in.",
       });
     } catch (error: any) {
-        console.error("OTP Verification Error:", error);
+        console.error("Login Error:", error);
+        let errorMessage = "An unknown error occurred. Please try again.";
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+            errorMessage = "Invalid phone number or password. Please check your credentials and try again.";
+        }
         toast({
             title: "Login Failed",
-            description: "The OTP you entered is incorrect. Please try again.",
+            description: errorMessage,
             variant: "destructive",
         });
     } finally {
@@ -95,45 +60,35 @@ export default function LoginPage() {
       <Card className="mx-auto max-w-sm w-full shadow-xl">
         <CardHeader>
           <CardTitle className="text-2xl font-headline">Login</CardTitle>
-          <CardDescription>Enter your phone number to receive a login code</CardDescription>
+          <CardDescription>Enter your phone number and password to login</CardDescription>
         </CardHeader>
         <CardContent>
-          {step === 'phone' ? (
-            <form className="grid gap-4" onSubmit={handleSendOtp}>
-              <div className="grid gap-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="9876543210"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                />
-              </div>
-              <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>
-                {loading ? 'Sending OTP...' : 'Send OTP'}
-              </Button>
-            </form>
-          ) : (
-            <form className="grid gap-4" onSubmit={handleVerifyOtp}>
-              <div className="grid gap-2">
-                <Label htmlFor="otp">Enter OTP</Label>
-                <Input
-                  id="otp"
-                  type="text"
-                  placeholder="123456"
-                  required
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                />
-              </div>
-               <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>
-                {loading ? 'Verifying...' : 'Login'}
-              </Button>
-              <Button variant="link" onClick={() => setStep('phone')}>Use a different phone number</Button>
-            </form>
-          )}
+          <form className="grid gap-4" onSubmit={handleLogin}>
+            <div className="grid gap-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="9876543210"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>
+              {loading ? 'Logging in...' : 'Login'}
+            </Button>
+          </form>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{' '}
             <Link href="/signup" className="underline hover:text-primary">
@@ -142,7 +97,6 @@ export default function LoginPage() {
           </div>
         </CardContent>
       </Card>
-      <div id="recaptcha-container"></div>
     </div>
   );
 }

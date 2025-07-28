@@ -7,30 +7,28 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { auth, db } from '@/lib/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, UserCredential } from 'firebase/auth';
+import { createUserWithEmailAndPassword, UserCredential } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { add } from 'date-fns';
 
-declare global {
-  interface Window {
-    recaptchaVerifier?: RecaptchaVerifier;
-    confirmationResult?: any;
-  }
-}
+// This is a workaround domain for phone+password auth.
+const FAKE_EMAIL_DOMAIN = '@sanghika.samakhya';
+
 
 export default function SignupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const [step, setStep] = useState<'details' | 'otp'>('details');
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
+    password: '',
+    confirmPassword: '',
     address: '',
     city: '',
     state: '',
@@ -38,56 +36,28 @@ export default function SignupPage() {
     pin: '',
   });
 
-  const [otp, setOtp] = useState('');
-
-  useEffect(() => {
-    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': (response: any) => {}
-    });
-
-    return () => {
-        window.recaptchaVerifier?.clear();
-    };
-}, []);
-
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({...prev, [id]: value}));
   }
 
-  const handleSendOtp = async (event: React.FormEvent) => {
+  const handleSignup = async (event: React.FormEvent) => {
     event.preventDefault();
-    setLoading(true);
-    
-    try {
-        const formattedPhone = `+91${formData.phone}`;
-        const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier!);
-        window.confirmationResult = confirmationResult;
-        setStep('otp');
+
+    if (formData.password !== formData.confirmPassword) {
         toast({
-          title: "ధృవీకరణ కోడ్ పంపబడింది",
-          description: "దయచేసి మీ ఫోన్‌కు పంపిన కోడ్‌ను నమోదు చేయండి.",
-        });
-    } catch (error: any) {
-        console.error("OTP Send Error:", error);
-        toast({
-            title: "కోడ్ పంపడంలో లోపం",
-            description: error.message,
+            title: "పాస్‌వర్డ్‌లు సరిపోలడం లేదు",
+            description: "దయచేసి మీ పాస్‌వర్డ్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.",
             variant: "destructive",
         });
-    } finally {
-        setLoading(false);
+        return;
     }
-  };
-
-  const handleVerifyOtpAndSignup = async (event: React.FormEvent) => {
-    event.preventDefault();
+    
     setLoading(true);
 
     try {
-        const userCredential: UserCredential = await window.confirmationResult.confirm(otp);
+        const email = `${formData.phone}${FAKE_EMAIL_DOMAIN}`;
+        const userCredential: UserCredential = await createUserWithEmailAndPassword(auth, email, formData.password);
         const user = userCredential.user;
 
         const plan = searchParams.get('plan') || 'yearly';
@@ -100,7 +70,7 @@ export default function SignupPage() {
         await setDoc(doc(db, "users", user.uid), {
             firstName: firstName,
             lastName: lastName,
-            email: null,
+            email: email, // Store fake email
             phone: formData.phone,
             address: `${formData.address}, ${formData.city}, ${formData.state}, ${formData.country} - ${formData.pin}`,
             createdAt: new Date(),
@@ -113,16 +83,22 @@ export default function SignupPage() {
         
         toast({
             title: "ఖాతా సృష్టించబడింది!",
-            description: "మీరు విజయవంతంగా నమోదు చేసుకున్నారు.",
+            description: "మీరు విజయవంతంగా నమోదు చేసుకున్నారు. దయచేసి లాగిన్ చేయండి.",
         });
 
-        router.push('/te/dashboard');
+        router.push('/te/login');
 
     } catch (error: any) {
         console.error("Signup Error:", error);
+        let errorMessage = "తెలియని లోపం సంభవించింది.";
+        if (error.code === 'auth/email-already-in-use') {
+            errorMessage = "ఈ ఫోన్ నంబర్ ఇప్పటికే నమోదు చేయబడింది. దయచేసి బదులుగా లాగిన్ చేయండి.";
+        } else if (error.code === 'auth/weak-password') {
+            errorMessage = "పాస్‌వర్డ్ చాలా బలహీనంగా ఉంది. దయచేసి కనీసం 6 అక్షరాలను ఉపయోగించండి.";
+        }
         toast({
             title: "నమోదు విఫలమైంది",
-            description: "ధృవీకరణ కోడ్ తప్పు లేదా మరో లోపం సంభవించింది.",
+            description: errorMessage,
             variant: "destructive",
         });
     } finally {
@@ -137,14 +113,11 @@ export default function SignupPage() {
         <CardHeader>
           <CardTitle className="text-2xl font-headline">కొత్త ఖాతాను సృష్టించండి</CardTitle>
           <CardDescription>
-            {step === 'details' 
-              ? "ఖాతాను సృష్టించడానికి మీ సమాచారాన్ని నమోదు చేయండి." 
-              : "నమోదు పూర్తి చేయడానికి మీ ఫోన్‌కు పంపిన OTPని నమోదు చేయండి."}
+            ఖాతాను సృష్టించడానికి మీ సమాచారాన్ని నమోదు చేయండి.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {step === 'details' ? (
-            <form className="grid gap-4" onSubmit={handleSendOtp}>
+            <form className="grid gap-4" onSubmit={handleSignup}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2">
                       <Label htmlFor="fullName">పూర్తి పేరు</Label>
@@ -153,6 +126,16 @@ export default function SignupPage() {
                   <div className="grid gap-2">
                       <Label htmlFor="phone">ఫోన్</Label>
                       <Input id="phone" type="tel" placeholder="987-654-3210" required onChange={handleInputChange} value={formData.phone}/>
+                  </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                      <Label htmlFor="password">పాస్‌వర్డ్</Label>
+                      <Input id="password" type="password" required onChange={handleInputChange} value={formData.password} />
+                  </div>
+                  <div className="grid gap-2">
+                      <Label htmlFor="confirmPassword">పాస్‌వర్డ్‌ను నిర్ధారించండి</Label>
+                      <Input id="confirmPassword" type="password" required onChange={handleInputChange} value={formData.confirmPassword}/>
                   </div>
               </div>
               <div className="grid gap-2">
@@ -181,29 +164,9 @@ export default function SignupPage() {
               </div>
               
               <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading}>
-                {loading ? 'OTP పంపుతోంది...' : 'ధృవీకరణ కోడ్ పంపండి'}
+                {loading ? 'ఖాతా సృష్టిస్తోంది...' : 'ఖాతాను సృష్టించండి'}
               </Button>
             </form>
-          ) : (
-             <form className="grid gap-4" onSubmit={handleVerifyOtpAndSignup}>
-                <div className="grid gap-2">
-                    <Label htmlFor="otp">ధృవీకరణ కోడ్</Label>
-                    <Input
-                        id="otp"
-                        type="text"
-                        placeholder="6-అంకెల కోడ్‌ను నమోదు చేయండి"
-                        required
-                        value={otp}
-                        onChange={(e) => setOtp(e.target.value)}
-                    />
-                </div>
-                <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading}>
-                    {loading ? 'ధృవీకరిస్తోంది...' : 'ఖాతాను సృష్టించండి'}
-                </Button>
-                <Button variant="link" onClick={() => setStep('details')}>వివరాలకు తిరిగి వెళ్ళు</Button>
-            </form>
-          )}
-
           <div className="mt-4 text-center text-sm">
             ఇప్పటికే ఖాతా ఉందా?{' '}
             <Link href="/te/login" className="underline hover:text-primary">
@@ -212,7 +175,6 @@ export default function SignupPage() {
           </div>
         </CardContent>
       </Card>
-      <div id="recaptcha-container"></div>
     </div>
   );
 }
