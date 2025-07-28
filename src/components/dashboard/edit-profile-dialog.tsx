@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Button } from "@/components/ui/button"
@@ -17,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { db } from "@/lib/firebase";
 import { doc, updateDoc } from "firebase/firestore";
 import { useState } from "react";
-import type { UserData } from "@/app/dashboard/page";
+import type { UserData } from "@/types/user";
 
 interface EditProfileDialogProps {
     user: UserData;

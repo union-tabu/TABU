@@ -1,11 +1,10 @@
-
 "use client";
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import type { UserData } from '@/app/dashboard/page';
+import type { UserData } from '@/types/user';
 
 interface AuthContextType {
   firebaseUser: FirebaseUser | null;
@@ -25,34 +24,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [dataUnsubscribe, setDataUnsubscribe] = useState<Unsubscribe | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    // Clean up previous listener on re-render
+    if (dataUnsubscribe) {
+        dataUnsubscribe();
+    }
+
+    const authUnsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setFirebaseUser(user);
-        // Set isAuthenticated in localStorage for non-context consumers if needed
-        localStorage.setItem('isAuthenticated', 'true');
-        
         const userDocRef = doc(db, "users", user.uid);
-        const unsubSnapshot = onSnapshot(userDocRef, (doc) => {
+        
+        const unsub = onSnapshot(userDocRef, (doc) => {
+          setLoading(true);
           if (doc.exists()) {
             setUserData(doc.data() as UserData);
           } else {
             setUserData(null);
           }
           setLoading(false);
+        }, (error) => {
+            console.error("Error fetching user data:", error);
+            setUserData(null);
+            setLoading(false);
         });
+        setDataUnsubscribe(() => unsub);
 
-        return () => unsubSnapshot();
       } else {
         setFirebaseUser(null);
         setUserData(null);
-        localStorage.removeItem('isAuthenticated');
         setLoading(false);
+        if (dataUnsubscribe) {
+          dataUnsubscribe();
+          setDataUnsubscribe(null);
+        }
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+        authUnsubscribe();
+        if (dataUnsubscribe) {
+            dataUnsubscribe();
+        }
+    };
   }, []);
 
   const value = {

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { createRazorpayOrder, handlePaymentSuccess } from '@/lib/razorpay';
 import { useAuth } from '@/context/auth-context';
-import type { UserData } from '@/app/dashboard/page';
+import type { UserData } from '@/types/user';
 
 declare global {
   interface Window {
