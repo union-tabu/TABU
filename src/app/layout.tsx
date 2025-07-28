@@ -1,8 +1,6 @@
 
 import type {Metadata} from 'next';
 import './globals.css';
-import { Header } from '@/components/layout/header';
-import { Footer } from '@/components/layout/footer';
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/context/auth-context';
 
@@ -25,11 +23,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
-          <div className="flex flex-col min-h-screen">
-            <Header />
-            <main className="flex-grow px-4 sm:px-6 lg:px-8">{children}</main>
-            <Footer />
-          </div>
+          {children}
           <Toaster />
         </AuthProvider>
       </body>
