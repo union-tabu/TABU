@@ -1,8 +1,9 @@
+
 "use client";
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Menu } from 'lucide-react';
+import { LogOut, Menu } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -11,13 +12,18 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 import React from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 export function Header() {
   const [isOpen, setIsOpen] = React.useState(false);
   const { isAuthenticated } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
+  const { toast } = useToast();
   const isTelugu = pathname.startsWith('/te');
 
   const navLinks = isTelugu ? [
@@ -36,7 +42,28 @@ export function Header() {
   const loginText = isTelugu ? 'సైన్ ఇన్' : 'Sign In';
   const registerText = isTelugu ? 'నమోదు చేసుకోండి' : 'Register';
   const dashboardText = isTelugu ? 'డాష్‌బోర్డ్' : 'Dashboard';
+  const logoutText = isTelugu ? 'లాగ్ అవుట్' : 'Logout';
   const homeLink = isTelugu ? '/te' : '/';
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      localStorage.removeItem('isAuthenticated');
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+      });
+      router.push(homeLink);
+      if (isOpen) setIsOpen(false);
+    } catch (error) {
+      console.error("Logout Error:", error);
+      toast({
+        title: "Error",
+        description: "Could not log you out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -63,12 +90,18 @@ export function Header() {
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-3">
             {isAuthenticated ? (
-              <Button asChild className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-md text-sm font-medium">
-                <Link href={dashboardLink}>{dashboardText}</Link>
-              </Button>
+              <>
+                <Button asChild className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-md text-sm font-medium">
+                  <Link href={dashboardLink}>{dashboardText}</Link>
+                </Button>
+                <Button variant="ghost" onClick={handleLogout} className="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {logoutText}
+                </Button>
+              </>
             ) : (
               <>
-                <Button asChild variant="ghost" className="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">
+                <Button asChild variant="ghost" className="text-gray-700 px-4 py-2 text-sm font-medium">
                   <Link href={loginLink}>{loginText}</Link>
                 </Button>
                 <Button asChild className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-md text-sm font-medium">
@@ -111,11 +144,17 @@ export function Header() {
                 ))}
                 <div className="pt-6 border-t space-y-3">
                   {isAuthenticated ? (
-                    <Button asChild size="lg" className="w-full bg-gray-900 hover:bg-gray-800 text-white">
-                      <Link href={dashboardLink} onClick={() => setIsOpen(false)}>
-                        {dashboardText}
-                      </Link>
-                    </Button>
+                    <>
+                      <Button asChild size="lg" className="w-full bg-gray-900 hover:bg-gray-800 text-white">
+                        <Link href={dashboardLink} onClick={() => setIsOpen(false)}>
+                          {dashboardText}
+                        </Link>
+                      </Button>
+                       <Button variant="ghost" size="lg" onClick={handleLogout} className="w-full text-gray-700 hover:text-gray-900">
+                         <LogOut className="mr-2 h-5 w-5" />
+                         {logoutText}
+                      </Button>
+                    </>
                   ) : (
                     <>
                       <Button asChild variant="ghost" size="lg" className="w-full text-gray-700 hover:text-gray-900">
