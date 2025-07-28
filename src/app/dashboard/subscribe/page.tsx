@@ -6,6 +6,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { PaymentButton } from "@/components/payment-button";
 import { SubscriptionStatusCard } from "@/components/dashboard/subscription-status-card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
+import { differenceInMonths } from 'date-fns';
 
 export default function SubscribePage() {
   const { userData, loading } = useAuth();
@@ -38,6 +41,32 @@ export default function SubscribePage() {
     );
   }
 
+  let isLapsed = false;
+  const PENALTY_FEE = 500;
+  const MONTHLY_PRICE = 100;
+  const YEARLY_PRICE = 1200;
+
+  if (userData) {
+    const now = new Date();
+    const status = userData.subscription?.status;
+    
+    if (status === 'not subscribed' && userData.createdAt) {
+      const accountCreationDate = new Date(userData.createdAt.seconds * 1000);
+      if (differenceInMonths(now, accountCreationDate) >= 2) {
+        isLapsed = true;
+      }
+    } else if (status === 'inactive' && userData.subscription?.renewalDate) {
+      const renewalDate = new Date(userData.subscription.renewalDate.seconds * 1000);
+       if (differenceInMonths(now, renewalDate) >= 2) {
+        isLapsed = true;
+      }
+    }
+  }
+  
+  const monthlyAmount = isLapsed ? MONTHLY_PRICE + PENALTY_FEE : MONTHLY_PRICE;
+  const yearlyAmount = isLapsed ? YEARLY_PRICE + PENALTY_FEE : YEARLY_PRICE;
+
+
   return (
     <div className="flex flex-col items-center justify-center w-full space-y-8">
       <div className="text-center">
@@ -48,19 +77,30 @@ export default function SubscribePage() {
         </p>
       </div>
 
+       {isLapsed && (
+          <Alert variant="destructive" className="max-w-4xl w-full">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Reactivation Fee Applied</AlertTitle>
+            <AlertDescription>
+              Your account has been inactive for over two months. A one-time fee of ₹{PENALTY_FEE} has been added to reactivate your membership.
+            </AlertDescription>
+          </Alert>
+        )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
         <Card className="flex flex-col">
           <CardHeader>
             <CardTitle>Monthly Plan</CardTitle>
           </CardHeader>
           <CardContent className="flex-grow">
-            <p className="text-4xl font-bold">₹100</p>
+            <p className="text-4xl font-bold">₹{monthlyAmount}</p>
             <p className="text-muted-foreground">per month</p>
+            {isLapsed && <p className="text-sm text-muted-foreground">(₹{MONTHLY_PRICE} plan + ₹{PENALTY_FEE} fee)</p>}
           </CardContent>
           <CardFooter>
             <PaymentButton
               plan="monthly"
-              amount={100}
+              amount={monthlyAmount}
               buttonText="Register"
             />
           </CardFooter>
@@ -71,13 +111,14 @@ export default function SubscribePage() {
             <CardTitle>Annual Plan</CardTitle>
           </CardHeader>
           <CardContent className="flex-grow">
-            <p className="text-4xl font-bold">₹1,200</p>
+            <p className="text-4xl font-bold">₹{yearlyAmount}</p>
             <p className="text-muted-foreground">per year</p>
+             {isLapsed && <p className="text-sm text-muted-foreground">(₹{YEARLY_PRICE} plan + ₹{PENALTY_FEE} fee)</p>}
           </CardContent>
           <CardFooter>
              <PaymentButton
               plan="yearly"
-              amount={1200}
+              amount={yearlyAmount}
               buttonText="Register"
             />
           </CardFooter>
