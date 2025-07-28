@@ -1,13 +1,41 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // WARNING: Insecure rules ahead.
-    // These rules grant open access to your entire database.
-    // This is useful for testing but MUST be secured before production.
+    
+    // Users collection rules
+    match /users/{userId} {
+      // Users can read all user documents (requirement #3)
+      allow read: if request.auth != null;
+      
+      // Users can only create and update their own user document (requirement #2)
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+      
+      // Users cannot delete their own user documents (safety measure)
+      // If you need delete functionality, add: allow delete: if request.auth.uid == userId;
+    }
+    
+    // Payments collection rules
+    match /payments/{paymentId} {
+      // Users can only read their own payments (requirement #1)
+      allow read: if request.auth != null && 
+                     request.auth.uid == resource.data.userId;
+      
+      // Users can only create payments for themselves (requirement #1)
+      allow create: if request.auth != null && 
+                       request.auth.uid == request.resource.data.userId;
+      
+      // Users can update their own payments (optional - remove if not needed)
+      allow update: if request.auth != null && 
+                       request.auth.uid == resource.data.userId;
+      
+      // Users cannot delete payments (safety measure)
+      // If you need delete functionality, add: allow delete: if request.auth.uid == resource.data.userId;
+    }
+    
+    // Deny all other access
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }
