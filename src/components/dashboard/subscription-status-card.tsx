@@ -75,7 +75,7 @@ export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolea
     const userStatus = userData?.subscription?.status || 'not subscribed';
 
     if (userStatus === 'not subscribed' || userStatus === 'inactive') {
-        const subscribeLink = isTelugu ? '/te/dashboard/subscribe' : '/dashboard/subscribe';
+        const subscribeLink = isTelugu ? '/te/subscribe' : '/subscribe';
         const titleText = isTelugu 
             ? (userStatus === 'inactive' ? "మీ సభ్యత్వం నిష్క్రియంగా ఉంది" : "సభ్యత్వం పొందలేదు")
             : (userStatus === 'inactive' ? "Your Subscription is Inactive" : "You are not subscribed");

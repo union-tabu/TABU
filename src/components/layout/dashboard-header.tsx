@@ -32,9 +32,9 @@ export function DashboardHeader() {
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard' },
-    { href: '/dashboard/union-members', label: 'Union Members' },
-    { href: '/dashboard/payments', label: 'Payments' },
-    { href: '/dashboard/subscribe', label: 'Subscribe' },
+    { href: '/union-members', label: 'Union Members' },
+    { href: '/payments', label: 'Payments' },
+    { href: '/subscribe', label: 'Subscribe' },
   ];
 
   return (
@@ -74,7 +74,7 @@ export function DashboardHeader() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-                <Link href="/dashboard/profile">Profile</Link>
+                <Link href="/profile">Profile</Link>
             </DropdownMenuItem>
             <DropdownMenuItem disabled>Settings</DropdownMenuItem>
             <DropdownMenuSeparator />

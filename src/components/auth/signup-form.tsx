@@ -81,7 +81,7 @@ export default function SignupForm() {
 
         // Redirect to subscribe page after login
         localStorage.setItem('isAuthenticated', 'true');
-        router.push('/dashboard/subscribe');
+        router.push('/subscribe');
 
     } catch (error: any) {
         console.error("Signup Error:", error);

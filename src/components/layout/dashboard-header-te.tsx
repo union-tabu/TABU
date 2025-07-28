@@ -32,9 +32,9 @@ export function DashboardHeaderTe() {
 
   const navItems = [
     { href: '/te/dashboard', label: 'డాష్‌బోర్డ్' },
-    { href: '/te/dashboard/union-members', label: 'యూనియన్ సభ్యులు' },
-    { href: '/te/dashboard/payments', label: 'చెల్లింపులు' },
-    { href: '/te/dashboard/subscribe', label: 'సభ్యత్వం' },
+    { href: '/te/union-members', label: 'యూనియన్ సభ్యులు' },
+    { href: '/te/payments', label: 'చెల్లింపులు' },
+    { href: '/te/subscribe', label: 'సభ్యత్వం' },
   ];
 
   return (
@@ -74,7 +74,7 @@ export function DashboardHeaderTe() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-                <Link href="/te/dashboard/profile">ప్రొఫైల్</Link>
+                <Link href="/te/profile">ప్రొఫైల్</Link>
             </DropdownMenuItem>
             <DropdownMenuItem disabled>సెట్టింగ్‌లు</DropdownMenuItem>
             <DropdownMenuSeparator />

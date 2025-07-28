@@ -79,7 +79,7 @@ export default function SignupFormTe() {
         });
 
         localStorage.setItem('isAuthenticated', 'true');
-        router.push('/te/dashboard/subscribe');
+        router.push('/te/subscribe');
 
     } catch (error: any) {
         console.error("Signup Error:", error);
