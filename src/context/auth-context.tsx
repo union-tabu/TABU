@@ -1,10 +1,13 @@
+
 "use client";
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { doc, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import type { UserData } from '@/types/user';
+
+const AUTH_STORAGE_KEY = 'isAuthenticated';
 
 interface AuthContextType {
   firebaseUser: FirebaseUser | null;
@@ -26,48 +29,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [dataUnsubscribe, setDataUnsubscribe] = useState<Unsubscribe | null>(null);
 
-  useEffect(() => {
-    // Clean up previous listener on re-render
+  const cleanupListeners = useCallback(() => {
     if (dataUnsubscribe) {
-        dataUnsubscribe();
+      dataUnsubscribe();
+      setDataUnsubscribe(null);
     }
+  }, [dataUnsubscribe]);
 
+  useEffect(() => {
     const authUnsubscribe = onAuthStateChanged(auth, (user) => {
+      cleanupListeners(); // Clean up any existing listener before setting a new one
+
       if (user) {
         setFirebaseUser(user);
+        localStorage.setItem(AUTH_STORAGE_KEY, 'true'); // For cross-tab sync
+
         const userDocRef = doc(db, "users", user.uid);
-        
         const unsub = onSnapshot(userDocRef, (doc) => {
-          setLoading(true);
           if (doc.exists()) {
             setUserData(doc.data() as UserData);
           } else {
+            console.warn(`No user data found in Firestore for UID: ${user.uid}`);
             setUserData(null);
           }
           setLoading(false);
         }, (error) => {
-            console.error("Error fetching user data:", error);
-            setUserData(null);
-            setLoading(false);
+          console.error("Firestore onSnapshot error:", error);
+          setUserData(null);
+          setLoading(false);
         });
         setDataUnsubscribe(() => unsub);
-
       } else {
         setFirebaseUser(null);
         setUserData(null);
+        localStorage.removeItem(AUTH_STORAGE_KEY); // For cross-tab sync
         setLoading(false);
-        if (dataUnsubscribe) {
-          dataUnsubscribe();
-          setDataUnsubscribe(null);
-        }
       }
     });
 
     return () => {
-        authUnsubscribe();
-        if (dataUnsubscribe) {
-            dataUnsubscribe();
+      authUnsubscribe();
+      cleanupListeners();
+    };
+  }, [cleanupListeners]);
+
+  // Effect for handling cross-tab session synchronization
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === AUTH_STORAGE_KEY) {
+            // If auth state changes in another tab, reload the page to re-trigger auth flow.
+            // This is a simple and effective way to ensure state is fully reset and re-evaluated.
+            window.location.reload();
         }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
