@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -22,7 +23,7 @@ export function HeroSection() {
               <Button asChild size="lg" className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 text-base font-medium">
                 <Link href="/signup">Register</Link>
               </Button>
-              <Button asChild size="lg" variant="ghost" className="text-gray-700 hover:text-gray-900 px-8 py-3 text-base font-medium border border-gray-300 hover:border-gray-400">
+              <Button asChild size="lg" variant="ghost" className="text-gray-700 px-8 py-3 text-base font-medium border border-gray-300 hover:border-gray-400">
                 <Link href="/login">Sign In</Link>
               </Button>
             </div>
