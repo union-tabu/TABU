@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link'
@@ -21,27 +22,19 @@ export function DashboardHeaderTe() {
   const { toast } = useToast();
 
   const handleLogout = async () => {
-    try {
-      await logout();
-      toast({
-        title: "లాగ్ అవుట్ చేయబడింది",
-        description: "మీరు విజయవంతంగా లాగ్ అవుట్ చేసారు.",
-      });
-      router.push('/te');
-    } catch (error) {
-      console.error("Logout Error:", error);
-      toast({
-        title: "లోపం",
-        description: "మిమ్మల్ని లాగ్ అవుట్ చేయడం సాధ్యం కాలేదు. దయచేసి మళ్లీ ప్రయత్నించండి.",
-        variant: "destructive",
-      });
-    }
+    await logout();
+    router.push('/te');
+    toast({
+      title: "లాగ్ అవుట్ చేయబడింది",
+      description: "మీరు విజయవంతంగా లాగ్ అవుట్ చేసారు.",
+    });
   };
 
   const navItems = [
     { href: '/te/dashboard', label: 'డాష్‌బోర్డ్' },
-    { href: '/te/dashboard/subscribe', label: 'సభ్యత్వం' },
+    { href: '/te/dashboard/union-members', label: 'యూనియన్ సభ్యులు' },
     { href: '/te/dashboard/payments', label: 'చెల్లింపులు' },
+    { href: '/te/dashboard/subscribe', label: 'సభ్యత్వం' },
   ];
 
   return (

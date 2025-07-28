@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link'
@@ -21,27 +22,19 @@ export function DashboardHeader() {
   const { toast } = useToast();
 
   const handleLogout = async () => {
-    try {
-      await logout();
-      toast({
-        title: "Logged Out",
-        description: "You have been successfully logged out.",
-      });
-      router.push('/');
-    } catch (error) {
-      console.error("Logout Error:", error);
-      toast({
-        title: "Error",
-        description: "Could not log you out. Please try again.",
-        variant: "destructive",
-      });
-    }
+    await logout();
+    router.push('/');
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+    });
   };
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard' },
-    { href: '/dashboard/subscribe', label: 'Subscribe' },
+    { href: '/dashboard/union-members', label: 'Union Members' },
     { href: '/dashboard/payments', label: 'Payments' },
+    { href: '/dashboard/subscribe', label: 'Subscribe' },
   ];
 
   return (
