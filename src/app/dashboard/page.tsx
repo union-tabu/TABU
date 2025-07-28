@@ -3,14 +3,14 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import { onAuthStateChanged, User as FirebaseUser, signOut } from 'firebase/auth';
 import { doc, onSnapshot, collection, query, where, orderBy } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import type { Timestamp } from 'firebase/firestore';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FileDown, CreditCard, History, Languages, UserCircle } from 'lucide-react';
+import { FileDown, CreditCard, History, Languages, UserCircle, LogOut } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
@@ -21,6 +21,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { format } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
 
 export interface UserData {
   firstName: string;
@@ -45,6 +46,7 @@ export interface Payment {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [user, setUser] = useState<UserData | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -104,6 +106,25 @@ export default function DashboardPage() {
     return () => unsubscribeAuth();
   }, [router]);
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      localStorage.removeItem('isAuthenticated');
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
+      });
+      router.push('/');
+    } catch (error) {
+      console.error("Logout Error:", error);
+      toast({
+        title: "Error",
+        description: "Could not log you out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+  
   if (loading) {
     return (
       <div className="container mx-auto py-10 px-4 md:px-6">
@@ -227,8 +248,8 @@ export default function DashboardPage() {
         <TabsContent value="settings">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Languages className="text-primary"/> Language Preferences</CardTitle>
-              <CardDescription>Choose your preferred language for the dashboard.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><Languages className="text-primary"/> Settings</CardTitle>
+              <CardDescription>Manage your language preferences and account.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                <div className="flex items-center space-x-2">
@@ -241,7 +262,10 @@ export default function DashboardPage() {
                 </Button>
               </div>
               <Separator />
-               <p className="text-sm text-muted-foreground">More settings will be available here in the future.</p>
+              <Button variant="destructive" onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>

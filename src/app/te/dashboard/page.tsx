@@ -3,14 +3,14 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import { onAuthStateChanged, User as FirebaseUser, signOut } from 'firebase/auth';
 import { doc, onSnapshot, collection, query, where, orderBy } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import type { Timestamp } from 'firebase/firestore';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FileDown, CreditCard, History, Languages, UserCircle } from 'lucide-react';
+import { FileDown, CreditCard, History, Languages, UserCircle, LogOut } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
@@ -22,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { te } from 'date-fns/locale';
+import { useToast } from '@/hooks/use-toast';
 
 export interface UserData {
   firstName: string;
@@ -47,6 +48,7 @@ export interface Payment {
 
 export default function DashboardPageTe() {
   const router = useRouter();
+  const { toast } = useToast();
   const [user, setUser] = useState<UserData | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -106,6 +108,25 @@ export default function DashboardPageTe() {
 
     return () => unsubscribeAuth();
   }, [router]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      localStorage.removeItem('isAuthenticated');
+      toast({
+        title: "లాగ్ అవుట్ చేయబడింది",
+        description: "మీరు విజయవంతంగా లాగ్ అవుట్ చేసారు.",
+      });
+      router.push('/te');
+    } catch (error) {
+      console.error("Logout Error:", error);
+      toast({
+        title: "లోపం",
+        description: "మిమ్మల్ని లాగ్ అవుట్ చేయడం సాధ్యం కాలేదు. దయచేసి మళ్లీ ప్రయత్నించండి.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -230,8 +251,8 @@ export default function DashboardPageTe() {
         <TabsContent value="settings">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2"><Languages className="text-primary"/> భాషా ప్రాధాన్యతలు</CardTitle>
-              <CardDescription>డాష్‌బోర్డ్ కోసం మీకు ఇష్టమైన భాషను ఎంచుకోండి.</CardDescription>
+              <CardTitle className="flex items-center gap-2"><Languages className="text-primary"/> సెట్టింగ్‌లు</CardTitle>
+              <CardDescription>మీ భాషా ప్రాధాన్యతలు మరియు ఖాతాను నిర్వహించండి.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                <div className="flex items-center space-x-2">
@@ -244,7 +265,10 @@ export default function DashboardPageTe() {
                 </Button>
               </div>
               <Separator />
-               <p className="text-sm text-muted-foreground">భవిష్యత్తులో మరిన్ని సెట్టింగ్‌లు ఇక్కడ అందుబాటులో ఉంటాయి.</p>
+               <Button variant="destructive" onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                లాగ్ అవుట్
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
