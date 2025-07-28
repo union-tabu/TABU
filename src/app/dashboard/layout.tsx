@@ -1,3 +1,4 @@
+"use client";
 
 import { DashboardHeader } from "@/components/layout/dashboard-header";
 import { DashboardHeaderTe } from "@/components/layout/dashboard-header-te";
@@ -9,7 +10,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isTelugu = pathname.startsWith('/te');
+  const isTelugu = pathname ? pathname.startsWith('/te') : false;
 
   return (
     <div className="flex min-h-screen w-full flex-col">
