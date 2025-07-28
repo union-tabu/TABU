@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link'
@@ -41,7 +40,7 @@ export function DashboardHeader() {
 
   const navItems = [
     { href: '/dashboard', label: 'Dashboard' },
-    { href: '/dashboard/members', label: 'Union Members' },
+    { href: '/dashboard/subscribe', label: 'Subscribe' },
     { href: '/dashboard/payments', label: 'Payments' },
   ];
 

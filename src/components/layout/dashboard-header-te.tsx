@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link'
@@ -41,7 +40,7 @@ export function DashboardHeaderTe() {
 
   const navItems = [
     { href: '/te/dashboard', label: 'డాష్‌బోర్డ్' },
-    { href: '/te/dashboard/members', label: 'యూనియన్ సభ్యులు' },
+    { href: '/te/dashboard/subscribe', label: 'సభ్యత్వం' },
     { href: '/te/dashboard/payments', label: 'చెల్లింపులు' },
   ];
 
