@@ -1,19 +1,13 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /users/{userId} {
-      // Allow any authenticated user to read user profiles (for union members page)
-      allow read: if request.auth != null;
-      
-      // Allow a user to create and update their own document.
-      // This is the key rule that allows post-payment subscription updates.
-      allow create, update: if request.auth != null && request.auth.uid == userId;
-    }
-
-    match /payments/{paymentId} {
-      // A user can only create and read their own payment documents.
-      allow create, read: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    // WARNING: Insecure rules ahead.
+    // These rules grant open access to your entire database.
+    // This is useful for testing but MUST be secured before production.
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }
