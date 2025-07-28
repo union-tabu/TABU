@@ -5,7 +5,7 @@ import Razorpay from 'razorpay';
 import { z } from 'zod';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { add, startOfMonth, addMonths, addYears } from 'date-fns';
+import { startOfMonth, addMonths, addYears } from 'date-fns';
 import crypto from 'crypto';
 
 const OrderOptionsSchema = z.object({
@@ -138,27 +138,58 @@ const PaymentSuccessSchema = z.object({
 
 type PaymentSuccessData = z.infer<typeof PaymentSuccessSchema>;
 
+function verifyPaymentSignature({
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature
+}: {
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature: string;
+}): boolean {
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+        console.error("Razorpay key secret is not configured.");
+        return false;
+    }
+    try {
+        const body = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSignature = crypto
+            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+            .update(body.toString())
+            .digest('hex');
+
+        return expectedSignature === razorpay_signature;
+    } catch (error) {
+        console.error('Signature verification error:', error);
+        return false;
+    }
+}
+
+
 export async function handlePaymentSuccess(data: PaymentSuccessData) {
     const validatedData = PaymentSuccessSchema.safeParse(data);
     if (!validatedData.success) {
         console.error('Payment success validation failed:', validatedData.error);
-        return { success: false, error: 'Invalid payment data' };
+        return { success: false, error: 'Invalid payment data received from the client.' };
     }
 
     const { userId, plan, amount, razorpay_payment_id, razorpay_order_id, razorpay_signature } = validatedData.data;
     
+    // 1. Verify payment signature
+    const isSignatureValid = verifyPaymentSignature({
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature
+    });
+
+    if (!isSignatureValid) {
+        console.error('Invalid payment signature');
+        // It's important to not give too much information to the client here
+        return { success: false, error: 'Payment verification failed.' };
+    }
+
     try {
-        const isSignatureValid = verifyPaymentSignature({
-            razorpay_order_id,
-            razorpay_payment_id,
-            razorpay_signature
-        });
-
-        if (!isSignatureValid) {
-            console.error('Invalid payment signature');
-            return { success: false, error: 'Payment verification failed' };
-        }
-
+        // 2. Add a new record to the `payments` collection
         const paymentRef = await addDoc(collection(db, "payments"), {
             userId,
             plan,
@@ -167,12 +198,15 @@ export async function handlePaymentSuccess(data: PaymentSuccessData) {
             paymentDate: serverTimestamp(),
             razorpay_payment_id,
             razorpay_order_id,
-            razorpay_signature
+            razorpay_signature // Store for auditing purposes
         });
         
+        // 3. Update the `users` collection
         const userDocRef = doc(db, "users", userId);
         const now = new Date();
+        // The subscription starts from the first day of the current month.
         const firstDayOfCurrentMonth = startOfMonth(now);
+        // The renewal date is the first day of the next month or year.
         const renewalDate = plan === 'monthly' 
             ? addMonths(firstDayOfCurrentMonth, 1) 
             : addYears(firstDayOfCurrentMonth, 1);
@@ -188,31 +222,10 @@ export async function handlePaymentSuccess(data: PaymentSuccessData) {
         });
         
         return { success: true, message: 'Payment successful and recorded.' };
+
     } catch (error: any) {
         console.error("Error handling payment success:", error);
+        // This will catch errors from either addDoc or updateDoc
         return { success: false, error: `Failed to update database: ${error.message}` };
-    }
-}
-
-function verifyPaymentSignature({
-    razorpay_order_id,
-    razorpay_payment_id,
-    razorpay_signature
-}: {
-    razorpay_order_id: string;
-    razorpay_payment_id: string;
-    razorpay_signature: string;
-}): boolean {
-    try {
-        const body = razorpay_order_id + "|" + razorpay_payment_id;
-        const expectedSignature = crypto
-            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
-            .update(body.toString())
-            .digest('hex');
-
-        return expectedSignature === razorpay_signature;
-    } catch (error) {
-        console.error('Signature verification error:', error);
-        return false;
     }
 }
