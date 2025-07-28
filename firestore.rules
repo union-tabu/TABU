@@ -3,17 +3,22 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Users can read the full list of union members
+
+    // Users Collection
+    // 1. Allow user creation for anyone (for signup).
+    // 2. Allow authenticated users to read the list of all users (for union-members page).
+    // 3. Allow a user to read and update their OWN document.
     match /users/{userId} {
+      allow create: if true;
       allow read: if request.auth != null;
-      allow create: if request.auth.uid == userId;
-      allow update: if request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Users can create and read their own payments, but not anyone else's
+    // Payments Collection
+    // 1. Allow authenticated users to create their OWN payment record.
+    // 2. Allow authenticated users to read only their OWN payment history.
     match /payments/{paymentId} {
-      allow read, create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow create, read: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
   }
 }
