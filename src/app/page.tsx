@@ -1,4 +1,3 @@
-
 "use client";
 
 import { HeroSection } from '@/components/landing/hero-section-new';
@@ -14,11 +13,6 @@ export default function Home() {
       <Header />
       <main className="flex-grow">
         <HeroSection />
-        <section className="w-full py-16 md:py-24">
-            <div className="container px-4 md:px-6">
-            <div data-ai-hint="workers group photo" className="h-96 w-full bg-gray-200 rounded-lg"></div>
-            </div>
-        </section>
         <AboutUsSection />
         <WhyJoinSection />
         <FaqSection />
