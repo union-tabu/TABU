@@ -64,7 +64,10 @@ export default function UnionMembersPageTe() {
     
     const filteredUsers = useMemo(() => {
         return users.filter(user => {
-            const matchesSearch = `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) || user.phone.includes(searchTerm);
+            const lowercasedSearchTerm = searchTerm.toLowerCase();
+            const matchesSearch = `${user.firstName} ${user.lastName}`.toLowerCase().includes(lowercasedSearchTerm) || 
+                                  user.phone.includes(searchTerm) ||
+                                  user.id.toLowerCase().includes(lowercasedSearchTerm);
             const status = user.subscription?.status || 'not subscribed';
             const matchesStatus = filterStatus === 'all' || status === filterStatus;
             return matchesSearch && matchesStatus;
@@ -121,7 +124,7 @@ export default function UnionMembersPageTe() {
                         </Tabs>
                         <form onSubmit={handleSearch} className="flex gap-2 w-full md:w-auto">
                              <Input 
-                                placeholder="సభ్యుడిని కనుగొనండి..."
+                                placeholder="పేరు, ఫోన్, లేదా ID ద్వారా వెతకండి..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-64 flex-grow"
@@ -240,3 +243,5 @@ export default function UnionMembersPageTe() {
         </div>
     );
 }
+
+    
