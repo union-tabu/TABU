@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -6,26 +5,46 @@ import Link from "next/link";
 
 export function AboutUsSection() {
   return (
-    <section id="about" className="w-full py-16 md:py-24 bg-background">
-      <div className="container px-4 md:px-6">
-        <div className="grid gap-10 md:grid-cols-2 md:gap-16 items-center">
-          <div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">About Us</h2>
-          </div>
-          <div className="flex flex-col gap-6">
-            <p className="text-muted-foreground">
-              Telangana All Building Workers Union is a collective of daily wage workers, construction laborers, and skilled tradespeople across Telangana, united to protect their rights and well-being.
-            </p>
-            <p className="text-muted-foreground">
-              We are committed to empowering every worker with identity, dignity, and access to essential benefits like insurance and financial support. By registering with the union, workers receive official recognition, a support system for wage recovery, and protection for their families in case of emergencies.
-            </p>
-            <p className="text-muted-foreground">
-              Whether you’re working on a site in a village or in a city, this union is your voice, your strength, and your safety net.
-            </p>
-            <div>
-                <Button asChild>
-                    <Link href="/signup">Register</Link>
+    <section id="about" className="w-full bg-white">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="py-16 sm:py-20 lg:py-24">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 xl:gap-20 items-start">
+            {/* Left side - Image placeholder */}
+            <div className="order-2 lg:order-1">
+              <div data-ai-hint="construction workers" className="w-full h-64 sm:h-80 lg:h-96 bg-gray-200 rounded-lg shadow-sm"></div>
+            </div>
+            
+            {/* Right side - Content */}
+            <div className="order-1 lg:order-2 flex flex-col justify-center space-y-6">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+                About Us
+              </h2>
+              
+              <div className="space-y-4 text-gray-600 leading-relaxed">
+                <p className="text-base sm:text-lg">
+                  Telangana All Building Workers Union is a collective of daily wage workers, 
+                  construction laborers, and skilled tradespeople across Telangana, united to 
+                  protect their rights and well-being.
+                </p>
+                
+                <p className="text-base sm:text-lg">
+                  We are committed to empowering every worker with identity, dignity, and access 
+                  to essential benefits like insurance and financial support. By registering with 
+                  the union, workers receive official recognition, a support system for wage 
+                  recovery, and protection for their families in case of emergencies.
+                </p>
+                
+                <p className="text-base sm:text-lg">
+                  Whether you're working on a site in a village or in a city, this union is 
+                  your voice, your strength, and your safety net.
+                </p>
+              </div>
+              
+              <div className="pt-4">
+                <Button asChild size="lg" className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 text-base font-medium">
+                  <Link href="/signup">Register</Link>
                 </Button>
+              </div>
             </div>
           </div>
         </div>

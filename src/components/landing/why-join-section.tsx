@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,33 +25,47 @@ const benefits = [
 
 export function WhyJoinSection() {
   return (
-    <section id="benefits" className="w-full py-16 md:py-24 bg-secondary">
-      <div className="container px-4 md:px-6">
-        <div className="text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">Why Join the Union?</h2>
-          <p className="mt-4 text-lg text-muted-foreground">
-            Membership in the Telangana Building Workers Union gives you more than just an ID. It provides protection, support, and recognition to help you work with confidence and peace of mind.
-          </p>
-        </div>
-        <div className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3">
-          {benefits.map((benefit, index) => (
-            <Card key={index} className="text-center shadow-none border-none bg-transparent">
-              <CardHeader>
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-                  {benefit.icon}
+    <section id="benefits" className="w-full bg-gray-50">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="py-16 sm:py-20 lg:py-24">
+          {/* Header */}
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-6">
+              Why Join the Union?
+            </h2>
+            <p className="text-lg sm:text-xl text-gray-600 leading-relaxed">
+              Membership in the Telangana Building Workers Union gives you more than just an ID. 
+              It provides protection, support, and recognition to help you work with confidence and peace of mind.
+            </p>
+          </div>
+          
+          {/* Benefits Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mb-16">
+            {benefits.map((benefit, index) => (
+              <div key={index} className="text-center group">
+                <div className="mb-6">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm group-hover:shadow-md transition-shadow duration-200">
+                    <div className="text-gray-700">
+                      {benefit.icon}
+                    </div>
+                  </div>
                 </div>
-                <CardTitle className="mt-4 text-xl font-semibold">{benefit.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">{benefit.description}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        <div className="mt-16 text-center">
-            <Button asChild>
-                <Link href="/signup">Register</Link>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+                  {benefit.title}
+                </h3>
+                <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
+                  {benefit.description}
+                </p>
+              </div>
+            ))}
+          </div>
+          
+          {/* CTA Button */}
+          <div className="text-center">
+            <Button asChild size="lg" className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 text-base font-medium">
+              <Link href="/signup">Register</Link>
             </Button>
+          </div>
         </div>
       </div>
     </section>

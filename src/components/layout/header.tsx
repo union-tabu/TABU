@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -40,76 +39,97 @@ export function Header() {
   const homeLink = isTelugu ? '/te' : '/';
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-20 items-center">
-        <div className="mr-auto flex items-center">
-          <Link href={homeLink} className="flex items-center gap-2 font-bold text-lg">
-            <div className="w-8 h-8 bg-gray-200 rounded-md"></div>
+    <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          {/* Logo */}
+          <Link href={homeLink} className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gray-300 rounded"></div>
           </Link>
-        </div>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
-          {navLinks.map((link) => (
-             <Link key={link.href} href={link.href} className="transition-colors hover:text-primary/80">
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            {navLinks.map((link) => (
+              <Link 
+                key={link.href} 
+                href={link.href} 
+                className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
 
-        <div className="flex items-center gap-2 ml-auto">
-          {isAuthenticated ? (
-             <Button asChild>
+          {/* Desktop Auth Buttons */}
+          <div className="hidden md:flex items-center space-x-3">
+            {isAuthenticated ? (
+              <Button asChild className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-md text-sm font-medium">
                 <Link href={dashboardLink}>{dashboardText}</Link>
-             </Button>
-          ) : (
-            <>
-              <Button asChild variant="ghost" className="hidden md:flex">
-                <Link href={loginLink}>{loginText}</Link>
               </Button>
-              <Button asChild className="hidden md:flex">
-                 <Link href={signupLink}>{registerText}</Link>
-              </Button>
-            </>
-          )}
+            ) : (
+              <>
+                <Button asChild variant="ghost" className="text-gray-700 hover:text-gray-900 px-4 py-2 text-sm font-medium">
+                  <Link href={loginLink}>{loginText}</Link>
+                </Button>
+                <Button asChild className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-md text-sm font-medium">
+                  <Link href={signupLink}>{registerText}</Link>
+                </Button>
+              </>
+            )}
+          </div>
 
-          {/* Mobile Navigation */}
+          {/* Mobile Menu Button */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" className="text-gray-700 hover:text-gray-900">
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Open menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right">
+            <SheetContent side="right" className="w-80">
               <SheetHeader>
                 <SheetTitle>
-                  <Link href={homeLink} className="flex items-center gap-2 font-bold text-lg" onClick={() => setIsOpen(false)}>
-                     <div className="w-8 h-8 bg-gray-200 rounded-md"></div>
+                  <Link 
+                    href={homeLink} 
+                    className="flex items-center gap-2" 
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <div className="w-8 h-8 bg-gray-300 rounded"></div>
                   </Link>
                 </SheetTitle>
               </SheetHeader>
-              <div className="mt-8 flex flex-col gap-4">
+              <div className="mt-8 flex flex-col space-y-6">
                 {navLinks.map((link) => (
-                  <Link key={link.href} href={link.href} className="text-lg font-medium transition-colors hover:text-primary/80" onClick={() => setIsOpen(false)}>
+                  <Link 
+                    key={link.href} 
+                    href={link.href} 
+                    className="text-lg font-medium text-gray-700 hover:text-gray-900 transition-colors" 
+                    onClick={() => setIsOpen(false)}
+                  >
                     {link.label}
                   </Link>
                 ))}
-                <div className="mt-6 flex flex-col gap-3">
-                    {isAuthenticated ? (
-                         <Button asChild size="lg">
-                            <Link href={dashboardLink} onClick={() => setIsOpen(false)}>{dashboardText}</Link>
-                         </Button>
-                    ) : (
-                        <>
-                            <Button asChild variant="ghost" size="lg">
-                                <Link href={loginLink} onClick={() => setIsOpen(false)}>{loginText}</Link>
-                            </Button>
-                            <Button asChild size="lg">
-                                <Link href={signupLink} onClick={() => setIsOpen(false)}>{registerText}</Link>
-                            </Button>
-                        </>
-                    )}
+                <div className="pt-6 border-t space-y-3">
+                  {isAuthenticated ? (
+                    <Button asChild size="lg" className="w-full bg-gray-900 hover:bg-gray-800 text-white">
+                      <Link href={dashboardLink} onClick={() => setIsOpen(false)}>
+                        {dashboardText}
+                      </Link>
+                    </Button>
+                  ) : (
+                    <>
+                      <Button asChild variant="ghost" size="lg" className="w-full text-gray-700 hover:text-gray-900">
+                        <Link href={loginLink} onClick={() => setIsOpen(false)}>
+                          {loginText}
+                        </Link>
+                      </Button>
+                      <Button asChild size="lg" className="w-full bg-gray-900 hover:bg-gray-800 text-white">
+                        <Link href={signupLink} onClick={() => setIsOpen(false)}>
+                          {registerText}
+                        </Link>
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             </SheetContent>

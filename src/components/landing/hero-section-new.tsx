@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -6,27 +5,32 @@ import { Button } from '@/components/ui/button';
 
 export function HeroSection() {
   return (
-    <section className="w-full py-20 md:py-32 lg:py-40">
-      <div className="container px-4 md:px-6">
-        <div className="grid gap-6 lg:grid-cols-2 lg:gap-12 xl:gap-16 items-center">
-          <div className="flex flex-col justify-center space-y-6">
-            <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
+    <section className="w-full bg-white">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 py-12 sm:py-16 lg:py-20 items-center min-h-[600px]">
+          {/* Content */}
+          <div className="flex flex-col justify-center space-y-6 lg:space-y-8 order-2 lg:order-1">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold text-gray-900 leading-tight">
               Join the Union. Secure Your Future.
             </h1>
-            <p className="max-w-[600px] text-muted-foreground md:text-xl">
-              Become a registered member of the Telangana All Building Workers Union and get access to official ID, insurance benefits, and support when you need it the most. It only takes a few minutes to get started.
+            <p className="text-lg sm:text-xl text-gray-600 leading-relaxed max-w-2xl">
+              Become a registered member of the Telangana All Building Workers Union and 
+              get access to official ID, insurance benefits, and support when you need it the 
+              most. It only takes a few minutes to get started.
             </p>
-            <div className="flex flex-col gap-2 min-[400px]:flex-row">
-              <Button asChild size="lg">
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Button asChild size="lg" className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 text-base font-medium">
                 <Link href="/signup">Register</Link>
               </Button>
-              <Button asChild size="lg" variant="ghost">
+              <Button asChild size="lg" variant="ghost" className="text-gray-700 hover:text-gray-900 px-8 py-3 text-base font-medium border border-gray-300 hover:border-gray-400">
                 <Link href="/login">Sign In</Link>
               </Button>
             </div>
           </div>
-          <div className="w-full h-80 lg:h-96 bg-gray-200 rounded-lg">
-            {/* Placeholder for an image */}
+          
+          {/* Image placeholder */}
+          <div className="order-1 lg:order-2">
+            <div data-ai-hint="construction worker" className="w-full h-64 sm:h-80 lg:h-96 xl:h-[500px] bg-gray-200 rounded-lg shadow-sm"></div>
           </div>
         </div>
       </div>

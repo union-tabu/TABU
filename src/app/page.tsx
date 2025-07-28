@@ -12,7 +12,7 @@ export default function Home() {
       <HeroSection />
       <section className="w-full py-16 md:py-24">
         <div className="container px-4 md:px-6">
-           <div className="h-96 w-full bg-gray-200 rounded-lg"></div>
+           <div data-ai-hint="workers group photo" className="h-96 w-full bg-gray-200 rounded-lg"></div>
         </div>
       </section>
       <AboutUsSection />
