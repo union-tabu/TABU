@@ -26,7 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 export interface UserData {
   firstName: string;
   lastName: string;
-  email: string;
+  email: string | null;
   phone: string;
   address: string;
   memberId: string;
@@ -290,5 +290,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

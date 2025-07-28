@@ -22,9 +22,9 @@ export function ProfileTab({ user, userId }: ProfileTabProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div><span className="font-semibold text-muted-foreground">మొదటి పేరు:</span> {user.firstName}</div>
                     <div><span className="font-semibold text-muted-foreground">ఇంటి పేరు:</span> {user.lastName}</div>
-                    <div><span className="font-semibold text-muted-foreground">ఇమెయిల్:</span> {user.email}</div>
+                    {user.email && <div><span className="font-semibold text-muted-foreground">ఇమెయిల్:</span> {user.email}</div>}
                     <div><span className="font-semibold text-muted-foreground">ఫోన్:</span> {user.phone}</div>
-                    <div><span className="font-semibold text-muted-foreground">చిరునామా:</span> {user.address}</div>
+                    <div className="md:col-span-2"><span className="font-semibold text-muted-foreground">చిరునామా:</span> {user.address}</div>
                 </div>
                 <EditProfileDialogTe user={user} userId={userId} />
             </CardContent>

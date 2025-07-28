@@ -22,9 +22,9 @@ export function ProfileTab({ user, userId }: ProfileTabProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div><span className="font-semibold text-muted-foreground">First Name:</span> {user.firstName}</div>
                     <div><span className="font-semibold text-muted-foreground">Last Name:</span> {user.lastName}</div>
-                    <div><span className="font-semibold text-muted-foreground">Email:</span> {user.email}</div>
+                    {user.email && <div><span className="font-semibold text-muted-foreground">Email:</span> {user.email}</div>}
                     <div><span className="font-semibold text-muted-foreground">Phone:</span> {user.phone}</div>
-                    <div><span className="font-semibold text-muted-foreground">Address:</span> {user.address}</div>
+                    <div className="md:col-span-2"><span className="font-semibold text-muted-foreground">Address:</span> {user.address}</div>
                 </div>
                 <EditProfileDialog user={user} userId={userId} />
             </CardContent>

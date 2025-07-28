@@ -7,137 +7,207 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { auth, db } from '@/lib/firebase';
-import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, UserCredential } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { add } from 'date-fns';
+
+declare global {
+  interface Window {
+    recaptchaVerifier?: RecaptchaVerifier;
+    confirmationResult?: any;
+  }
+}
 
 export default function SignupPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const [showPassword, setShowPassword] = useState(false);
+  const [step, setStep] = useState<'details' | 'otp'>('details');
+  const [loading, setLoading] = useState(false);
 
-  const handleSignup = async (event: React.FormEvent) => {
-    event.preventDefault();
-    const form = event.target as HTMLFormElement;
-    const firstName = (form.elements.namedItem('first-name') as HTMLInputElement).value;
-    const lastName = (form.elements.namedItem('last-name') as HTMLInputElement).value;
-    const email = (form.elements.namedItem('email') as HTMLInputElement).value;
-    const phone = (form.elements.namedItem('phone') as HTMLInputElement).value;
-    const password = (form.elements.namedItem('password') as HTMLInputElement).value;
+  const [formData, setFormData] = useState({
+    fullName: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    country: 'India',
+    pin: '',
+  });
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})/;
-    if (!passwordRegex.test(password)) {
-      toast({
-        title: "Weak Password",
-        description: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.",
-        variant: "destructive",
-      });
-      return;
-    }
+  const [otp, setOtp] = useState('');
 
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      const plan = searchParams.get('plan') || 'yearly';
-      const renewalDate = plan === 'monthly' ? add(new Date(), { months: 1 }) : add(new Date(), { years: 1 });
-
-      // Add user to "users" collection in Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        phone: phone,
-        address: "42 Main St, Worker's City", // Default address
-        createdAt: new Date(),
-        subscription: {
-          plan: plan,
-          status: 'active',
-          renewalDate: renewalDate,
+  useEffect(() => {
+    // Render recaptcha verifier
+    window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'invisible',
+        'callback': (response: any) => {
+            // reCAPTCHA solved, allow signInWithPhoneNumber.
         }
-      });
+    });
 
-      await sendEmailVerification(user);
-      
-      toast({
-        title: "Verification Email Sent",
-        description: "Please check your inbox to verify your email address.",
-      });
+    return () => {
+        window.recaptchaVerifier?.clear();
+    };
+}, []);
 
-      router.push('/login');
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({...prev, [id]: value}));
+  }
+
+  const handleSendOtp = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setLoading(true);
+    
+    try {
+        const formattedPhone = `+91${formData.phone}`;
+        const confirmationResult = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier!);
+        window.confirmationResult = confirmationResult;
+        setStep('otp');
+        toast({
+          title: "Verification Code Sent",
+          description: "Please enter the code sent to your phone.",
+        });
     } catch (error: any) {
-      console.error("Signup Error:", error);
-      toast({
-        title: "Signup Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+        console.error("OTP Send Error:", error);
+        toast({
+            title: "Error Sending Code",
+            description: error.message,
+            variant: "destructive",
+        });
+    } finally {
+        setLoading(false);
     }
   };
 
+  const handleVerifyOtpAndSignup = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setLoading(true);
+
+    try {
+        const userCredential: UserCredential = await window.confirmationResult.confirm(otp);
+        const user = userCredential.user;
+
+        const plan = searchParams.get('plan') || 'yearly';
+        const renewalDate = plan === 'monthly' ? add(new Date(), { months: 1 }) : add(new Date(), { years: 1 });
+        
+        // Split full name into first and last
+        const nameParts = formData.fullName.trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+
+        await setDoc(doc(db, "users", user.uid), {
+            firstName: firstName,
+            lastName: lastName,
+            email: null, // No email in this flow
+            phone: formData.phone,
+            address: `${formData.address}, ${formData.city}, ${formData.state}, ${formData.country} - ${formData.pin}`,
+            createdAt: new Date(),
+            subscription: {
+                plan: plan,
+                status: 'active',
+                renewalDate: renewalDate,
+            }
+        });
+        
+        toast({
+            title: "Account Created!",
+            description: "You have been successfully registered.",
+        });
+
+        router.push('/dashboard');
+
+    } catch (error: any) {
+        console.error("Signup Error:", error);
+        toast({
+            title: "Signup Failed",
+            description: "The verification code was incorrect or another error occurred.",
+            variant: "destructive",
+        });
+    } finally {
+        setLoading(false);
+    }
+  }
+
+
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-14rem)] bg-background px-4 py-12">
-      <Card className="mx-auto max-w-sm w-full shadow-xl">
+      <Card className="mx-auto max-w-2xl w-full shadow-xl">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline">Sign Up</CardTitle>
-          <CardDescription>Enter your information to create an account</CardDescription>
+          <CardTitle className="text-2xl font-headline">Create New Account</CardTitle>
+          <CardDescription>
+            {step === 'details' 
+              ? "Enter your information to create an account." 
+              : "Enter the OTP sent to your phone to complete registration."}
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="grid gap-4" onSubmit={handleSignup}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="first-name">First name</Label>
-                <Input id="first-name" placeholder="Max" required />
+          {step === 'details' ? (
+            <form className="grid gap-4" onSubmit={handleSendOtp}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                      <Label htmlFor="fullName">Full Name</Label>
+                      <Input id="fullName" placeholder="Pietro Schirano" required onChange={handleInputChange} value={formData.fullName} />
+                  </div>
+                  <div className="grid gap-2">
+                      <Label htmlFor="phone">Phone</Label>
+                      <Input id="phone" type="tel" placeholder="987-654-3210" required onChange={handleInputChange} value={formData.phone}/>
+                  </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="last-name">Last name</Label>
-                <Input id="last-name" placeholder="Robinson" required />
+                <Label htmlFor="address">Address</Label>
+                <Input id="address" placeholder="11-2-333, Landmark" required onChange={handleInputChange} value={formData.address} />
               </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input
-                id="phone"
-                type="tel"
-                placeholder="9876543210"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input id="password" type={showPassword ? "text" : "password"} required />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground"
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                      <Label htmlFor="city">City</Label>
+                      <Input id="city" placeholder="Hyderabad" required onChange={handleInputChange} value={formData.city}/>
+                  </div>
+                  <div className="grid gap-2">
+                      <Label htmlFor="state">State</Label>
+                      <Input id="state" placeholder="Telangana" required onChange={handleInputChange} value={formData.state}/>
+                  </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Must be 8+ characters with uppercase, lowercase, number, and special character.
-              </p>
-            </div>
-            <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-              Create an account
-            </Button>
-          </form>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                      <Label htmlFor="country">Country</Label>
+                      <Input id="country" placeholder="India" required onChange={handleInputChange} value={formData.country}/>
+                  </div>
+                  <div className="grid gap-2">
+                      <Label htmlFor="pin">Pin</Label>
+                      <Input id="pin" placeholder="500089" required onChange={handleInputChange} value={formData.pin}/>
+                  </div>
+              </div>
+              
+              <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading}>
+                {loading ? 'Sending OTP...' : 'Send Verification Code'}
+              </Button>
+            </form>
+          ) : (
+             <form className="grid gap-4" onSubmit={handleVerifyOtpAndSignup}>
+                <div className="grid gap-2">
+                    <Label htmlFor="otp">Verification Code</Label>
+                    <Input
+                        id="otp"
+                        type="text"
+                        placeholder="Enter 6-digit code"
+                        required
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                    />
+                </div>
+                <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading}>
+                    {loading ? 'Verifying...' : 'Create Account'}
+                </Button>
+                <Button variant="link" onClick={() => setStep('details')}>Back to details</Button>
+            </form>
+          )}
+
           <div className="mt-4 text-center text-sm">
             Already have an account?{' '}
             <Link href="/login" className="underline hover:text-primary">
@@ -146,6 +216,7 @@ export default function SignupPage() {
           </div>
         </CardContent>
       </Card>
+      <div id="recaptcha-container"></div>
     </div>
   );
 }
