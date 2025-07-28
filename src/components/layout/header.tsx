@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Languages, Menu, Users, LayoutDashboard } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -13,14 +13,7 @@ import {
 } from "@/components/ui/sheet"
 import React from 'react';
 import { usePathname } from 'next/navigation';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { useAuth } from '@/context/auth-context';
-
 
 export function Header() {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -29,74 +22,53 @@ export function Header() {
   const isTelugu = pathname.startsWith('/te');
 
   const navLinks = isTelugu ? [
+    { href: '/te', label: 'హోమ్' },
+    { href: '/te#about', label: 'మా గురించి' },
     { href: '/te#benefits', label: 'ప్రయోజనాలు' },
-    { href: '/te#pricing', label: 'ధర' },
-    { href: '/te#testimonials', label: 'టెస్టిమోనియల్స్' },
   ] : [
+    { href: '/', label: 'Home' },
+    { href: '/#about', label: 'About' },
     { href: '/#benefits', label: 'Benefits' },
-    { href: '/#pricing', label: 'Pricing' },
-    { href: '/#testimonials', label: 'Testimonials' },
   ];
   
   const loginLink = isTelugu ? '/te/login' : '/login';
   const signupLink = isTelugu ? '/te/signup' : '/signup';
   const dashboardLink = isTelugu ? '/te/dashboard' : '/dashboard';
-  const loginText = isTelugu ? 'లాగిన్' : 'Login';
-  const joinNowText = isTelugu ? 'ఇప్పుడే చేరండి' : 'Join Now';
-  const goToDashboardText = isTelugu ? 'డాష్‌బోర్డ్‌కి వెళ్లండి' : 'Go to Dashboard';
+  const loginText = isTelugu ? 'సైన్ ఇన్' : 'Sign In';
+  const registerText = isTelugu ? 'నమోదు చేసుకోండి' : 'Register';
+  const dashboardText = isTelugu ? 'డాష్‌బోర్డ్' : 'Dashboard';
   const homeLink = isTelugu ? '/te' : '/';
-
-  const otherLang = isTelugu ? 'en' : 'te';
-  const newPath = isTelugu ? pathname.replace('/te', '') || '/' : `/te${pathname}`;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
+      <div className="container flex h-20 items-center">
         <div className="mr-auto flex items-center">
-          <Link href={homeLink} className="flex items-center gap-2 font-bold text-lg font-headline">
-            <Users className="h-6 w-6 text-primary" />
-            Sanghika Samakhya
+          <Link href={homeLink} className="flex items-center gap-2 font-bold text-lg">
+            <div className="w-8 h-8 bg-gray-200 rounded-md"></div>
           </Link>
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+        <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
           {navLinks.map((link) => (
-             <Link key={link.href} href={link.href} className="transition-colors hover:text-primary">
+             <Link key={link.href} href={link.href} className="transition-colors hover:text-primary/80">
               {link.label}
             </Link>
           ))}
         </nav>
 
         <div className="flex items-center gap-2 ml-auto">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Languages className="h-5 w-5" />
-                <span className="sr-only">Toggle Language</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link href={isTelugu ? pathname.replace('/te', '') || '/' : pathname} locale="en">English</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={isTelugu ? pathname : `/te${pathname}`} locale="te">తెలుగు</Link>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           {isAuthenticated ? (
-             <Button asChild className="hidden md:flex">
-                <Link href={dashboardLink}><LayoutDashboard className="mr-2" />{goToDashboardText}</Link>
+             <Button asChild>
+                <Link href={dashboardLink}>{dashboardText}</Link>
              </Button>
           ) : (
             <>
-              <Button asChild variant="outline" className="hidden md:flex">
+              <Button asChild variant="ghost" className="hidden md:flex">
                 <Link href={loginLink}>{loginText}</Link>
               </Button>
-              <Button asChild className="hidden md:flex bg-accent text-accent-foreground hover:bg-accent/90">
-                 <Link href={signupLink}>{joinNowText}</Link>
+              <Button asChild className="hidden md:flex">
+                 <Link href={signupLink}>{registerText}</Link>
               </Button>
             </>
           )}
@@ -112,30 +84,29 @@ export function Header() {
             <SheetContent side="right">
               <SheetHeader>
                 <SheetTitle>
-                  <Link href={homeLink} className="flex items-center gap-2 font-bold text-lg font-headline" onClick={() => setIsOpen(false)}>
-                    <Users className="h-6 w-6 text-primary" />
-                    Sanghika Samakhya
+                  <Link href={homeLink} className="flex items-center gap-2 font-bold text-lg" onClick={() => setIsOpen(false)}>
+                     <div className="w-8 h-8 bg-gray-200 rounded-md"></div>
                   </Link>
                 </SheetTitle>
               </SheetHeader>
               <div className="mt-8 flex flex-col gap-4">
                 {navLinks.map((link) => (
-                  <Link key={link.href} href={link.href} className="text-lg font-medium transition-colors hover:text-primary" onClick={() => setIsOpen(false)}>
+                  <Link key={link.href} href={link.href} className="text-lg font-medium transition-colors hover:text-primary/80" onClick={() => setIsOpen(false)}>
                     {link.label}
                   </Link>
                 ))}
                 <div className="mt-6 flex flex-col gap-3">
                     {isAuthenticated ? (
                          <Button asChild size="lg">
-                            <Link href={dashboardLink} onClick={() => setIsOpen(false)}><LayoutDashboard className="mr-2"/>{goToDashboardText}</Link>
+                            <Link href={dashboardLink} onClick={() => setIsOpen(false)}>{dashboardText}</Link>
                          </Button>
                     ) : (
                         <>
-                            <Button asChild variant="outline" size="lg">
+                            <Button asChild variant="ghost" size="lg">
                                 <Link href={loginLink} onClick={() => setIsOpen(false)}>{loginText}</Link>
                             </Button>
-                            <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
-                                <Link href={signupLink} onClick={() => setIsOpen(false)}>{joinNowText}</Link>
+                            <Button asChild size="lg">
+                                <Link href={signupLink} onClick={() => setIsOpen(false)}>{registerText}</Link>
                             </Button>
                         </>
                     )}
