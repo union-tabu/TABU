@@ -9,10 +9,9 @@ import { Label } from '@/components/ui/label';
 import { auth, db } from '@/lib/firebase';
 import { createUserWithEmailAndPassword, UserCredential } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState, useEffect } from 'react';
-import { startOfMonth, addMonths, addYears } from 'date-fns';
+import React, { useState } from 'react';
 
 // This is a workaround domain for phone+password auth.
 const FAKE_EMAIL_DOMAIN = '@sanghika.samakhya';
@@ -20,18 +19,9 @@ const FAKE_EMAIL_DOMAIN = '@sanghika.samakhya';
 
 export default function SignupFormTe() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [plan, setPlan] = useState('yearly');
-
-  useEffect(() => {
-    const planFromUrl = searchParams.get('plan');
-    if (planFromUrl === 'monthly' || planFromUrl === 'yearly') {
-      setPlan(planFromUrl);
-    }
-  }, [searchParams]);
-
+ 
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
@@ -68,12 +58,6 @@ export default function SignupFormTe() {
         const userCredential: UserCredential = await createUserWithEmailAndPassword(auth, email, formData.password);
         const user = userCredential.user;
 
-        const now = new Date();
-        const firstDayOfCurrentMonth = startOfMonth(now);
-        const renewalDate = plan === 'monthly' 
-            ? addMonths(firstDayOfCurrentMonth, 1) 
-            : addYears(firstDayOfCurrentMonth, 1);
-        
         const nameParts = formData.fullName.trim().split(' ');
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
@@ -86,18 +70,17 @@ export default function SignupFormTe() {
             address: `${formData.address}, ${formData.city}, ${formData.state}, ${formData.country} - ${formData.pin}`,
             createdAt: new Date(),
             subscription: {
-                plan: plan,
-                status: 'active',
-                renewalDate: renewalDate,
+                status: 'not subscribed',
             }
         });
         
         toast({
             title: "ఖాతా సృష్టించబడింది!",
-            description: "మీరు విజయవంతంగా నమోదు చేసుకున్నారు. దయచేసి లాగిన్ చేయండి.",
+            description: "స్వాగతం! మీ ఖాతా సిద్ధంగా ఉంది. దయచేసి మీ సభ్యత్వాన్ని సక్రియం చేయడానికి సభ్యత్వాన్ని పొందండి.",
         });
 
-        router.push('/te/login');
+        localStorage.setItem('isAuthenticated', 'true');
+        router.push('/te/dashboard/subscribe');
 
     } catch (error: any) {
         console.error("Signup Error:", error);

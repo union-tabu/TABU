@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useAuth } from "@/context/auth-context";
@@ -63,7 +64,8 @@ export default function ProfilePage() {
     const statusMap: { [key: string]: string } = {
         'active': 'క్రియాశీలం',
         'inactive': 'నిష్క్రియం',
-        'cancelled': 'రద్దు చేయబడింది'
+        'cancelled': 'రద్దు చేయబడింది',
+        'not subscribed': 'సభ్యత్వం పొందలేదు'
     };
     
     const planInTelugu = userData.subscription?.plan ? planMap[userData.subscription.plan] : 'N/A';

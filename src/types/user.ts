@@ -1,13 +1,14 @@
+
 export interface UserData {
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
   address: string;
-  subscription: {
-    plan: 'monthly' | 'yearly';
-    status: 'active' | 'inactive' | 'cancelled';
-    renewalDate: {
+  subscription?: {
+    plan?: 'monthly' | 'yearly';
+    status: 'active' | 'inactive' | 'cancelled' | 'not subscribed';
+    renewalDate?: {
       seconds: number;
       nanoseconds: number;
     };

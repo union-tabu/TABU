@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useAuth } from "@/context/auth-context";
@@ -52,6 +53,10 @@ export default function ProfilePage() {
     const renewalDate = userData.subscription?.renewalDate?.seconds 
         ? format(new Date(userData.subscription.renewalDate.seconds * 1000), "MMMM dd, yyyy")
         : "N/A";
+    
+    const statusText = userData.subscription?.status === 'not subscribed' 
+        ? 'Not Subscribed' 
+        : userData.subscription?.status || 'N/A';
 
     return (
         <div className="space-y-6">
@@ -79,7 +84,7 @@ export default function ProfilePage() {
                 <CardContent>
                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         <div><span className="font-semibold text-muted-foreground">Plan:</span> <span className="capitalize">{userData.subscription?.plan || 'N/A'}</span></div>
-                        <div><span className="font-semibold text-muted-foreground">Status:</span> <span className="capitalize">{userData.subscription?.status || 'N/A'}</span></div>
+                        <div><span className="font-semibold text-muted-foreground">Status:</span> <span className="capitalize">{statusText}</span></div>
                         <div><span className="font-semibold text-muted-foreground">Next Renewal:</span> {renewalDate}</div>
                     </div>
                 </CardContent>

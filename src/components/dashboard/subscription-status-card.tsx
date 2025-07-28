@@ -23,12 +23,14 @@ const planMapTe: { [key: string]: string } = {
 const statusMap: { [key: string]: string } = {
     'active': 'Active',
     'inactive': 'Inactive',
-    'cancelled': 'Cancelled'
+    'cancelled': 'Cancelled',
+    'not subscribed': 'Not Subscribed'
 };
 const statusMapTe: { [key: string]: string } = {
     'active': 'క్రియాశీలం',
     'inactive': 'నిష్క్రియం',
-    'cancelled': 'రద్దు చేయబడింది'
+    'cancelled': 'రద్దు చేయబడింది',
+    'not subscribed': 'సభ్యత్వం పొందలేదు'
 };
 
 export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolean }) {
@@ -70,10 +72,10 @@ export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolea
         );
     }
     
-    if (!userData?.subscription) {
+    if (!userData?.subscription || userData.subscription.status === 'not subscribed') {
         const subscribeLink = isTelugu ? '/te/dashboard/subscribe' : '/dashboard/subscribe';
-        const titleText = isTelugu ? "సభ్యత్వం లేదు" : "No Subscription Found";
-        const descriptionText = isTelugu ? "ప్రయోజనాలను అన్‌లాక్ చేయడానికి సభ్యత్వాన్ని పొందండి." : "Get a subscription to unlock benefits.";
+        const titleText = isTelugu ? "సభ్యత్వం పొందలేదు" : "You are not subscribed";
+        const descriptionText = isTelugu ? "అన్ని ప్రయోజనాలను అన్‌లాక్ చేయడానికి మరియు క్రియాశీల సభ్యులుగా మారడానికి సభ్యత్వాన్ని పొందండి." : "Get a subscription to unlock all benefits and become an active member.";
         const buttonText = isTelugu ? "ఇప్పుడే సభ్యత్వాన్ని పొందండి" : "Subscribe Now";
 
         return (
@@ -97,7 +99,7 @@ export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolea
         ? format(new Date(renewalDateData.seconds * 1000), "MMMM dd, yyyy", { locale: isTelugu ? te : undefined })
         : "N/A";
     
-    const currentPlan = isTelugu ? (planMapTe[plan] || plan) : (planMap[plan] || plan);
+    const currentPlan = plan ? (isTelugu ? (planMapTe[plan] || plan) : (planMap[plan] || plan)) : 'N/A';
     const currentStatus = isTelugu ? (statusMapTe[status] || status) : (statusMap[status] || status);
 
     const titleText = isTelugu ? "మీ సభ్యత్వ వివరాలు" : "Your Subscription Details";
@@ -121,7 +123,7 @@ export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolea
                          <ShieldCheck className="h-8 w-8 text-primary" />
                         <div>
                             <span className="font-semibold text-muted-foreground">{planLabel}</span>
-                            <p className="text-lg font-bold capitalize">{currentPlan}</p>
+                            <div className="text-lg font-bold capitalize">{currentPlan}</div>
                         </div>
                     </div>
                      <div className="flex items-center gap-3">
@@ -139,7 +141,7 @@ export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolea
                          <Calendar className="h-8 w-8 text-primary" />
                         <div>
                             <span className="font-semibold text-muted-foreground">{renewalLabel}</span>
-                            <p className="text-lg font-bold">{renewalDate}</p>
+                            <div className="text-lg font-bold">{renewalDate}</div>
                         </div>
                     </div>
                 </div>
