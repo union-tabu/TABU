@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
@@ -15,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { format } from "date-fns";
 import type { UserData } from '@/types/user';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type UserWithId = UserData & { id: string };
 
@@ -95,13 +95,15 @@ export default function UnionMembersPage() {
             <Card>
                 <CardHeader>
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <Tabs defaultValue="all" onValueChange={(value) => { setFilterStatus(value); setCurrentPage(1); }}>
-                            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-                                <TabsTrigger value="all">All</TabsTrigger>
-                                <TabsTrigger value="active">Active</TabsTrigger>
-                                <TabsTrigger value="inactive">Inactive</TabsTrigger>
-                                <TabsTrigger value="not subscribed">Not Subscribed</TabsTrigger>
-                            </TabsList>
+                        <Tabs defaultValue="all" onValueChange={(value) => { setFilterStatus(value); setCurrentPage(1); }} className="w-full md:w-auto">
+                           <ScrollArea className="w-full md:w-auto whitespace-nowrap">
+                                <TabsList>
+                                    <TabsTrigger value="all">All</TabsTrigger>
+                                    <TabsTrigger value="active">Active</TabsTrigger>
+                                    <TabsTrigger value="inactive">Inactive</TabsTrigger>
+                                    <TabsTrigger value="not subscribed">Not Subscribed</TabsTrigger>
+                                </TabsList>
+                            </ScrollArea>
                         </Tabs>
                         <form onSubmit={handleSearch} className="flex gap-2 w-full md:w-auto">
                              <Input 

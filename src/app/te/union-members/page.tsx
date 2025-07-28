@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
@@ -16,6 +15,8 @@ import { format } from "date-fns";
 import { te } from 'date-fns/locale';
 import type { UserData } from '@/types/user';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ScrollArea } from '@/components/ui/scroll-area';
+
 
 type UserWithId = UserData & { id: string };
 
@@ -108,13 +109,15 @@ export default function UnionMembersPageTe() {
             <Card>
                 <CardHeader>
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <Tabs defaultValue="all" onValueChange={(value) => { setFilterStatus(value); setCurrentPage(1); }}>
-                            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-                                <TabsTrigger value="all">{filterMap['all']}</TabsTrigger>
-                                <TabsTrigger value="active">{filterMap['active']}</TabsTrigger>
-                                <TabsTrigger value="inactive">{filterMap['inactive']}</TabsTrigger>
-                                <TabsTrigger value="not subscribed">{filterMap['not subscribed']}</TabsTrigger>
-                            </TabsList>
+                        <Tabs defaultValue="all" onValueChange={(value) => { setFilterStatus(value); setCurrentPage(1); }} className="w-full md:w-auto">
+                            <ScrollArea className="w-full md:w-auto whitespace-nowrap">
+                                <TabsList>
+                                    <TabsTrigger value="all">{filterMap['all']}</TabsTrigger>
+                                    <TabsTrigger value="active">{filterMap['active']}</TabsTrigger>
+                                    <TabsTrigger value="inactive">{filterMap['inactive']}</TabsTrigger>
+                                    <TabsTrigger value="not subscribed">{filterMap['not subscribed']}</TabsTrigger>
+                                </TabsList>
+                            </ScrollArea>
                         </Tabs>
                         <form onSubmit={handleSearch} className="flex gap-2 w-full md:w-auto">
                              <Input 
