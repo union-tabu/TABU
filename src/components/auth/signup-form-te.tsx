@@ -65,7 +65,6 @@ export default function SignupFormTe() {
         await setDoc(doc(db, "users", user.uid), {
             firstName: firstName,
             lastName: lastName,
-            email: email, // Store fake email
             phone: formData.phone,
             address: `${formData.address}, ${formData.city}, ${formData.state}, ${formData.country} - ${formData.pin}`,
             createdAt: new Date(),

@@ -66,7 +66,6 @@ export default function SignupForm() {
         await setDoc(doc(db, "users", user.uid), {
             firstName: firstName,
             lastName: lastName,
-            email: email, // Store the fake email
             phone: formData.phone,
             address: `${formData.address}, ${formData.city}, ${formData.state}, ${formData.country} - ${formData.pin}`,
             createdAt: new Date(),

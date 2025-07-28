@@ -14,7 +14,6 @@ const OrderOptionsSchema = z.object({
   plan: z.enum(['monthly', 'yearly']),
   user: z.object({
     name: z.string().min(1).max(100),
-    email: z.string().email(),
     phone: z.string().regex(/^[6-9]\d{9}$/, "Invalid Indian phone number"),
   })
 });
@@ -37,9 +36,6 @@ export async function createRazorpayOrder(options: OrderOptions) {
         const errorMessages = validatedOptions.error.errors.map(err => {
             if (err.path.includes('phone')) {
                 return `Phone number must be a valid 10-digit Indian number starting with 6-9`;
-            }
-            if (err.path.includes('email')) {
-                return `Email must be a valid email address`;
             }
             if (err.path.includes('name')) {
                 return `Name must be between 1-100 characters`;
@@ -84,7 +80,6 @@ export async function createRazorpayOrder(options: OrderOptions) {
             userId: userId,
             plan: plan,
             user_name: user.name,
-            user_email: user.email
         }
     };
 
@@ -109,7 +104,6 @@ export async function createRazorpayOrder(options: OrderOptions) {
                 ...order,
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
                 userName: user.name,
-                userEmail: user.email,
                 userPhone: user.phone,
             }
         };

@@ -63,7 +63,7 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             return;
         }
 
-        if (!userData.firstName || !userData.lastName || !userData.email || !userData.phone) {
+        if (!userData.firstName || !userData.lastName || !userData.phone) {
             toast({ 
                 title: 'Profile Incomplete', 
                 description: 'Please complete your profile before making a payment.', 
@@ -86,7 +86,6 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             userId: firebaseUser.uid,
             user: {
                 name: `${userData.firstName} ${userData.lastName}`.trim(),
-                email: userData.email,
                 phone: userData.phone,
             },
         };
@@ -135,7 +134,6 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
                 },
                 prefill: {
                     name: order.userName,
-                    email: order.userEmail,
                     contact: order.userPhone,
                 },
                 notes: {
