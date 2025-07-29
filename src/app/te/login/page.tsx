@@ -1,19 +1,12 @@
 
 "use client";
 
+import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { useAuth } from '@/context/auth-context';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/layout/header';
-
-const LoginFormTe = dynamic(() => import('@/components/auth/login-form-te'), { 
-  ssr: false,
-  loading: () => <LoginSkeleton />
-});
+import LoginPageClient from './login-page-client';
 
 function LoginSkeleton() {
     return (
@@ -41,37 +34,13 @@ function LoginSkeleton() {
 }
 
 export default function LoginPageTe() {
-    const { isAuthenticated, loading } = useAuth();
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const { toast } = useToast();
-
-    useEffect(() => {
-        if (searchParams.get('registered') === 'true') {
-        toast({
-            title: "నమోదు విజయవంతమైంది!",
-            description: "దయచేసి మీ కొత్త వివరాలతో లాగిన్ అవ్వండి.",
-        });
-        // Remove the query param from the URL
-        router.replace('/te/login', { scroll: false });
-        }
-    }, [searchParams, router, toast]);
-
-    useEffect(() => {
-        if (!loading && isAuthenticated) {
-        router.replace('/te/dashboard');
-        }
-    }, [isAuthenticated, loading, router]);
-
-    if (loading || isAuthenticated) {
-        return null;
-    }
-
     return (
         <div className="flex flex-col min-h-screen">
           <Header />
           <main className="flex-grow">
-            <LoginFormTe />
+            <Suspense fallback={<LoginSkeleton />}>
+                <LoginPageClient />
+            </Suspense>
           </main>
         </div>
     );
