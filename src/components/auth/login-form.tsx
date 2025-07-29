@@ -57,16 +57,20 @@ export default function LoginForm() {
     try {
       window.confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier);
       setOtpSent(true);
-      setLoading(false);
       toast.success('OTP sent successfully!');
     } catch (error: any) {
       console.error("Error sending OTP:", error);
+      let errorMessage = 'Failed to send OTP. Please try again later.';
       if (error.code === 'auth/billing-not-enabled') {
-          toast.error('Phone sign-in quota exceeded. Please enable billing in your Firebase project.');
-      } else {
-        toast.error('Failed to send OTP. Please check the phone number and try again.');
+          errorMessage = 'Phone sign-in quota exceeded. Please contact support.';
+      } else if (error.code === 'auth/invalid-phone-number') {
+          errorMessage = 'The phone number you entered is not valid.';
+      } else if (error.code === 'auth/too-many-requests') {
+          errorMessage = 'Too many requests. Please try again later.';
       }
-      setLoading(false);
+      toast.error(errorMessage);
+    } finally {
+        setLoading(false);
     }
   };
 
@@ -92,6 +96,8 @@ export default function LoginForm() {
         let errorMessage = "An unknown error occurred. Please try again.";
         if (error.code === 'auth/invalid-verification-code') {
             errorMessage = "Invalid OTP. Please check the code and try again.";
+        } else if (error.code === 'auth/code-expired') {
+            errorMessage = "The OTP has expired. Please request a new one.";
         }
         shadToast({
             title: "Login Failed",

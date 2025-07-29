@@ -74,11 +74,15 @@ export default function SignupForm() {
       toast.success('OTP sent successfully!');
     } catch (error: any) {
       console.error("Error sending OTP:", error);
+      let errorMessage = 'Failed to send OTP. Please try again later.';
       if (error.code === 'auth/billing-not-enabled') {
-          toast.error('Phone sign-in quota exceeded. Please enable billing in your Firebase project.');
-      } else {
-        toast.error('Failed to send OTP. Please check the phone number and try again.');
+          errorMessage = 'Phone sign-in quota exceeded. Please contact support.';
+      } else if (error.code === 'auth/invalid-phone-number') {
+          errorMessage = 'The phone number you entered is not valid.';
+      } else if (error.code === 'auth/too-many-requests') {
+          errorMessage = 'Too many requests. Please try again later.';
       }
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -128,6 +132,8 @@ export default function SignupForm() {
             errorMessage = "The OTP is incorrect. Please check and try again.";
         } else if (error.code === 'auth/credential-already-in-use') {
              errorMessage = "This phone number is already registered. Please login instead.";
+        } else if (error.code === 'auth/code-expired') {
+            errorMessage = "The OTP has expired. Please request a new one.";
         }
         shadToast({
             title: "Signup Failed",

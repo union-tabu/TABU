@@ -54,15 +54,19 @@ export default function LoginFormTe() {
         try {
             window.confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier);
             setOtpSent(true);
-            setLoading(false);
             toast.success('OTP విజయవంతంగా పంపబడింది!');
         } catch (error: any) {
             console.error("Error sending OTP:", error);
+            let errorMessage = 'OTP పంపడంలో విఫలమైంది. దయచేసి తర్వాత ప్రయత్నించండి.';
             if (error.code === 'auth/billing-not-enabled') {
-                 toast.error('ఫోన్ సైన్-ఇన్ కోటా మించిపోయింది. దయచేసి మీ Firebase ప్రాజెక్ట్‌లో బిల్లింగ్‌ను ప్రారంభించండి.');
-            } else {
-                toast.error('OTP పంపడంలో విఫలమైంది. దయచేసి ఫోన్ నంబర్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.');
+                 errorMessage = 'ఫోన్ సైన్-ఇన్ కోటా మించిపోయింది. దయచేసి మద్దతును సంప్రదించండి.';
+            } else if (error.code === 'auth/invalid-phone-number') {
+                errorMessage = 'మీరు నమోదు చేసిన ఫోన్ నంబర్ చెల్లదు.';
+            } else if (error.code === 'auth/too-many-requests') {
+                errorMessage = 'చాలా ఎక్కువ అభ్యర్థనలు. దయచేసి తర్వాత ప్రయత్నించండి.';
             }
+            toast.error(errorMessage);
+        } finally {
             setLoading(false);
         }
     };
@@ -89,6 +93,8 @@ export default function LoginFormTe() {
             let errorMessage = "తెలియని లోపం సంభవించింది. దయచేసి మళ్లీ ప్రయత్నించండి.";
             if (error.code === 'auth/invalid-verification-code') {
                 errorMessage = "తప్పు OTP. దయచేసి కోడ్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.";
+            } else if (error.code === 'auth/code-expired') {
+                errorMessage = "OTP గడువు ముగిసింది. దయచేసి కొత్తదాన్ని అభ్యర్థించండి.";
             }
             shadToast({
                 title: "లాగిన్ విఫలమైంది",
