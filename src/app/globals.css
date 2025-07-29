@@ -4,7 +4,7 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Tiro Telugu', 'Inter', 'Noto Sans Telugu', sans-serif;
+  font-family: 'Inter', 'Tiro Telugu', sans-serif;
 }
 
 @layer base {
@@ -66,4 +66,8 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.font-tiro-telugu {
+    font-family: 'Tiro Telugu', sans-serif;
 }

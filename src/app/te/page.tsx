@@ -10,7 +10,7 @@ import { Header } from '@/components/layout/header';
 
 export default function HomeTe() {
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col font-headline">
       <Header />
       <main className="flex-grow">
         <HeroSectionTe />
