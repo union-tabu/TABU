@@ -123,7 +123,7 @@ export function Header() {
                     </>
                   ) : (
                     <>
-                      <Button asChild variant="ghost" size="lg" className="w-full text-gray-700 hover:text-gray-900">
+                      <Button asChild variant="ghost" size="lg" className="w-full text-gray-700 hover:text-accent-foreground hover:bg-accent">
                         <Link href={loginLink} onClick={() => setIsOpen(false)}>
                           {loginText}
                         </Link>
