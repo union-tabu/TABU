@@ -43,6 +43,22 @@ export default function SignupFormTe() {
   });
 
   useEffect(() => {
+    // This function sets up the container for the reCAPTCHA widget.
+    const setupRecaptcha = () => {
+      if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          'size': 'invisible',
+          'callback': (response: any) => {
+            // reCAPTCHA solved, allow signInWithPhoneNumber.
+          }
+        });
+      }
+    };
+    
+    // Call setup function on component mount.
+    setupRecaptcha();
+
+    // Cleanup on component unmount.
     return () => {
       window.recaptchaVerifier?.clear();
     };
@@ -53,19 +69,16 @@ export default function SignupFormTe() {
     setFormData(prev => ({...prev, [id]: value}));
   };
 
-  const generateRecaptcha = () => {
-     if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': (response: any) => {}
-      });
-    }
-  };
 
   const handleSendOtp = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
-    generateRecaptcha();
+
+    if (!/^[6-9]\d{9}$/.test(formData.phone)) {
+        toast.error('దయచేసి చెల్లుబాటు అయ్యే 10-అంకెల భారతీయ ఫోన్ నంబర్‌ను నమోదు చేయండి.');
+        setLoading(false);
+        return;
+    }
     
     const appVerifier = window.recaptchaVerifier!;
     const fullPhoneNumber = `+91${formData.phone}`;
@@ -77,11 +90,7 @@ export default function SignupFormTe() {
     } catch (error: any) {
       console.error("Error sending OTP:", error);
       let errorMessage = 'OTP పంపడంలో విఫలమైంది. దయచేసి తర్వాత ప్రయత్నించండి.';
-      if (error.code === 'auth/billing-not-enabled') {
-          errorMessage = 'ఫోన్ సైన్-ఇన్ కోటా మించిపోయింది. దయచేసి మద్దతును సంప్రదించండి.';
-      } else if (error.code === 'auth/invalid-phone-number') {
-          errorMessage = 'మీరు నమోదు చేసిన ఫోన్ నంబర్ చెల్లదు.';
-      } else if (error.code === 'auth/too-many-requests') {
+      if (error.code === 'auth/too-many-requests') {
           errorMessage = 'చాలా ఎక్కువ అభ్యర్థనలు. దయచేసి తర్వాత ప్రయత్నించండి.';
       }
       toast.error(errorMessage);
@@ -101,7 +110,7 @@ export default function SignupFormTe() {
     try {
         const confirmationResult = window.confirmationResult;
         if (!confirmationResult) {
-            throw new Error("OTP not verified.");
+            throw new Error("OTP ధృవీకరించబడలేదు.");
         }
 
         await confirmationResult.confirm(formData.otp);
@@ -122,16 +131,12 @@ export default function SignupFormTe() {
             createdAt: new Date(),
             subscription: {
                 status: 'not subscribed',
-            }
+            },
+            email: '' // Add email field
         });
         
-        shadToast({
-            title: "ఖాతా సృష్టించబడింది!",
-            description: "స్వాగతం! మీ ఖాతా సిద్ధంగా ఉంది. దయచేసి మీ సభ్యత్వాన్ని సక్రియం చేయడానికి సభ్యత్వాన్ని పొందండి.",
-        });
-
-        localStorage.setItem('isAuthenticated', 'true');
-        router.push('/te/subscribe');
+        // No toast here, redirect will show it
+        router.push('/te/login?registered=true');
 
     } catch (error: any)        {
         console.error("Signup Error:", error);
@@ -172,7 +177,32 @@ export default function SignupFormTe() {
                   </div>
                   <div className="grid gap-2">
                       <Label htmlFor="phone">ఫోన్</Label>
-                      <Input id="phone" type="tel" placeholder="987-654-3210" required onChange={handleInputChange} value={formData.phone} disabled={otpSent}/>
+                      <Input id="phone" type="tel" placeholder="9876543210" required onChange={handleInputChange} value={formData.phone} disabled={otpSent}/>
+                  </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="address">చిరునామా</Label>
+                <Input id="address" placeholder="11-2-333, ల్యాండ్‌మార్క్" required onChange={handleInputChange} value={formData.address} disabled={otpSent}/>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                      <Label htmlFor="city">నగరం</Label>
+                      <Input id="city" placeholder="హైదరాబాద్" required onChange={handleInputChange} value={formData.city} disabled={otpSent}/>
+                  </div>
+                  <div className="grid gap-2">
+                      <Label htmlFor="state">రాష్ట్రం</Label>
+                      <Input id="state" placeholder="తెలంగాణ" required onChange={handleInputChange} value={formData.state} disabled={otpSent}/>
+                  </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                      <Label htmlFor="country">దేశం</Label>
+                      <Input id="country" placeholder="భారతదేశం" required onChange={handleInputChange} value={formData.country} disabled={true}/>
+                  </div>
+                  <div className="grid gap-2">
+                      <Label htmlFor="pin">పిన్</Label>
+                      <Input id="pin" placeholder="500089" required onChange={handleInputChange} value={formData.pin} disabled={otpSent}/>
                   </div>
               </div>
               
@@ -195,32 +225,9 @@ export default function SignupFormTe() {
                 </>
               )}
               
-              <div className="grid gap-2">
-                <Label htmlFor="address">చిరునామా</Label>
-                <Input id="address" placeholder="11-2-333, ల్యాండ్‌మార్క్" required onChange={handleInputChange} value={formData.address} disabled={otpSent}/>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                      <Label htmlFor="city">నగరం</Label>
-                      <Input id="city" placeholder="హైదరాబాద్" required onChange={handleInputChange} value={formData.city} disabled={otpSent}/>
-                  </div>
-                  <div className="grid gap-2">
-                      <Label htmlFor="state">రాష్ట్రం</Label>
-                      <Input id="state" placeholder="తెలంగాణ" required onChange={handleInputChange} value={formData.state} disabled={otpSent}/>
-                  </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                      <Label htmlFor="country">దేశం</Label>
-                      <Input id="country" placeholder="భారతదేశం" required onChange={handleInputChange} value={formData.country} disabled={otpSent}/>
-                  </div>
-                  <div className="grid gap-2">
-                      <Label htmlFor="pin">పిన్</Label>
-                      <Input id="pin" placeholder="500089" required onChange={handleInputChange} value={formData.pin} disabled={otpSent}/>
-                  </div>
-              </div>
+              <div id="recaptcha-container"></div>
               
-              <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading}>
+              <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>
                 {otpSent
                     ? (loading ? 'ఖాతా సృష్టిస్తోంది...' : 'ఖాతాను సృష్టించండి')
                     : (loading ? 'OTP పంపుతోంది...' : 'OTP పంపండి')
@@ -235,7 +242,6 @@ export default function SignupFormTe() {
           </div>
         </CardContent>
       </Card>
-      <div id="recaptcha-container"></div>
     </div>
   );
 }

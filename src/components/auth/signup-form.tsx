@@ -43,29 +43,42 @@ export default function SignupForm() {
   });
 
   useEffect(() => {
+    // This function sets up the container for the reCAPTCHA widget.
+    const setupRecaptcha = () => {
+        if (!window.recaptchaVerifier) {
+            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                'size': 'invisible',
+                'callback': (response: any) => {
+                    // reCAPTCHA solved, allow signInWithPhoneNumber.
+                }
+            });
+        }
+    };
+
+    // Call setup function on component mount.
+    setupRecaptcha();
+
+    // Cleanup on component unmount.
     return () => {
       window.recaptchaVerifier?.clear();
     };
   }, []);
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({...prev, [id]: value}));
   };
 
-  const generateRecaptcha = () => {
-     if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': (response: any) => {}
-      });
-    }
-  };
-
   const handleSendOtp = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
-    generateRecaptcha();
+
+    if (!/^[6-9]\d{9}$/.test(formData.phone)) {
+        toast.error('Please enter a valid 10-digit Indian phone number.');
+        setLoading(false);
+        return;
+    }
     
     const appVerifier = window.recaptchaVerifier!;
     const fullPhoneNumber = `+91${formData.phone}`;
@@ -77,11 +90,7 @@ export default function SignupForm() {
     } catch (error: any) {
       console.error("Error sending OTP:", error);
       let errorMessage = 'Failed to send OTP. Please try again later.';
-      if (error.code === 'auth/billing-not-enabled') {
-          errorMessage = 'Phone sign-in quota exceeded. Please contact support.';
-      } else if (error.code === 'auth/invalid-phone-number') {
-          errorMessage = 'The phone number you entered is not valid.';
-      } else if (error.code === 'auth/too-many-requests') {
+      if (error.code === 'auth/too-many-requests') {
           errorMessage = 'Too many requests. Please try again later.';
       }
       toast.error(errorMessage);
@@ -126,13 +135,8 @@ export default function SignupForm() {
           email: ''
       });
       
-      shadToast({
-          title: "Account Created!",
-          description: "Welcome! Your account is ready. Please subscribe to activate your membership.",
-      });
-
-      localStorage.setItem('isAuthenticated', 'true');
-      router.push('/subscribe');
+      // No toast here, redirect will show it
+      router.push('/login?registered=true');
 
     } catch (error: any) {
         console.error("Signup Error:", error);
@@ -172,7 +176,32 @@ export default function SignupForm() {
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="phone">Phone</Label>
-                    <Input id="phone" type="tel" placeholder="987-654-3210" required onChange={handleInputChange} value={formData.phone} disabled={otpSent}/>
+                    <Input id="phone" type="tel" placeholder="9876543210" required onChange={handleInputChange} value={formData.phone} disabled={otpSent}/>
+                </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="address">Address</Label>
+              <Input id="address" placeholder="11-2-333, Landmark" required onChange={handleInputChange} value={formData.address} disabled={otpSent}/>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="city">City</Label>
+                    <Input id="city" placeholder="Hyderabad" required onChange={handleInputChange} value={formData.city} disabled={otpSent}/>
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="state">State</Label>
+                    <Input id="state" placeholder="Telangana" required onChange={handleInputChange} value={formData.state} disabled={otpSent}/>
+                </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                    <Label htmlFor="country">Country</Label>
+                    <Input id="country" placeholder="India" required onChange={handleInputChange} value={formData.country} disabled={true}/>
+                </div>
+                <div className="grid gap-2">
+                    <Label htmlFor="pin">Pin</Label>
+                    <Input id="pin" placeholder="500089" required onChange={handleInputChange} value={formData.pin} disabled={otpSent}/>
                 </div>
             </div>
             
@@ -195,32 +224,9 @@ export default function SignupForm() {
               </>
             )}
 
-            <div className="grid gap-2">
-              <Label htmlFor="address">Address</Label>
-              <Input id="address" placeholder="11-2-333, Landmark" required onChange={handleInputChange} value={formData.address} disabled={otpSent}/>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="city">City</Label>
-                    <Input id="city" placeholder="Hyderabad" required onChange={handleInputChange} value={formData.city} disabled={otpSent}/>
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="state">State</Label>
-                    <Input id="state" placeholder="Telangana" required onChange={handleInputChange} value={formData.state} disabled={otpSent}/>
-                </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                    <Label htmlFor="country">Country</Label>
-                    <Input id="country" placeholder="India" required onChange={handleInputChange} value={formData.country} disabled={otpSent}/>
-                </div>
-                <div className="grid gap-2">
-                    <Label htmlFor="pin">Pin</Label>
-                    <Input id="pin" placeholder="500089" required onChange={handleInputChange} value={formData.pin} disabled={otpSent}/>
-                </div>
-            </div>
+            <div id="recaptcha-container"></div>
             
-            <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading}>
+            <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>
               {otpSent
                 ? (loading ? 'Creating Account...' : 'Create Account')
                 : (loading ? 'Sending OTP...' : 'Send OTP')
@@ -236,7 +242,6 @@ export default function SignupForm() {
           </div>
         </CardContent>
       </Card>
-      <div id="recaptcha-container"></div>
     </div>
   );
 }

@@ -25,16 +25,22 @@ export default function LoginFormTe() {
         event.preventDefault();
         setLoading(true);
 
+        if (!/^[6-9]\d{9}$/.test(phone)) {
+            toast({
+                title: "చెల్లని ఫోన్ నంబర్",
+                description: "దయచేసి చెల్లుబాటు అయ్యే 10-అంకెల భారతీయ ఫోన్ నంబర్‌ను నమోదు చేయండి.",
+                variant: "destructive",
+            });
+            setLoading(false);
+            return;
+        }
+
         try {
             const email = `${phone}${FAKE_EMAIL_DOMAIN}`;
             await signInWithEmailAndPassword(auth, email, password);
             
-            localStorage.setItem('isAuthenticated', 'true');
             router.push('/te/dashboard');
-            toast({
-                title: "లాగిన్ విజయవంతమైంది",
-                description: "మీరు విజయవంతంగా లాగిన్ అయ్యారు.",
-            });
+            
         } catch (error: any) {
             console.error("Login Error:", error);
             let errorMessage = "తెలియని లోపం సంభవించింది. దయచేసి మళ్లీ ప్రయత్నించండి.";
@@ -71,6 +77,8 @@ export default function LoginFormTe() {
                         required
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
+                        pattern="[6-9]{1}[0-9]{9}"
+                        title="దయచేసి చెల్లుబాటు అయ్యే 10-అంకెల భారతీయ ఫోన్ నంబర్‌ను నమోదు చేయండి"
                         maxLength={10}
                     />
                 </div>

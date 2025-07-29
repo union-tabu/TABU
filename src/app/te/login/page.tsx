@@ -5,8 +5,9 @@ import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/context/auth-context';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 const LoginFormTe = dynamic(() => import('@/components/auth/login-form-te'), { 
   ssr: false,
@@ -41,6 +42,19 @@ function LoginSkeleton() {
 export default function LoginPageTe() {
     const { isAuthenticated, loading } = useAuth();
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const { toast } = useToast();
+
+    useEffect(() => {
+        if (searchParams.get('registered') === 'true') {
+        toast({
+            title: "నమోదు విజయవంతమైంది!",
+            description: "దయచేసి మీ కొత్త వివరాలతో లాగిన్ అవ్వండి.",
+        });
+        // Remove the query param from the URL
+        router.replace('/te/login', { scroll: false });
+        }
+    }, [searchParams, router, toast]);
 
     useEffect(() => {
         if (!loading && isAuthenticated) {

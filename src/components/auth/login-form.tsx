@@ -10,32 +10,38 @@ import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
-import React, from 'react';
+import React, { useState } from 'react';
 
 const FAKE_EMAIL_DOMAIN = "@sanghika.samakhya";
 
 export default function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
-  const [phone, setPhone] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [loading, setLoading] = React.useState(false);
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
+
+    if (!/^[6-9]\d{9}$/.test(phone)) {
+        toast({
+            title: "Invalid Phone Number",
+            description: "Please enter a valid 10-digit Indian phone number.",
+            variant: "destructive",
+        });
+        setLoading(false);
+        return;
+    }
 
     try {
       const email = `${phone}${FAKE_EMAIL_DOMAIN}`;
       
       await signInWithEmailAndPassword(auth, email, password);
       
-      localStorage.setItem('isAuthenticated', 'true');
       router.push('/dashboard');
-      toast({
-        title: "Login Successful",
-        description: "You have been successfully logged in.",
-      });
+      
     } catch (error: any) {
         console.error("Login Error:", error);
         let errorMessage = "An unknown error occurred. Please try again.";
@@ -72,6 +78,8 @@ export default function LoginForm() {
                 required
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
+                pattern="[6-9]{1}[0-9]{9}"
+                title="Please enter a valid 10-digit Indian phone number"
                 maxLength={10}
               />
             </div>

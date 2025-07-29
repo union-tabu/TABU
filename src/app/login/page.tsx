@@ -7,6 +7,8 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 const LoginForm = dynamic(() => import('@/components/auth/login-form'), { 
   ssr: false,
@@ -41,6 +43,19 @@ function LoginSkeleton() {
 export default function LoginPage() {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (searchParams.get('registered') === 'true') {
+      toast({
+        title: "Registration Successful!",
+        description: "Please log in with your new credentials.",
+      });
+      // Remove the query param from the URL
+      router.replace('/login', { scroll: false });
+    }
+  }, [searchParams, router, toast]);
 
   useEffect(() => {
     // If not loading and already authenticated, redirect immediately.
