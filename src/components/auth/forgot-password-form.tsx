@@ -63,9 +63,12 @@ export default function ForgotPasswordForm() {
         clearInterval(timerRef.current);
       }
       // Cleanup reCAPTCHA verifier
+      const recaptchaContainer = document.getElementById('recaptcha-container');
+      if (recaptchaContainer) {
+        recaptchaContainer.innerHTML = '';
+      }
       if (window.recaptchaVerifier) {
         window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = undefined;
       }
     };
   }, []);
@@ -134,10 +137,9 @@ export default function ForgotPasswordForm() {
   };
 
   const setupRecaptcha = () => {
-    if (window.recaptchaVerifier || recaptchaRendered.current) {
-      return;
+    if (window.recaptchaVerifier) {
+       window.recaptchaVerifier.clear();
     }
-
     try {
       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         'size': 'invisible',
@@ -153,7 +155,6 @@ export default function ForgotPasswordForm() {
           });
         }
       });
-      recaptchaRendered.current = true;
     } catch (error) {
       console.error('Error setting up reCAPTCHA:', error);
       throw new Error('Failed to initialize security verification');
@@ -254,12 +255,9 @@ export default function ForgotPasswordForm() {
         description: errorMessage,
         variant: "destructive",
       });
-
-      // Reset reCAPTCHA on error
+      
       if (window.recaptchaVerifier) {
         window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = undefined;
-        recaptchaRendered.current = false;
       }
 
     } finally {
@@ -273,13 +271,6 @@ export default function ForgotPasswordForm() {
     setLoading(true);
     
     try {
-      // Reset reCAPTCHA
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = undefined;
-        recaptchaRendered.current = false;
-      }
-
       setupRecaptcha();
       
       const fullPhoneNumber = `+91${formData.phone}`;

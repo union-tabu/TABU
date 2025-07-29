@@ -83,7 +83,13 @@ export default function LoginFormTe() {
                     />
                 </div>
                  <div className="grid gap-2">
-                    <Label htmlFor="password">పాస్‌వర్డ్</Label>
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="password">పాస్‌వర్డ్</Label>
+                        <Link href="/te/forgot-password"
+                            className="text-sm underline hover:text-primary">
+                            పాస్వర్డ్ మర్చిపోయారా?
+                        </Link>
+                    </div>
                     <Input 
                         id="password" 
                         type="password" 
