@@ -93,6 +93,7 @@ export default function SignupFormTe() {
         return;
       }
 
+      // Only now, after checking, do we set up reCAPTCHA and send OTP
       const appVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
           'size': 'invisible',
           'callback': (response: any) => {

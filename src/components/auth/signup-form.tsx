@@ -94,7 +94,7 @@ export default function SignupForm() {
         return;
       }
       
-      // Create a new verifier each time to avoid issues with expired tokens
+      // Only now, after checking, do we set up reCAPTCHA and send OTP
       const appVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
           'size': 'invisible',
           'callback': (response: any) => {
