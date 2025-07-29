@@ -67,7 +67,6 @@ export default function LoginForm() {
         toast.error('Failed to send OTP. Please check the phone number and try again.');
       }
       setLoading(false);
-      window.recaptchaVerifier?.clear();
     }
   };
 

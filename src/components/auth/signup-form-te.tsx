@@ -77,7 +77,6 @@ export default function SignupFormTe() {
       } else {
           toast.error('OTP పంపడంలో విఫలమైంది. దయచేసి ఫోన్ నంబర్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.');
       }
-      window.recaptchaVerifier?.clear();
     } finally {
       setLoading(false);
     }

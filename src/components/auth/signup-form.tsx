@@ -79,7 +79,6 @@ export default function SignupForm() {
       } else {
         toast.error('Failed to send OTP. Please check the phone number and try again.');
       }
-      window.recaptchaVerifier?.clear();
     } finally {
       setLoading(false);
     }

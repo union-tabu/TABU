@@ -64,7 +64,6 @@ export default function LoginFormTe() {
                 toast.error('OTP పంపడంలో విఫలమైంది. దయచేసి ఫోన్ నంబర్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.');
             }
             setLoading(false);
-            window.recaptchaVerifier?.clear();
         }
     };
 
