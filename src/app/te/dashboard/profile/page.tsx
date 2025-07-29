@@ -44,9 +44,15 @@ export default function ProfilePage() {
             });
              if (userData.dob) {
                 try {
-                    setDob(parse(userData.dob, 'yyyy-MM-dd', new Date()));
+                    const parsedDate = parse(userData.dob, 'yyyy-MM-dd', new Date());
+                    if (!isNaN(parsedDate.getTime())) {
+                       setDob(parsedDate);
+                    } else {
+                       console.warn("Invalid date format for DOB:", userData.dob);
+                       setDob(undefined);
+                    }
                 } catch (e) {
-                    console.warn("Invalid date format for DOB:", userData.dob)
+                    console.warn("Error parsing DOB:", userData.dob, e);
                     setDob(undefined);
                 }
             } else {
