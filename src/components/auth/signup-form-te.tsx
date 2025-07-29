@@ -72,7 +72,11 @@ export default function SignupFormTe() {
       toast.success('OTP విజయవంతంగా పంపబడింది!');
     } catch (error: any) {
       console.error("Error sending OTP:", error);
-      toast.error('OTP పంపడంలో విఫలమైంది. దయచేసి ఫోన్ నంబర్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.');
+      if (error.code === 'auth/billing-not-enabled') {
+          toast.error('ఫోన్ సైన్-ఇన్ కోటా మించిపోయింది. దయచేసి మీ Firebase ప్రాజెక్ట్‌లో బిల్లింగ్‌ను ప్రారంభించండి.');
+      } else {
+          toast.error('OTP పంపడంలో విఫలమైంది. దయచేసి ఫోన్ నంబర్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.');
+      }
       window.recaptchaVerifier?.clear();
     } finally {
       setLoading(false);

@@ -74,7 +74,11 @@ export default function SignupForm() {
       toast.success('OTP sent successfully!');
     } catch (error: any) {
       console.error("Error sending OTP:", error);
-      toast.error('Failed to send OTP. Please check the phone number and try again.');
+      if (error.code === 'auth/billing-not-enabled') {
+          toast.error('Phone sign-in quota exceeded. Please enable billing in your Firebase project.');
+      } else {
+        toast.error('Failed to send OTP. Please check the phone number and try again.');
+      }
       window.recaptchaVerifier?.clear();
     } finally {
       setLoading(false);
