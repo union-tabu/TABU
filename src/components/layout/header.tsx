@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Menu } from 'lucide-react';
+import { Menu, HardHat } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -45,7 +45,7 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href={homeLink} className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gray-300 rounded"></div>
+            <HardHat className="w-8 h-8 text-primary" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -97,7 +97,7 @@ export function Header() {
                     className="flex items-center gap-2" 
                     onClick={() => setIsOpen(false)}
                   >
-                    <div className="w-8 h-8 bg-gray-300 rounded"></div>
+                    <HardHat className="w-8 h-8 text-primary" />
                   </Link>
                 </SheetTitle>
               </SheetHeader>

@@ -1,7 +1,8 @@
+
 "use client";
 
 import Link from 'next/link';
-import { Twitter, Facebook, Instagram } from 'lucide-react';
+import { Twitter, Facebook, Instagram, HardHat } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 export function Footer() {
@@ -29,7 +30,7 @@ export function Footer() {
             {/* Logo and brand */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:col-span-1">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gray-300 rounded"></div>
+                <HardHat className="w-8 h-8 text-primary" />
                 <span className="text-lg font-bold text-gray-900 leading-tight">
                   Telangana All Building Workers Union
                 </span>

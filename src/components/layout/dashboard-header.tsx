@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/auth-context';
 import { usePathname, useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { HardHat } from 'lucide-react';
 
 export function DashboardHeader() {
   const { userData, loading, logout } = useAuth();
@@ -43,7 +44,7 @@ export function DashboardHeader() {
           href="/"
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
         >
-          <div className="w-8 h-8 bg-gray-300 rounded"></div>
+          <HardHat className="w-8 h-8 text-primary" />
           <span className="sr-only">Sanghika Samakhya</span>
         </Link>
       <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
