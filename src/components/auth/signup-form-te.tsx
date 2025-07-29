@@ -7,26 +7,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { auth, db } from '@/lib/firebase';
-import { createUserWithEmailAndPassword, UserCredential } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 
-// This is a workaround domain for phone+password auth.
-const FAKE_EMAIL_DOMAIN = '@sanghika.samakhya';
-
+declare global {
+  interface Window {
+    recaptchaVerifier?: RecaptchaVerifier;
+    confirmationResult?: ConfirmationResult;
+  }
+}
 
 export default function SignupFormTe() {
   const router = useRouter();
-  const { toast } = useToast();
+  const { toast: shadToast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
  
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
-    password: '',
-    confirmPassword: '',
+    otp: '',
     address: '',
     city: '',
     state: '',
@@ -34,28 +38,58 @@ export default function SignupFormTe() {
     pin: '',
   });
 
+  useEffect(() => {
+    return () => {
+      window.recaptchaVerifier?.clear();
+    };
+  }, []);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({...prev, [id]: value}));
-  }
+  };
+
+  const generateRecaptcha = () => {
+     if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        'size': 'invisible',
+        'callback': (response: any) => {}
+      });
+    }
+  };
+
+  const handleSendOtp = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setLoading(true);
+    generateRecaptcha();
+    
+    const appVerifier = window.recaptchaVerifier!;
+    const fullPhoneNumber = `+91${formData.phone}`;
+
+    try {
+      window.confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier);
+      setOtpSent(true);
+      toast.success('OTP విజయవంతంగా పంపబడింది!');
+    } catch (error: any) {
+      console.error("Error sending OTP:", error);
+      toast.error('OTP పంపడంలో విఫలమైంది. దయచేసి ఫోన్ నంబర్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.');
+      window.recaptchaVerifier?.clear();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSignup = async (event: React.FormEvent) => {
     event.preventDefault();
-
-    if (formData.password !== formData.confirmPassword) {
-        toast({
-            title: "పాస్‌వర్డ్‌లు సరిపోలడం లేదు",
-            description: "దయచేసి మీ పాస్‌వర్డ్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.",
-            variant: "destructive",
-        });
-        return;
-    }
-    
     setLoading(true);
 
     try {
-        const email = `${formData.phone}${FAKE_EMAIL_DOMAIN}`;
-        const userCredential: UserCredential = await createUserWithEmailAndPassword(auth, email, formData.password);
+        const confirmationResult = window.confirmationResult;
+        if (!confirmationResult) {
+            throw new Error("OTP not verified.");
+        }
+
+        const userCredential = await confirmationResult.confirm(formData.otp);
         const user = userCredential.user;
 
         const nameParts = formData.fullName.trim().split(' ');
@@ -73,7 +107,7 @@ export default function SignupFormTe() {
             }
         });
         
-        toast({
+        shadToast({
             title: "ఖాతా సృష్టించబడింది!",
             description: "స్వాగతం! మీ ఖాతా సిద్ధంగా ఉంది. దయచేసి మీ సభ్యత్వాన్ని సక్రియం చేయడానికి సభ్యత్వాన్ని పొందండి.",
         });
@@ -84,12 +118,12 @@ export default function SignupFormTe() {
     } catch (error: any) {
         console.error("Signup Error:", error);
         let errorMessage = "తెలియని లోపం సంభవించింది.";
-        if (error.code === 'auth/email-already-in-use') {
+        if (error.code === 'auth/invalid-verification-code') {
+            errorMessage = "OTP తప్పుగా ఉంది. దయచేసి తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.";
+        } else if (error.code === 'auth/credential-already-in-use') {
             errorMessage = "ఈ ఫోన్ నంబర్ ఇప్పటికే నమోదు చేయబడింది. దయచేసి బదులుగా లాగిన్ చేయండి.";
-        } else if (error.code === 'auth/weak-password') {
-            errorMessage = "పాస్‌వర్డ్ చాలా బలహీనంగా ఉంది. దయచేసి కనీసం 6 అక్షరాలను ఉపయోగించండి.";
         }
-        toast({
+        shadToast({
             title: "నమోదు విఫలమైంది",
             description: errorMessage,
             variant: "destructive",
@@ -110,54 +144,55 @@ export default function SignupFormTe() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-            <form className="grid gap-4" onSubmit={handleSignup}>
+            <form className="grid gap-4" onSubmit={otpSent ? handleSignup : handleSendOtp}>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2">
                       <Label htmlFor="fullName">పూర్తి పేరు</Label>
-                      <Input id="fullName" placeholder="పేరు ఇంటిపేరు" required onChange={handleInputChange} value={formData.fullName} />
+                      <Input id="fullName" placeholder="పేరు ఇంటిపేరు" required onChange={handleInputChange} value={formData.fullName} disabled={otpSent}/>
                   </div>
                   <div className="grid gap-2">
                       <Label htmlFor="phone">ఫోన్</Label>
-                      <Input id="phone" type="tel" placeholder="987-654-3210" required onChange={handleInputChange} value={formData.phone}/>
+                      <Input id="phone" type="tel" placeholder="987-654-3210" required onChange={handleInputChange} value={formData.phone} disabled={otpSent}/>
                   </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              
+              {otpSent && (
                   <div className="grid gap-2">
-                      <Label htmlFor="password">పాస్‌వర్డ్</Label>
-                      <Input id="password" type="password" required onChange={handleInputChange} value={formData.password} />
+                      <Label htmlFor="otp">OTPని నమోదు చేయండి</Label>
+                      <Input id="otp" type="text" placeholder="123456" required onChange={handleInputChange} value={formData.otp} maxLength={6} />
                   </div>
-                  <div className="grid gap-2">
-                      <Label htmlFor="confirmPassword">పాస్‌వర్డ్‌ను నిర్ధారించండి</Label>
-                      <Input id="confirmPassword" type="password" required onChange={handleInputChange} value={formData.confirmPassword}/>
-                  </div>
-              </div>
+              )}
+              
               <div className="grid gap-2">
                 <Label htmlFor="address">చిరునామా</Label>
-                <Input id="address" placeholder="11-2-333, ల్యాండ్‌మార్క్" required onChange={handleInputChange} value={formData.address} />
+                <Input id="address" placeholder="11-2-333, ల్యాండ్‌మార్క్" required onChange={handleInputChange} value={formData.address} disabled={otpSent}/>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2">
                       <Label htmlFor="city">నగరం</Label>
-                      <Input id="city" placeholder="హైదరాబాద్" required onChange={handleInputChange} value={formData.city}/>
+                      <Input id="city" placeholder="హైదరాబాద్" required onChange={handleInputChange} value={formData.city} disabled={otpSent}/>
                   </div>
                   <div className="grid gap-2">
                       <Label htmlFor="state">రాష్ట్రం</Label>
-                      <Input id="state" placeholder="తెలంగాణ" required onChange={handleInputChange} value={formData.state}/>
+                      <Input id="state" placeholder="తెలంగాణ" required onChange={handleInputChange} value={formData.state} disabled={otpSent}/>
                   </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="grid gap-2">
                       <Label htmlFor="country">దేశం</Label>
-                      <Input id="country" placeholder="భారతదేశం" required onChange={handleInputChange} value={formData.country}/>
+                      <Input id="country" placeholder="భారతదేశం" required onChange={handleInputChange} value={formData.country} disabled={otpSent}/>
                   </div>
                   <div className="grid gap-2">
                       <Label htmlFor="pin">పిన్</Label>
-                      <Input id="pin" placeholder="500089" required onChange={handleInputChange} value={formData.pin}/>
+                      <Input id="pin" placeholder="500089" required onChange={handleInputChange} value={formData.pin} disabled={otpSent}/>
                   </div>
               </div>
               
               <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading}>
-                {loading ? 'ఖాతా సృష్టిస్తోంది...' : 'ఖాతాను సృష్టించండి'}
+                {otpSent
+                    ? (loading ? 'ఖాతా సృష్టిస్తోంది...' : 'ఖాతాను సృష్టించండి')
+                    : (loading ? 'OTP పంపుతోంది...' : 'OTP పంపండి')
+                }
               </Button>
             </form>
           <div className="mt-4 text-center text-sm">
@@ -168,6 +203,7 @@ export default function SignupFormTe() {
           </div>
         </CardContent>
       </Card>
+      <div id="recaptcha-container"></div>
     </div>
   );
 }

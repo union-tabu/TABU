@@ -3,6 +3,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/context/auth-context';
+import { Toaster as HotToaster } from 'react-hot-toast';
 
 export const metadata: Metadata = {
   title: 'Sanghika Samakhya',
@@ -25,6 +26,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <Toaster />
+          <HotToaster />
         </AuthProvider>
       </body>
     </html>
