@@ -84,7 +84,7 @@ export function Header() {
           {/* Mobile Menu Button */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild className="md:hidden">
-              <Button variant="ghost" size="icon" className="text-gray-700 hover:text-gray-900">
+              <Button variant="ghost" size="icon" className="text-gray-700 hover:bg-gray-900 hover:text-white">
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Open menu</span>
               </Button>
@@ -123,7 +123,7 @@ export function Header() {
                     </>
                   ) : (
                     <>
-                      <Button asChild variant="ghost" size="lg" className="w-full text-gray-700 hover:text-accent-foreground hover:bg-accent">
+                      <Button asChild variant="ghost" size="lg" className="w-full text-gray-700 hover:text-white hover:bg-gray-900">
                         <Link href={loginLink} onClick={() => setIsOpen(false)}>
                           {loginText}
                         </Link>
