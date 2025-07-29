@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button"
@@ -17,6 +18,12 @@ import { db } from "@/lib/firebase";
 import { doc, updateDoc } from "firebase/firestore";
 import { useState } from "react";
 import type { UserData } from "@/types/user";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "../ui/calendar";
+import { format, parse } from "date-fns";
+import { cn } from "@/lib/utils";
+import { te } from "date-fns/locale";
 
 interface EditProfileDialogProps {
     user: UserData;
@@ -26,11 +33,15 @@ interface EditProfileDialogProps {
 export function EditProfileDialogTe({ user, userId }: EditProfileDialogProps) {
     const { toast } = useToast();
     const [isOpen, setIsOpen] = useState(false);
+    const [dob, setDob] = useState<Date | undefined>(
+        user.dob ? parse(user.dob, 'yyyy-MM-dd', new Date()) : undefined
+    );
     const [formData, setFormData] = useState({
-        firstName: user.firstName,
-        lastName: user.lastName,
-        phone: user.phone,
-        address: user.address,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        phone: user.phone || '',
+        address: user.address || '',
+        email: user.email || '',
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,10 +53,8 @@ export function EditProfileDialogTe({ user, userId }: EditProfileDialogProps) {
         try {
             const userDocRef = doc(db, "users", userId);
             await updateDoc(userDocRef, {
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                phone: formData.phone,
-                address: formData.address,
+                ...formData,
+                dob: dob ? format(dob, 'yyyy-MM-dd') : null,
             });
             toast({
                 title: "ప్రొఫైల్ నవీకరించబడింది",
@@ -98,6 +107,43 @@ export function EditProfileDialogTe({ user, userId }: EditProfileDialogProps) {
               చిరునామా
             </Label>
             <Input id="address" value={formData.address} onChange={handleChange} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="email" className="text-right">
+              ఇమెయిల్
+            </Label>
+            <Input id="email" type="email" value={formData.email} onChange={handleChange} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="dob" className="text-right">
+                పుట్టిన తేది
+            </Label>
+             <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "col-span-3 justify-start text-left font-normal",
+                      !dob && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {dob ? format(dob, "PPP", { locale: te }) : <span>తేదీని ఎంచుకోండి</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={dob}
+                    onSelect={setDob}
+                    initialFocus
+                    locale={te}
+                    captionLayout="dropdown-buttons"
+                    fromYear={1950}
+                    toYear={new Date().getFullYear() - 18}
+                  />
+                </PopoverContent>
+              </Popover>
           </div>
         </div>
         <DialogFooter>

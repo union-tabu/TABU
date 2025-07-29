@@ -34,7 +34,7 @@ export default function DashboardPage() {
     }
   }, []);
 
-  const isProfileIncomplete = userData && !userData.address;
+  const isProfileIncomplete = userData && (!userData.address || !userData.email || !userData.dob);
 
   if (loading || !isAuthenticated) {
     return (
@@ -75,7 +75,7 @@ export default function DashboardPage() {
               <UserCheck className="h-4 w-4" />
               <AlertTitle>Complete Your Profile</AlertTitle>
               <AlertDescription className="flex justify-between items-center">
-                <p>Please add your address to complete your profile and access all features.</p>
+                <p>Please add your address, email, and date of birth to complete your profile.</p>
                 <Button asChild size="sm">
                   <Link href="/dashboard/profile">Go to Profile</Link>
                 </Button>

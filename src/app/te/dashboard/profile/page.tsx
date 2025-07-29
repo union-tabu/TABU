@@ -24,6 +24,8 @@ export default function ProfilePage() {
                             <Skeleton className="h-5 w-full" />
                             <Skeleton className="h-5 w-full" />
                             <Skeleton className="h-5 w-full" />
+                            <Skeleton className="h-5 w-full" />
+                            <Skeleton className="h-5 w-full" />
                         </div>
                         <Skeleton className="h-10 w-32" />
                     </CardContent>
@@ -48,7 +50,9 @@ export default function ProfilePage() {
                         <div><span className="font-semibold text-muted-foreground">మొదటి పేరు:</span> {userData.firstName}</div>
                         <div><span className="font-semibold text-muted-foreground">ఇంటి పేరు:</span> {userData.lastName}</div>
                         <div><span className="font-semibold text-muted-foreground">ఫోన్:</span> {userData.phone}</div>
-                        <div className="md:col-span-2"><span className="font-semibold text-muted-foreground">చిరునామా:</span> {userData.address}</div>
+                        <div><span className="font-semibold text-muted-foreground">ఇమెయిల్:</span> {userData.email || 'అందించలేదు'}</div>
+                        <div><span className="font-semibold text-muted-foreground">పుట్టిన తేది:</span> {userData.dob || 'అందించలేదు'}</div>
+                        <div className="md:col-span-2"><span className="font-semibold text-muted-foreground">చిరునామా:</span> {userData.address || 'అందించలేదు'}</div>
                     </div>
                     <EditProfileDialogTe user={userData} userId={firebaseUser.uid} />
                 </CardContent>

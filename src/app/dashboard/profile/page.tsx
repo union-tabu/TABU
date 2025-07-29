@@ -24,6 +24,8 @@ export default function ProfilePage() {
                             <Skeleton className="h-5 w-full" />
                             <Skeleton className="h-5 w-full" />
                             <Skeleton className="h-5 w-full" />
+                             <Skeleton className="h-5 w-full" />
+                            <Skeleton className="h-5 w-full" />
                         </div>
                         <Skeleton className="h-10 w-32" />
                     </CardContent>
@@ -48,7 +50,9 @@ export default function ProfilePage() {
                         <div><span className="font-semibold text-muted-foreground">First Name:</span> {userData.firstName}</div>
                         <div><span className="font-semibold text-muted-foreground">Last Name:</span> {userData.lastName}</div>
                         <div><span className="font-semibold text-muted-foreground">Phone:</span> {userData.phone}</div>
-                        <div className="md:col-span-2"><span className="font-semibold text-muted-foreground">Address:</span> {userData.address}</div>
+                        <div><span className="font-semibold text-muted-foreground">Email:</span> {userData.email || 'Not provided'}</div>
+                        <div><span className="font-semibold text-muted-foreground">Date of Birth:</span> {userData.dob || 'Not provided'}</div>
+                        <div className="md:col-span-2"><span className="font-semibold text-muted-foreground">Address:</span> {userData.address || 'Not provided'}</div>
                     </div>
                     <EditProfileDialog user={userData} userId={firebaseUser.uid} />
                 </CardContent>

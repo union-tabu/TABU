@@ -4,6 +4,8 @@ export interface UserData {
   lastName: string;
   phone: string;
   address: string;
+  email?: string;
+  dob?: string;
   subscription?: {
     plan: 'monthly' | 'yearly';
     status: 'active' | 'inactive' | 'cancelled' | 'not subscribed' | 'lapsed';

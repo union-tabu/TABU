@@ -34,7 +34,7 @@ export default function DashboardPageTe() {
     }
   }, []);
 
-  const isProfileIncomplete = userData && !userData.address;
+  const isProfileIncomplete = userData && (!userData.address || !userData.email || !userData.dob);
 
   if (loading || !isAuthenticated) {
     return (
@@ -75,7 +75,7 @@ export default function DashboardPageTe() {
               <UserCheck className="h-4 w-4" />
               <AlertTitle>మీ ప్రొఫైల్‌ను పూర్తి చేయండి</AlertTitle>
               <AlertDescription className="flex justify-between items-center">
-                <p>దయచేసి మీ ప్రొఫైల్‌ను పూర్తి చేయడానికి మీ చిరునామాను జోడించండి.</p>
+                <p>దయచేసి మీ ప్రొఫైల్‌ను పూర్తి చేయడానికి మీ చిరునామా, ఇమెయిల్ మరియు పుట్టిన తేదీని జోడించండి.</p>
                 <Button asChild size="sm">
                   <Link href="/te/dashboard/profile">ప్రొఫైల్‌కు వెళ్లండి</Link>
                 </Button>
