@@ -11,7 +11,7 @@ import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, createUse
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 
 // =================================================================================
@@ -21,12 +21,12 @@ import toast from 'react-hot-toast';
 // blocking your request because it's coming from an unrecognized domain.
 //
 // TO FIX THIS:
-// 1. Go to your Firebase Console: https://console.firebase.google.com/
-// 2. Select your project.
-// 3. Go to "Authentication" -> "Settings" -> "Authorized domains".
-// 4. Click "Add domain".
-// 5. Add the domain you are testing on. For local development, this is `localhost`.
-//    If using a preview URL, you must add that specific URL.
+// 1. Open your browser's developer console (Right-click -> Inspect -> Console).
+// 2. Find the domain name logged below (e.g., "localhost" or a long cloud URL).
+// 3. Go to your Firebase Console: https://console.firebase.google.com/
+// 4. Select your project.
+// 5. Go to "Authentication" -> "Settings" -> "Authorized domains".
+// 6. Click "Add domain" and paste the domain from your console.
 // =================================================================================
 
 
@@ -57,6 +57,15 @@ export default function SignupForm() {
     country: 'India',
     pin: '',
   });
+
+   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      console.log('================================================================================');
+      console.log('🔥 FIREBASE AUTH DOMAIN:', window.location.hostname);
+      console.log('Add the domain above to your Firebase Console -> Authentication -> Settings -> Authorized domains');
+      console.log('================================================================================');
+    }
+  }, []);
 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
