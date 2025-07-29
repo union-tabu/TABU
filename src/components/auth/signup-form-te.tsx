@@ -7,27 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { auth, db } from '@/lib/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, createUserWithEmailAndPassword, fetchSignInMethodsForEmail } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, createUserWithEmailAndPassword, fetchSignInMethodsForEmail, signOut } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
-
-// =================================================================================
-// 🔥 ముఖ్యమైన ఫైర్‌బేస్ కాన్ఫిగరేషన్ గమనిక 🔥
-// =================================================================================
-// `auth/captcha-check-failed` లేదా `auth/internal-error` లోపం అంటే ఫైర్‌బేస్
-// మీ అభ్యర్థనను గుర్తింపు లేని డొమైన్ నుండి వస్తున్నందున నిరోధిస్తోంది.
-//
-// దీన్ని పరిష్కరించడానికి:
-// 1. మీ బ్రౌజర్ డెవలపర్ కన్సోల్ తెరవండి (కుడి-క్లిక్ -> తనిఖీ -> కన్సోల్).
-// 2. క్రింద లాగ్ చేయబడిన డొమైన్ పేరును కనుగొనండి (ఉదా., "localhost" లేదా ఒక పొడవైన క్లౌడ్ URL).
-// 3. మీ ఫైర్‌బేస్ కన్సోల్‌కు వెళ్లండి: https://console.firebase.google.com/
-// 4. మీ ప్రాజెక్ట్‌ను ఎంచుకోండి.
-// 5. "Authentication" -> "Settings" -> "Authorized domains"కు వెళ్లండి.
-// 6. "Add domain" క్లిక్ చేసి, మీ కన్సోల్ నుండి డొమైన్‌ను అతికించండి.
-// =================================================================================
 
 declare global {
   interface Window {
@@ -40,7 +24,7 @@ const FAKE_EMAIL_DOMAIN = "@sanghika.samakhya";
 
 export default function SignupFormTe() {
   const router = useRouter();
-  const { toast: shadToast } = useToast();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
  
@@ -58,12 +42,11 @@ export default function SignupFormTe() {
   });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      console.log('================================================================================');
-      console.log('🔥 ఫైర్‌బేస్ ప్రామాణీకరణ డొమైన్:', window.location.hostname);
-      console.log("పై డొమైన్‌ను మీ ఫైర్‌బేస్ కన్సోల్ -> Authentication -> Settings -> Authorized domainsకు జోడించండి");
-      console.log('================================================================================');
-    }
+    return () => {
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+      }
+    };
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,13 +54,16 @@ export default function SignupFormTe() {
     setFormData(prev => ({...prev, [id]: value}));
   };
 
-
   const handleSendOtp = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
 
     if (!/^[6-9]\d{9}$/.test(formData.phone)) {
-        toast.error('దయచేసి చెల్లుబాటు అయ్యే 10-అంకెల భారతీయ ఫోన్ నంబర్‌ను నమోదు చేయండి.');
+        toast({
+            title: 'చెల్లని ఫోన్ నంబర్',
+            description: 'దయచేసి చెల్లుబాటు అయ్యే 10-అంకెల భారతీయ ఫోన్ నంబర్‌ను నమోదు చేయండి.',
+            variant: "destructive",
+        });
         setLoading(false);
         return;
     }
@@ -87,33 +73,31 @@ export default function SignupFormTe() {
       const signInMethods = await fetchSignInMethodsForEmail(auth, email);
 
       if (signInMethods.length > 0) {
-        toast.error('ఈ ఫోన్ నంబర్‌తో ఖాతా ఇప్పటికే ఉంది. దయచేసి లాగిన్ చేయండి.');
+        toast({
+            title: 'ఖాతా ఇప్పటికే ఉంది',
+            description: 'ఈ ఫోన్ నంబర్‌తో ఖాతా ఇప్పటికే ఉంది. దయచేసి లాగిన్ చేయండి.',
+            variant: "destructive"
+        });
         router.push('/te/login');
         setLoading(false);
         return;
       }
 
-      // Only now, after checking, do we set up reCAPTCHA and send OTP
       const appVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-          'size': 'invisible',
-          'callback': (response: any) => {
-              // reCAPTCHA solved, allow signInWithPhoneNumber.
-          }
+          'size': 'invisible', 'callback': () => {}
       });
       
       const fullPhoneNumber = `+91${formData.phone}`;
       window.confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier);
       setOtpSent(true);
-      toast.success('OTP విజయవంతంగా పంపబడింది!');
+      toast({title: 'OTP విజయవంతంగా పంపబడింది!'});
     } catch (error: any) {
       console.error("Error sending OTP:", error);
-      let errorMessage = 'OTP పంపడంలో విఫలమైంది. దయచేసి తర్వాత ప్రయత్నించండి.';
-       if (error.code === 'auth/captcha-check-failed' || error.code === 'auth/internal-error') {
-          errorMessage = "చర్య విఫలమైంది. దయచేసి మీ డొమైన్ (ఉదా., 'localhost') ఫైర్‌బేస్ కన్సోల్ యొక్క ప్రామాణీకరణ సెట్టింగ్‌లలో అధీకృతం చేయబడిందని నిర్ధారించుకోండి.";
-      } else if (error.code === 'auth/too-many-requests') {
-          errorMessage = 'చాలా ఎక్కువ అభ్యర్థనలు. దయచేసి తర్వాత ప్రయత్నించండి.';
-      }
-      toast.error(errorMessage);
+      toast({
+          title: 'OTP పంపడంలో విఫలమైంది',
+          description: error.message || 'దయచేసి తర్వాత ప్రయత్నించండి.',
+          variant: "destructive"
+        });
     } finally {
       setLoading(false);
     }
@@ -122,18 +106,17 @@ export default function SignupFormTe() {
   const handleSignup = async (event: React.FormEvent) => {
     event.preventDefault();
      if (formData.password !== formData.confirmPassword) {
-        toast.error("పాస్‌వర్డ్‌లు సరిపోలడం లేదు.");
+        toast({title: "పాస్‌వర్డ్‌లు సరిపోలడం లేదు.", variant: "destructive"});
         return;
     }
     setLoading(true);
 
     try {
         const confirmationResult = window.confirmationResult;
-        if (!confirmationResult) {
-            throw new Error("OTP ధృవీకరించబడలేదు.");
-        }
-
+        if (!confirmationResult) throw new Error("OTP ధృవీకరించబడలేదు.");
+        
         await confirmationResult.confirm(formData.otp);
+        await signOut(auth);
         
         const email = `${formData.phone}${FAKE_EMAIL_DOMAIN}`;
         const userCredential = await createUserWithEmailAndPassword(auth, email, formData.password);
@@ -144,31 +127,24 @@ export default function SignupFormTe() {
         const lastName = nameParts.slice(1).join(' ') || '';
 
         await setDoc(doc(db, "users", user.uid), {
-            firstName: firstName,
-            lastName: lastName,
+            firstName,
+            lastName,
             phone: formData.phone,
             address: `${formData.address}, ${formData.city}, ${formData.state}, ${formData.country} - ${formData.pin}`,
             createdAt: new Date(),
-            subscription: {
-                status: 'not subscribed',
-            },
-            email: '' // Add email field
+            subscription: { status: 'not subscribed' },
+            email: ''
         });
         
-        // No toast here, redirect will show it
         router.push('/te/login?registered=true');
 
     } catch (error: any) {
         console.error("Signup Error:", error);
-        
         let errorMessage = "తెలియని లోపం సంభవించింది.";
         if (error.code === 'auth/invalid-verification-code') {
             errorMessage = "OTP తప్పుగా ఉంది. దయచేసి తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.";
-        } else if (error.code === 'auth/code-expired') {
-            errorMessage = "OTP గడువు ముగిసింది. దయచేసి కొత్తదాన్ని అభ్యర్థించండి.";
         }
-        
-        shadToast({
+        toast({
             title: "నమోదు విఫలమైంది",
             description: errorMessage,
             variant: "destructive",

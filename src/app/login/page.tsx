@@ -1,3 +1,4 @@
+
 // src/app/login/page.tsx
 "use client";
 
@@ -53,9 +54,16 @@ export default function LoginPage() {
     }
   }, [isAuthenticated, loading, router]);
 
-  // While checking auth or if user is authenticated, render nothing to make redirection feel faster.
+  // While checking auth or if user is authenticated, render a skeleton or nothing to prevent flashing.
   if (loading || isAuthenticated) {
-    return null;
+    return (
+        <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-grow">
+                <LoginSkeleton />
+            </main>
+        </div>
+    );
   }
   
   // Only show the login form if the user is not authenticated and the auth state has been loaded.

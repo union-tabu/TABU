@@ -1,3 +1,4 @@
+
 // src/app/signup/page.tsx
 "use client";
 
@@ -75,9 +76,16 @@ export default function SignupPage() {
     }
   }, [isAuthenticated, loading, router]);
 
-  // Show nothing while checking auth state or if user is authenticated
+  // Show a skeleton while checking auth state or if user is authenticated to prevent flashing
   if (loading || isAuthenticated) {
-    return null;
+     return (
+        <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-grow">
+                <SignupSkeleton />
+            </main>
+        </div>
+    );
   }
 
   // Only render signup form if user is not authenticated
