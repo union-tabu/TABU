@@ -3,7 +3,7 @@
 
 import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { UserCircle, CalendarIcon } from "lucide-react";
+import { UserCircle, CalendarIcon, ChevronDownIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +32,8 @@ export default function ProfilePage() {
         email: '',
     });
     const [dob, setDob] = useState<Date | undefined>(undefined);
+    const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
 
      useEffect(() => {
         if (userData) {
@@ -146,31 +148,32 @@ export default function ProfilePage() {
                             <Label htmlFor="email">ఇమెయిల్</Label>
                             <Input id="email" type="email" value={formData.email} onChange={handleChange} placeholder="మీరు@ఉదాహరణ.com" />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="dob">పుట్టిన తేది</Label>
-                            <Popover>
+                        <div className="flex flex-col gap-3">
+                            <Label htmlFor="dob" className="px-1">పుట్టిన తేది</Label>
+                             <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                                 <PopoverTrigger asChild>
                                   <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                      "w-full justify-start text-left font-normal",
-                                      !dob && "text-muted-foreground"
-                                    )}
+                                    variant="outline"
+                                    id="dob"
+                                    className="w-48 justify-between font-normal"
                                   >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {dob ? format(dob, "PPP", { locale: te }) : <span>తేదీని ఎంచుకోండి</span>}
+                                    {dob ? dob.toLocaleDateString('te-IN') : "తేదీని ఎంచుకోండి"}
+                                    <ChevronDownIcon />
                                   </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0">
+                                <PopoverContent className="w-auto overflow-hidden p-0" align="start">
                                   <Calendar
                                     mode="single"
                                     selected={dob}
-                                    onSelect={setDob}
-                                    initialFocus
                                     locale={te}
-                                    captionLayout="dropdown-buttons"
+                                    captionLayout="dropdown"
+                                    onSelect={(date) => {
+                                        setDob(date)
+                                        setIsCalendarOpen(false)
+                                    }}
                                     fromYear={1950}
                                     toYear={new Date().getFullYear() - 18}
+                                    initialFocus
                                   />
                                 </PopoverContent>
                             </Popover>
