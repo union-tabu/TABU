@@ -54,7 +54,6 @@ export default function SignupForm() {
   const [otpSent, setOtpSent] = useState(false);
   const [otpResendTimer, setOtpResendTimer] = useState(0);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
-  const recaptchaRendered = useRef(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   
   const [formData, setFormData] = useState<FormData>({
@@ -75,8 +74,17 @@ export default function SignupForm() {
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
+      // Clean up reCAPTCHA widget
+      const recaptchaContainer = document.getElementById("recaptcha-container");
+      if (recaptchaContainer) {
+        recaptchaContainer.remove();
+      }
       if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
+        try {
+            window.recaptchaVerifier.clear();
+        } catch (error) {
+            console.warn("Could not clear reCAPTCHA verifier:", error);
+        }
       }
     };
   }, []);
@@ -113,12 +121,15 @@ export default function SignupForm() {
   };
 
   const setupRecaptcha = () => {
-    if (recaptchaRendered.current) return;
     try {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible', 'callback': () => {}
-      });
-      recaptchaRendered.current = true;
+      if (!window.recaptchaVerifier) {
+          window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            'size': 'invisible', 
+            'callback': () => {
+                // reCAPTCHA solved, allow signInWithPhoneNumber.
+            }
+          });
+      }
     } catch (error) {
       console.error('reCAPTCHA setup error:', error);
     }

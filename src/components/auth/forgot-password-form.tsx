@@ -16,7 +16,7 @@ import {
 } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 declare global {
   interface Window {
@@ -43,14 +43,20 @@ export default function ForgotPasswordForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   
   const [formErrors, setFormErrors] = useState<FormErrors>({});
-  const recaptchaRendered = useRef(false);
 
   useEffect(() => {
     return () => {
-      // Cleanup reCAPTCHA verifier
+      // Cleanup reCAPTCHA widget
+      const recaptchaContainer = document.getElementById("recaptcha-container");
+      if (recaptchaContainer) {
+        recaptchaContainer.remove();
+      }
       if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = undefined;
+        try {
+            window.recaptchaVerifier.clear();
+        } catch (error) {
+            console.warn("Could not clear reCAPTCHA verifier:", error);
+        }
       }
     };
   }, []);
@@ -88,13 +94,13 @@ export default function ForgotPasswordForm() {
   };
 
   const setupRecaptcha = () => {
-    if (recaptchaRendered.current) return;
     try {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': () => {},
-      });
-      recaptchaRendered.current = true;
+       if (!window.recaptchaVerifier) {
+          window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            'size': 'invisible',
+            'callback': () => {},
+          });
+       }
     } catch (error) {
       console.error('reCAPTCHA setup error:', error);
     }
