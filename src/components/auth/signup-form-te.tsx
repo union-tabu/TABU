@@ -158,29 +158,22 @@ export default function SignupFormTe() {
         // No toast here, redirect will show it
         router.push('/te/login?registered=true');
 
-    } catch (error: any)        {
+    } catch (error: any) {
         console.error("Signup Error:", error);
         
-        if (error.code === 'auth/email-already-in-use') {
-            shadToast({
-                title: "ఖాతా ఇప్పటికే ఉంది",
-                description: "ఈ ఫోన్ నంబర్ ఇప్పటికే నమోదు చేయబడింది. దయచేసి బదులుగా లాగిన్ చేయండి.",
-                variant: "destructive",
-            });
-            router.push('/te/login');
-        } else {
-            let errorMessage = "తెలియని లోపం సంభవించింది.";
-            if (error.code === 'auth/invalid-verification-code') {
-                errorMessage = "OTP తప్పుగా ఉంది. దయచేసి తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.";
-            } else if (error.code === 'auth/code-expired') {
-                errorMessage = "OTP గడువు ముగిసింది. దయచేసి కొత్తదాన్ని అభ్యర్థించండి.";
-            }
-            shadToast({
-                title: "నమోదు విఫలమైంది",
-                description: errorMessage,
-                variant: "destructive",
-            });
+        let errorMessage = "తెలియని లోపం సంభవించింది.";
+        if (error.code === 'auth/invalid-verification-code') {
+            errorMessage = "OTP తప్పుగా ఉంది. దయచేసి తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.";
+        } else if (error.code === 'auth/code-expired') {
+            errorMessage = "OTP గడువు ముగిసింది. దయచేసి కొత్తదాన్ని అభ్యర్థించండి.";
         }
+        
+        shadToast({
+            title: "నమోదు విఫలమైంది",
+            description: errorMessage,
+            variant: "destructive",
+        });
+
     } finally {
         setLoading(false);
     }
