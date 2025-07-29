@@ -15,16 +15,18 @@ import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 
 // =================================================================================
-// IMPORTANT FIREBASE CONFIGURATION NOTE
+// 🔥 CRITICAL FIREBASE CONFIGURATION FOR PHONE AUTH 🔥
 // =================================================================================
-// To prevent `auth/internal-error` when sending OTPs, you MUST authorize
-// the domain you are testing on (e.g., localhost) in the Firebase console.
+// The `auth/captcha-check-failed` or `auth/internal-error` means Firebase is
+// blocking your request because it's coming from an unrecognized domain.
 //
-// How to fix:
-// 1. Go to your Firebase Console.
+// TO FIX THIS:
+// 1. Go to your Firebase Console: https://console.firebase.google.com/
 // 2. Select your project.
 // 3. Go to "Authentication" -> "Settings" -> "Authorized domains".
-// 4. Click "Add domain" and enter the domain (e.g., `localhost` if testing locally).
+// 4. Click "Add domain".
+// 5. Add the domain you are testing on. For local development, this is `localhost`.
+//    If using a preview URL, you must add that specific URL.
 // =================================================================================
 
 
@@ -87,11 +89,11 @@ export default function SignupForm() {
       toast.success('OTP sent successfully!');
     } catch (error: any) {
       console.error("Error sending OTP:", error);
-      let errorMessage = 'Failed to send OTP. Please try again later. Ensure your domain is authorized in the Firebase Console.';
-      if (error.code === 'auth/too-many-requests') {
+      let errorMessage = 'Failed to send OTP. Please try again later.';
+       if (error.code === 'auth/captcha-check-failed' || error.code === 'auth/internal-error') {
+          errorMessage = "Action failed. Please ensure your domain (e.g., 'localhost') is authorized in the Firebase console's Authentication settings.";
+      } else if (error.code === 'auth/too-many-requests') {
           errorMessage = 'Too many requests. Please try again later.';
-      } else if (error.code === 'auth/internal-error') {
-          errorMessage = "Internal error. Please ensure your domain (e.g., 'localhost') is authorized in the Firebase console's Authentication settings.";
       }
       toast.error(errorMessage);
     } finally {
