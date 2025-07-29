@@ -77,7 +77,7 @@ export default function DashboardPageTe() {
               <AlertDescription className="flex justify-between items-center">
                 <p>దయచేసి మీ ప్రొఫైల్‌ను పూర్తి చేయడానికి మీ చిరునామా, ఇమెయిల్ మరియు పుట్టిన తేదీని జోడించండి.</p>
                 <Button asChild size="sm">
-                  <Link href="/te/dashboard/profile">ప్రొఫైల్‌కు వెళ్లండి</Link>
+                  <Link href="/te/profile">ప్రొఫైల్‌కు వెళ్లండి</Link>
                 </Button>
               </AlertDescription>
             </Alert>

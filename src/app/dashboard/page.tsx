@@ -77,7 +77,7 @@ export default function DashboardPage() {
               <AlertDescription className="flex justify-between items-center">
                 <p>Please add your address, email, and date of birth to complete your profile.</p>
                 <Button asChild size="sm">
-                  <Link href="/dashboard/profile">Go to Profile</Link>
+                  <Link href="/profile">Go to Profile</Link>
                 </Button>
               </AlertDescription>
             </Alert>
