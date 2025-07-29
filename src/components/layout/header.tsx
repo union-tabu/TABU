@@ -109,6 +109,7 @@ export function Header() {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-2">
+             <LanguageToggle />
             {isAuthenticated ? (
               <Button asChild className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-md text-sm font-medium">
                 <Link href={dashboardLink}>{dashboardText}</Link>
@@ -123,7 +124,6 @@ export function Header() {
                 </Button>
               </>
             )}
-             <LanguageToggle />
           </div>
 
           {/* Mobile Menu Button */}
