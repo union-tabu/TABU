@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { auth, db } from '@/lib/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -21,6 +21,8 @@ declare global {
   }
 }
 
+const FAKE_EMAIL_DOMAIN = "@sanghika.samakhya";
+
 export default function SignupFormTe() {
   const router = useRouter();
   const { toast: shadToast } = useToast();
@@ -31,6 +33,8 @@ export default function SignupFormTe() {
     fullName: '',
     phone: '',
     otp: '',
+    password: '',
+    confirmPassword: '',
     address: '',
     city: '',
     state: '',
@@ -88,6 +92,10 @@ export default function SignupFormTe() {
 
   const handleSignup = async (event: React.FormEvent) => {
     event.preventDefault();
+     if (formData.password !== formData.confirmPassword) {
+        toast.error("పాస్‌వర్డ్‌లు సరిపోలడం లేదు.");
+        return;
+    }
     setLoading(true);
 
     try {
@@ -96,7 +104,10 @@ export default function SignupFormTe() {
             throw new Error("OTP not verified.");
         }
 
-        const userCredential = await confirmationResult.confirm(formData.otp);
+        await confirmationResult.confirm(formData.otp);
+        
+        const email = `${formData.phone}${FAKE_EMAIL_DOMAIN}`;
+        const userCredential = await createUserWithEmailAndPassword(auth, email, formData.password);
         const user = userCredential.user;
 
         const nameParts = formData.fullName.trim().split(' ');
@@ -127,7 +138,7 @@ export default function SignupFormTe() {
         let errorMessage = "తెలియని లోపం సంభవించింది.";
         if (error.code === 'auth/invalid-verification-code') {
             errorMessage = "OTP తప్పుగా ఉంది. దయచేసి తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.";
-        } else if (error.code === 'auth/credential-already-in-use') {
+        } else if (error.code === 'auth/email-already-in-use') {
             errorMessage = "ఈ ఫోన్ నంబర్ ఇప్పటికే నమోదు చేయబడింది. దయచేసి బదులుగా లాగిన్ చేయండి.";
         } else if (error.code === 'auth/code-expired') {
             errorMessage = "OTP గడువు ముగిసింది. దయచేసి కొత్తదాన్ని అభ్యర్థించండి.";
@@ -166,10 +177,22 @@ export default function SignupFormTe() {
               </div>
               
               {otpSent && (
-                  <div className="grid gap-2">
-                      <Label htmlFor="otp">OTPని నమోదు చేయండి</Label>
-                      <Input id="otp" type="text" placeholder="123456" required onChange={handleInputChange} value={formData.otp} maxLength={6} />
-                  </div>
+                <>
+                    <div className="grid gap-2">
+                        <Label htmlFor="otp">OTPని నమోదు చేయండి</Label>
+                        <Input id="otp" type="text" placeholder="123456" required onChange={handleInputChange} value={formData.otp} maxLength={6} />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="password">పాస్‌వర్డ్</Label>
+                            <Input id="password" type="password" required onChange={handleInputChange} value={formData.password} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="confirmPassword">పాస్‌వర్డ్‌ను నిర్ధారించండి</Label>
+                            <Input id="confirmPassword" type="password" required onChange={handleInputChange} value={formData.confirmPassword} />
+                        </div>
+                    </div>
+                </>
               )}
               
               <div className="grid gap-2">

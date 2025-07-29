@@ -8,95 +8,42 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
+import React from 'react';
 
-declare global {
-  interface Window {
-    recaptchaVerifier?: RecaptchaVerifier;
-    confirmationResult?: ConfirmationResult;
-  }
-}
+const FAKE_EMAIL_DOMAIN = "@sanghika.samakhya";
 
 export default function LoginFormTe() {
     const router = useRouter();
-    const { toast: shadToast } = useToast();
-    const [phone, setPhone] = useState('');
-    const [otp, setOtp] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [otpSent, setOtpSent] = useState(false);
-
-    useEffect(() => {
-        return () => {
-            window.recaptchaVerifier?.clear();
-        };
-    }, []);
-
-    const generateRecaptcha = () => {
-        if (!window.recaptchaVerifier) {
-            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                'size': 'invisible',
-                'callback': (response: any) => {}
-            });
-        }
-    };
-
-    const handleSendOtp = async (event: React.FormEvent) => {
-        event.preventDefault();
-        setLoading(true);
-        generateRecaptcha();
-        
-        const appVerifier = window.recaptchaVerifier!;
-        const fullPhoneNumber = `+91${phone}`;
-
-        try {
-            window.confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier);
-            setOtpSent(true);
-            toast.success('OTP విజయవంతంగా పంపబడింది!');
-        } catch (error: any) {
-            console.error("Error sending OTP:", error);
-            let errorMessage = 'OTP పంపడంలో విఫలమైంది. దయచేసి తర్వాత ప్రయత్నించండి.';
-            if (error.code === 'auth/billing-not-enabled') {
-                 errorMessage = 'ఫోన్ సైన్-ఇన్ కోటా మించిపోయింది. దయచేసి మద్దతును సంప్రదించండి.';
-            } else if (error.code === 'auth/invalid-phone-number') {
-                errorMessage = 'మీరు నమోదు చేసిన ఫోన్ నంబర్ చెల్లదు.';
-            } else if (error.code === 'auth/too-many-requests') {
-                errorMessage = 'చాలా ఎక్కువ అభ్యర్థనలు. దయచేసి తర్వాత ప్రయత్నించండి.';
-            }
-            toast.error(errorMessage);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const { toast } = useToast();
+    const [phone, setPhone] = React.useState('');
+    const [password, setPassword] = React.useState('');
+    const [loading, setLoading] = React.useState(false);
 
     const handleLogin = async (event: React.FormEvent) => {
         event.preventDefault();
-        if (!otp) return;
         setLoading(true);
 
         try {
-            const confirmationResult = window.confirmationResult;
-            if (confirmationResult) {
-                await confirmationResult.confirm(otp);
-                
-                localStorage.setItem('isAuthenticated', 'true');
-                router.push('/te/dashboard');
-                shadToast({
-                    title: "లాగిన్ విజయవంతమైంది",
-                    description: "మీరు విజయవంతంగా లాగిన్ అయ్యారు.",
-                });
-            }
+            const email = `${phone}${FAKE_EMAIL_DOMAIN}`;
+            await signInWithEmailAndPassword(auth, email, password);
+            
+            localStorage.setItem('isAuthenticated', 'true');
+            router.push('/te/dashboard');
+            toast({
+                title: "లాగిన్ విజయవంతమైంది",
+                description: "మీరు విజయవంతంగా లాగిన్ అయ్యారు.",
+            });
         } catch (error: any) {
             console.error("Login Error:", error);
             let errorMessage = "తెలియని లోపం సంభవించింది. దయచేసి మళ్లీ ప్రయత్నించండి.";
-            if (error.code === 'auth/invalid-verification-code') {
-                errorMessage = "తప్పు OTP. దయచేసి కోడ్‌ను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.";
-            } else if (error.code === 'auth/code-expired') {
-                errorMessage = "OTP గడువు ముగిసింది. దయచేసి కొత్తదాన్ని అభ్యర్థించండి.";
+            if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                errorMessage = "తప్పు ఫోన్ నంబర్ లేదా పాస్‌వర్డ్. దయచేసి మీ వివరాలను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.";
+            } else if (error.code === 'auth/too-many-requests') {
+                errorMessage = "చాలా విఫలమైన లాగిన్ ప్రయత్నాల కారణంగా ఈ ఖాతాకు యాక్సెస్ తాత్కాలికంగా నిలిపివేయబడింది. మీరు మీ పాస్‌వర్డ్‌ను రీసెట్ చేయడం ద్వారా దాన్ని వెంటనే పునరుద్ధరించవచ్చు లేదా మీరు తర్వాత మళ్లీ ప్రయత్నించవచ్చు.";
             }
-            shadToast({
+            toast({
                 title: "లాగిన్ విఫలమైంది",
                 description: errorMessage,
                 variant: "destructive",
@@ -111,47 +58,36 @@ export default function LoginFormTe() {
       <Card className="mx-auto max-w-sm w-full shadow-xl">
         <CardHeader>
           <CardTitle className="text-2xl font-headline">లాగిన్</CardTitle>
-          <CardDescription>లాగిన్ OTPని పొందడానికి మీ ఫోన్ నంబర్‌ను నమోదు చేయండి</CardDescription>
+          <CardDescription>లాగిన్ చేయడానికి మీ ఫోన్ నంబర్ మరియు పాస్‌వర్డ్‌ను నమోదు చేయండి</CardDescription>
         </CardHeader>
         <CardContent>
-            {!otpSent ? (
-                <form className="grid gap-4" onSubmit={handleSendOtp}>
-                    <div className="grid gap-2">
-                        <Label htmlFor="phone">ఫోన్ నంబర్</Label>
-                        <Input
-                            id="phone"
-                            type="tel"
-                            placeholder="9876543210"
-                            required
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            maxLength={10}
-                        />
-                    </div>
-                    <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>
-                        {loading ? 'OTP పంపుతోంది...' : 'OTP పంపండి'}
-                    </Button>
-                </form>
-            ) : (
-                 <form className="grid gap-4" onSubmit={handleLogin}>
-                    <div className="grid gap-2">
-                        <Label htmlFor="otp">OTPని నమోదు చేయండి</Label>
-                        <Input
-                            id="otp"
-                            type="text"
-                            placeholder="123456"
-                            required
-                            value={otp}
-                            onChange={(e) => setOtp(e.target.value)}
-                            maxLength={6}
-                        />
-                    </div>
-                    <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>
-                        {loading ? 'లాగిన్ అవుతోంది...' : 'లాగిన్'}
-                    </Button>
-                     <Button variant="link" size="sm" onClick={() => setOtpSent(false)}>వేరే ఫోన్ నంబర్‌ను ఉపయోగించండి</Button>
-                </form>
-            )}
+            <form className="grid gap-4" onSubmit={handleLogin}>
+                <div className="grid gap-2">
+                    <Label htmlFor="phone">ఫోన్ నంబర్</Label>
+                    <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="9876543210"
+                        required
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        maxLength={10}
+                    />
+                </div>
+                 <div className="grid gap-2">
+                    <Label htmlFor="password">పాస్‌వర్డ్</Label>
+                    <Input 
+                        id="password" 
+                        type="password" 
+                        required 
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                </div>
+                <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>
+                    {loading ? 'లాగిన్ అవుతోంది...' : 'లాగిన్'}
+                </Button>
+            </form>
           <div className="mt-4 text-center text-sm">
             ఖాతా లేదా?{' '}
             <Link href="/te/signup" className="underline hover:text-primary">
@@ -160,7 +96,6 @@ export default function LoginFormTe() {
           </div>
         </CardContent>
       </Card>
-      <div id="recaptcha-container"></div>
     </div>
   );
 }

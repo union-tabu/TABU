@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { auth, db } from '@/lib/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -21,6 +21,8 @@ declare global {
   }
 }
 
+const FAKE_EMAIL_DOMAIN = "@sanghika.samakhya";
+
 export default function SignupForm() {
   const router = useRouter();
   const { toast: shadToast } = useToast();
@@ -31,6 +33,8 @@ export default function SignupForm() {
     fullName: '',
     phone: '',
     otp: '',
+    password: '',
+    confirmPassword: '',
     address: '',
     city: '',
     state: '',
@@ -53,9 +57,7 @@ export default function SignupForm() {
      if (!window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         'size': 'invisible',
-        'callback': (response: any) => {
-          // reCAPTCHA solved, allow signInWithPhoneNumber.
-        }
+        'callback': (response: any) => {}
       });
     }
   };
@@ -90,6 +92,10 @@ export default function SignupForm() {
 
   const handleSignup = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+        toast.error("Passwords do not match.");
+        return;
+    }
     setLoading(true);
 
     try {
@@ -98,7 +104,10 @@ export default function SignupForm() {
         throw new Error("OTP not verified.");
       }
 
-      const userCredential = await confirmationResult.confirm(formData.otp);
+      await confirmationResult.confirm(formData.otp);
+      
+      const email = `${formData.phone}${FAKE_EMAIL_DOMAIN}`;
+      const userCredential = await createUserWithEmailAndPassword(auth, email, formData.password);
       const user = userCredential.user;
 
       const nameParts = formData.fullName.trim().split(' ');
@@ -130,7 +139,7 @@ export default function SignupForm() {
         let errorMessage = "An unknown error occurred.";
         if (error.code === 'auth/invalid-verification-code') {
             errorMessage = "The OTP is incorrect. Please check and try again.";
-        } else if (error.code === 'auth/credential-already-in-use') {
+        } else if (error.code === 'auth/email-already-in-use') {
              errorMessage = "This phone number is already registered. Please login instead.";
         } else if (error.code === 'auth/code-expired') {
             errorMessage = "The OTP has expired. Please request a new one.";
@@ -168,10 +177,22 @@ export default function SignupForm() {
             </div>
             
             {otpSent && (
-              <div className="grid gap-2">
-                  <Label htmlFor="otp">Enter OTP</Label>
-                  <Input id="otp" type="text" placeholder="123456" required onChange={handleInputChange} value={formData.otp} maxLength={6} />
-              </div>
+              <>
+                <div className="grid gap-2">
+                    <Label htmlFor="otp">Enter OTP</Label>
+                    <Input id="otp" type="text" placeholder="123456" required onChange={handleInputChange} value={formData.otp} maxLength={6} />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="password">Password</Label>
+                        <Input id="password" type="password" required onChange={handleInputChange} value={formData.password} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="confirmPassword">Confirm Password</Label>
+                        <Input id="confirmPassword" type="password" required onChange={handleInputChange} value={formData.confirmPassword} />
+                    </div>
+                </div>
+              </>
             )}
 
             <div className="grid gap-2">

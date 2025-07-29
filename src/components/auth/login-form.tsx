@@ -8,98 +8,43 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
-import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
+import React, from 'react';
 
-declare global {
-  interface Window {
-    recaptchaVerifier?: RecaptchaVerifier;
-    confirmationResult?: ConfirmationResult;
-  }
-}
+const FAKE_EMAIL_DOMAIN = "@sanghika.samakhya";
 
 export default function LoginForm() {
   const router = useRouter();
-  const { toast: shadToast } = useToast();
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-
-  useEffect(() => {
-    // Cleanup reCAPTCHA on component unmount
-    return () => {
-      window.recaptchaVerifier?.clear();
-    };
-  }, []);
-
-  const generateRecaptcha = () => {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'invisible',
-        'callback': (response: any) => {
-          // reCAPTCHA solved, allow signInWithPhoneNumber.
-        }
-      });
-    }
-  };
-
-  const handleSendOtp = async (event: React.FormEvent) => {
-    event.preventDefault();
-    setLoading(true);
-    generateRecaptcha();
-    
-    const appVerifier = window.recaptchaVerifier!;
-    const fullPhoneNumber = `+91${phone}`;
-
-    try {
-      window.confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier);
-      setOtpSent(true);
-      toast.success('OTP sent successfully!');
-    } catch (error: any) {
-      console.error("Error sending OTP:", error);
-      let errorMessage = 'Failed to send OTP. Please try again later.';
-      if (error.code === 'auth/billing-not-enabled') {
-          errorMessage = 'Phone sign-in quota exceeded. Please contact support.';
-      } else if (error.code === 'auth/invalid-phone-number') {
-          errorMessage = 'The phone number you entered is not valid.';
-      } else if (error.code === 'auth/too-many-requests') {
-          errorMessage = 'Too many requests. Please try again later.';
-      }
-      toast.error(errorMessage);
-    } finally {
-        setLoading(false);
-    }
-  };
+  const { toast } = useToast();
+  const [phone, setPhone] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!otp) return;
     setLoading(true);
 
     try {
-      const confirmationResult = window.confirmationResult;
-      if (confirmationResult) {
-        await confirmationResult.confirm(otp);
-        
-        localStorage.setItem('isAuthenticated', 'true');
-        router.push('/dashboard');
-        shadToast({
-          title: "Login Successful",
-          description: "You have been successfully logged in.",
-        });
-      }
+      const email = `${phone}${FAKE_EMAIL_DOMAIN}`;
+      
+      await signInWithEmailAndPassword(auth, email, password);
+      
+      localStorage.setItem('isAuthenticated', 'true');
+      router.push('/dashboard');
+      toast({
+        title: "Login Successful",
+        description: "You have been successfully logged in.",
+      });
     } catch (error: any) {
         console.error("Login Error:", error);
         let errorMessage = "An unknown error occurred. Please try again.";
-        if (error.code === 'auth/invalid-verification-code') {
-            errorMessage = "Invalid OTP. Please check the code and try again.";
-        } else if (error.code === 'auth/code-expired') {
-            errorMessage = "The OTP has expired. Please request a new one.";
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+            errorMessage = "Invalid phone number or password. Please check your credentials and try again.";
+        } else if (error.code === 'auth/too-many-requests') {
+            errorMessage = "Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.";
         }
-        shadToast({
+        toast({
             title: "Login Failed",
             description: errorMessage,
             variant: "destructive",
@@ -114,47 +59,36 @@ export default function LoginForm() {
       <Card className="mx-auto max-w-sm w-full shadow-xl">
         <CardHeader>
           <CardTitle className="text-2xl font-headline">Login</CardTitle>
-          <CardDescription>Enter your phone number to receive a login OTP</CardDescription>
+          <CardDescription>Enter your phone number and password to login</CardDescription>
         </CardHeader>
         <CardContent>
-          {!otpSent ? (
-            <form className="grid gap-4" onSubmit={handleSendOtp}>
-              <div className="grid gap-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="9876543210"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  maxLength={10}
+          <form className="grid gap-4" onSubmit={handleLogin}>
+            <div className="grid gap-2">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="9876543210"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                maxLength={10}
+              />
+            </div>
+             <div className="grid gap-2">
+                <Label htmlFor="password">Password</Label>
+                <Input 
+                    id="password" 
+                    type="password" 
+                    required 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                 />
-              </div>
-              <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>
-                {loading ? 'Sending OTP...' : 'Send OTP'}
-              </Button>
-            </form>
-          ) : (
-            <form className="grid gap-4" onSubmit={handleLogin}>
-              <div className="grid gap-2">
-                <Label htmlFor="otp">Enter OTP</Label>
-                <Input
-                  id="otp"
-                  type="text"
-                  placeholder="123456"
-                  required
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  maxLength={6}
-                />
-              </div>
-              <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>
-                {loading ? 'Logging in...' : 'Login'}
-              </Button>
-              <Button variant="link" size="sm" onClick={() => setOtpSent(false)}>Use a different phone number</Button>
-            </form>
-          )}
+            </div>
+            <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>
+              {loading ? 'Logging in...' : 'Login'}
+            </Button>
+          </form>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{' '}
             <Link href="/signup" className="underline hover:text-primary">
@@ -163,7 +97,6 @@ export default function LoginForm() {
           </div>
         </CardContent>
       </Card>
-      <div id="recaptcha-container"></div>
     </div>
   );
 }
