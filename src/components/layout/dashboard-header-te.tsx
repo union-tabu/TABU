@@ -14,7 +14,46 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/auth-context';
 import { usePathname, useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { HardHat } from 'lucide-react';
+import { HardHat, Languages } from 'lucide-react';
+
+function LanguageToggle() {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleLanguageChange = (lang: 'en' | 'te') => {
+    const isTelugu = pathname.startsWith('/te');
+    let newPath;
+
+    if (lang === 'en' && isTelugu) {
+      newPath = pathname === '/te' ? '/' : pathname.substring(3);
+    } else if (lang === 'te' && !isTelugu) {
+      newPath = pathname === '/' ? '/te' : `/te${pathname}`;
+    } else {
+      return; // Already on the correct language version
+    }
+    router.push(newPath);
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <Languages className="h-5 w-5" />
+          <span className="sr-only">Change language</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onSelect={() => handleLanguageChange('en')}>
+          English
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => handleLanguageChange('te')}>
+          తెలుగు (Telugu)
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 
 export function DashboardHeaderTe() {
   const { userData, loading, logout } = useAuth();
@@ -58,7 +97,8 @@ export function DashboardHeaderTe() {
             </Link>
         ))}
       </nav>
-      <div className="flex items-center gap-4 md:gap-2 lg:gap-4">
+      <div className="flex items-center gap-2">
+        <LanguageToggle />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="icon" className="rounded-full">

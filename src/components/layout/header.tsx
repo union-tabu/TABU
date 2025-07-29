@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Menu, HardHat } from 'lucide-react';
+import { Menu, HardHat, Languages } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -11,14 +11,59 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import React from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
+
+function LanguageToggle() {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleLanguageChange = (lang: 'en' | 'te') => {
+    const isTelugu = pathname.startsWith('/te');
+    let newPath;
+
+    if (lang === 'en' && isTelugu) {
+      newPath = pathname === '/te' ? '/' : pathname.substring(3);
+    } else if (lang === 'te' && !isTelugu) {
+      newPath = pathname === '/' ? '/te' : `/te${pathname}`;
+    } else {
+      return; // Already on the correct language version
+    }
+    router.push(newPath);
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <Languages className="h-5 w-5" />
+          <span className="sr-only">Change language</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onSelect={() => handleLanguageChange('en')}>
+          English
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => handleLanguageChange('te')}>
+          తెలుగు (Telugu)
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export function Header() {
   const [isOpen, setIsOpen] = React.useState(false);
   const { isAuthenticated } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   const isTelugu = pathname.startsWith('/te');
 
   const navLinks = isTelugu ? [
@@ -63,13 +108,11 @@ export function Header() {
           </nav>
 
           {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-3">
+          <div className="hidden md:flex items-center space-x-2">
             {isAuthenticated ? (
-              <>
-                <Button asChild className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-md text-sm font-medium">
-                  <Link href={dashboardLink}>{dashboardText}</Link>
-                </Button>
-              </>
+              <Button asChild className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-md text-sm font-medium">
+                <Link href={dashboardLink}>{dashboardText}</Link>
+              </Button>
             ) : (
               <>
                 <Button asChild variant="ghost" className="text-gray-700 px-4 py-2 text-sm font-medium">
@@ -80,6 +123,7 @@ export function Header() {
                 </Button>
               </>
             )}
+             <LanguageToggle />
           </div>
 
           {/* Mobile Menu Button */}
@@ -114,15 +158,39 @@ export function Header() {
                     {link.label}
                   </Link>
                 ))}
+                 <div className="pt-6 border-t space-y-3">
+                    <h3 className="text-lg font-medium text-gray-700">Language</h3>
+                     <Button 
+                        variant="ghost" 
+                        size="lg" 
+                        className="w-full justify-start text-gray-700" 
+                        onClick={() => {
+                            const newPath = isTelugu ? (pathname === '/te' ? '/' : pathname.substring(3)) : pathname;
+                            router.push(newPath);
+                            setIsOpen(false);
+                        }}>
+                        English
+                    </Button>
+                     <Button 
+                        variant="ghost" 
+                        size="lg" 
+                        className="w-full justify-start text-gray-700"
+                        onClick={() => {
+                             const newPath = isTelugu ? pathname : (pathname === '/' ? '/te' : `/te${pathname}`);
+                             router.push(newPath);
+                             setIsOpen(false);
+                        }}
+                        >
+                        తెలుగు (Telugu)
+                    </Button>
+                </div>
                 <div className="pt-6 border-t space-y-3">
                   {isAuthenticated ? (
-                    <>
-                      <Button asChild size="lg" className="w-full bg-gray-900 hover:bg-gray-800 text-white">
-                        <Link href={dashboardLink} onClick={() => setIsOpen(false)}>
-                          {dashboardText}
-                        </Link>
-                      </Button>
-                    </>
+                    <Button asChild size="lg" className="w-full bg-gray-900 hover:bg-gray-800 text-white">
+                      <Link href={dashboardLink} onClick={() => setIsOpen(false)}>
+                        {dashboardText}
+                      </Link>
+                    </Button>
                   ) : (
                     <>
                       <Button asChild variant="ghost" size="lg" className="w-full text-gray-700 hover:text-white hover:bg-gray-900">

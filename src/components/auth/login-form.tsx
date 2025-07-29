@@ -187,6 +187,7 @@ export default function LoginForm() {
     try {
       const email = `${phone}${FAKE_EMAIL_DOMAIN}`;
       
+      // This will work with the linked credential approach
       await signInWithEmailAndPassword(auth, email, password);
       
       handleSuccessfulLogin();
