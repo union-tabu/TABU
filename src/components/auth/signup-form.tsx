@@ -11,8 +11,22 @@ import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, createUse
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+
+// =================================================================================
+// IMPORTANT FIREBASE CONFIGURATION NOTE
+// =================================================================================
+// To prevent `auth/internal-error` when sending OTPs, you MUST authorize
+// the domain you are testing on (e.g., localhost) in the Firebase console.
+//
+// How to fix:
+// 1. Go to your Firebase Console.
+// 2. Select your project.
+// 3. Go to "Authentication" -> "Settings" -> "Authorized domains".
+// 4. Click "Add domain" and enter the domain (e.g., `localhost` if testing locally).
+// =================================================================================
+
 
 declare global {
   interface Window {
@@ -42,28 +56,6 @@ export default function SignupForm() {
     pin: '',
   });
 
-  useEffect(() => {
-    // This function sets up the container for the reCAPTCHA widget.
-    const setupRecaptcha = () => {
-        if (!window.recaptchaVerifier) {
-            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                'size': 'invisible',
-                'callback': (response: any) => {
-                    // reCAPTCHA solved, allow signInWithPhoneNumber.
-                }
-            });
-        }
-    };
-
-    // Call setup function on component mount.
-    setupRecaptcha();
-
-    // Cleanup on component unmount.
-    return () => {
-      window.recaptchaVerifier?.clear();
-    };
-  }, []);
-
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -80,18 +72,26 @@ export default function SignupForm() {
         return;
     }
     
-    const appVerifier = window.recaptchaVerifier!;
-    const fullPhoneNumber = `+91${formData.phone}`;
-
     try {
+      // Create a new verifier each time to avoid issues with expired tokens
+      const appVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          'size': 'invisible',
+          'callback': (response: any) => {
+              // reCAPTCHA solved, allow signInWithPhoneNumber.
+          }
+      });
+      
+      const fullPhoneNumber = `+91${formData.phone}`;
       window.confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier);
       setOtpSent(true);
       toast.success('OTP sent successfully!');
     } catch (error: any) {
       console.error("Error sending OTP:", error);
-      let errorMessage = 'Failed to send OTP. Please try again later.';
+      let errorMessage = 'Failed to send OTP. Please try again later. Ensure your domain is authorized in the Firebase Console.';
       if (error.code === 'auth/too-many-requests') {
           errorMessage = 'Too many requests. Please try again later.';
+      } else if (error.code === 'auth/internal-error') {
+          errorMessage = "Internal error. Please ensure your domain (e.g., 'localhost') is authorized in the Firebase console's Authentication settings.";
       }
       toast.error(errorMessage);
     } finally {

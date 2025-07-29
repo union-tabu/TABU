@@ -11,8 +11,21 @@ import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult, createUse
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
+
+// =================================================================================
+// ముఖ్యమైన ఫైర్‌బేస్ కాన్ఫిగరేషన్ గమనిక
+// =================================================================================
+// OTP పంపేటప్పుడు `auth/internal-error` నివారించడానికి, మీరు పరీక్షించే డొమైన్‌ను
+// (ఉదా., localhost) ఫైర్‌బేస్ కన్సోల్‌లో తప్పనిసరిగా అధీకృతం చేయాలి.
+//
+// ఎలా పరిష్కరించాలి:
+// 1. మీ ఫైర్‌బేస్ కన్సోల్‌కు వెళ్లండి.
+// 2. మీ ప్రాజెక్ట్‌ను ఎంచుకోండి.
+// 3. "Authentication" -> "Settings" -> "Authorized domains"కు వెళ్లండి.
+// 4. "Add domain" క్లిక్ చేసి, డొమైన్‌ను నమోదు చేయండి (ఉదా., `localhost` స్థానికంగా పరీక్షిస్తుంటే).
+// =================================================================================
 
 declare global {
   interface Window {
@@ -42,28 +55,6 @@ export default function SignupFormTe() {
     pin: '',
   });
 
-  useEffect(() => {
-    // This function sets up the container for the reCAPTCHA widget.
-    const setupRecaptcha = () => {
-      if (!window.recaptchaVerifier) {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-          'size': 'invisible',
-          'callback': (response: any) => {
-            // reCAPTCHA solved, allow signInWithPhoneNumber.
-          }
-        });
-      }
-    };
-    
-    // Call setup function on component mount.
-    setupRecaptcha();
-
-    // Cleanup on component unmount.
-    return () => {
-      window.recaptchaVerifier?.clear();
-    };
-  }, []);
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({...prev, [id]: value}));
@@ -80,10 +71,15 @@ export default function SignupFormTe() {
         return;
     }
     
-    const appVerifier = window.recaptchaVerifier!;
-    const fullPhoneNumber = `+91${formData.phone}`;
-
     try {
+      const appVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+          'size': 'invisible',
+          'callback': (response: any) => {
+              // reCAPTCHA solved, allow signInWithPhoneNumber.
+          }
+      });
+      
+      const fullPhoneNumber = `+91${formData.phone}`;
       window.confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, appVerifier);
       setOtpSent(true);
       toast.success('OTP విజయవంతంగా పంపబడింది!');
@@ -92,6 +88,8 @@ export default function SignupFormTe() {
       let errorMessage = 'OTP పంపడంలో విఫలమైంది. దయచేసి తర్వాత ప్రయత్నించండి.';
       if (error.code === 'auth/too-many-requests') {
           errorMessage = 'చాలా ఎక్కువ అభ్యర్థనలు. దయచేసి తర్వాత ప్రయత్నించండి.';
+      } else if (error.code === 'auth/internal-error') {
+          errorMessage = "అంతర్గత లోపం. దయచేసి మీ డొమైన్ (ఉదా., 'localhost') ఫైర్‌బేస్ కన్సోల్ యొక్క ప్రామాణీకరణ సెట్టింగ్‌లలో అధీకృతం చేయబడిందని నిర్ధారించుకోండి.";
       }
       toast.error(errorMessage);
     } finally {
