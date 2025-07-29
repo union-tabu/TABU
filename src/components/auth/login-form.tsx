@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState } from 'react';
+import React, from 'react';
 
 // This is a workaround domain for phone+password auth.
 const FAKE_EMAIL_DOMAIN = '@sanghika.samakhya';
@@ -18,9 +18,9 @@ const FAKE_EMAIL_DOMAIN = '@sanghika.samakhya';
 export default function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [phone, setPhone] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();

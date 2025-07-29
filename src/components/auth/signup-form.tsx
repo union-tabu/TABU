@@ -71,7 +71,8 @@ export default function SignupForm() {
             createdAt: new Date(),
             subscription: {
                 status: 'not subscribed',
-            }
+            },
+            email: ''
         });
         
         toast({
