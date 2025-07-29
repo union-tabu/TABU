@@ -8,6 +8,7 @@ import { useAuth } from '@/context/auth-context';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { Header } from '@/components/layout/header';
 
 const LoginFormTe = dynamic(() => import('@/components/auth/login-form-te'), { 
   ssr: false,
@@ -16,7 +17,7 @@ const LoginFormTe = dynamic(() => import('@/components/auth/login-form-te'), {
 
 function LoginSkeleton() {
     return (
-        <div className="flex items-center justify-center min-h-[calc(100vh-14rem)] bg-background px-4 py-12">
+        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-background px-4 py-12">
             <Card className="mx-auto max-w-sm w-full shadow-xl">
                 <CardHeader>
                 <Skeleton className="h-8 w-24 mb-2" />
@@ -66,5 +67,12 @@ export default function LoginPageTe() {
         return null;
     }
 
-    return <LoginFormTe />;
+    return (
+        <div className="flex flex-col min-h-screen">
+          <Header />
+          <main className="flex-grow">
+            <LoginFormTe />
+          </main>
+        </div>
+    );
 }

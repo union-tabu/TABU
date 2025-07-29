@@ -181,7 +181,7 @@ export default function SignupFormTe() {
 
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-14rem)] bg-background px-4 py-12">
+    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-background px-4 py-12">
       <Card className="mx-auto max-w-2xl w-full shadow-xl">
         <CardHeader>
           <CardTitle className="text-2xl font-headline">కొత్త ఖాతాను సృష్టించండి</CardTitle>

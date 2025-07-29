@@ -1,4 +1,3 @@
-
 "use client";
 
 import { createContext, useContext, useEffect, useState, useRef } from 'react';
@@ -13,6 +12,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
   logout: () => Promise<void>;
+  refreshUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -21,14 +21,15 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   loading: true,
   logout: async () => {},
+  refreshUserData: async () => {},
 });
 
 // Storage keys for cross-tab synchronization
 const STORAGE_KEYS = {
-  AUTH_STATE: 'auth_state',
-  USER_DATA: 'user_data',
-  AUTH_EVENT: 'auth_event',
-  LOGOUT_EVENT: 'logout_event'
+  AUTH_STATE: 'sanghika_auth_state',
+  USER_DATA: 'sanghika_user_data',
+  AUTH_EVENT: 'sanghika_auth_event',
+  LOGOUT_EVENT: 'sanghika_logout_event'
 } as const;
 
 interface AuthState {
@@ -48,57 +49,104 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const currentAuthState = useRef<AuthState | null>(null);
   const userDataUnsubscribe = useRef<Unsubscribe | null>(null);
   const isUpdatingFromStorage = useRef(false);
+  const authUnsubscribeRef = useRef<(() => void) | null>(null);
 
-  // Utility function to update localStorage
+  // Utility function to update localStorage safely
   const updateAuthStorage = (user: FirebaseUser | null, newUserData: UserData | null = null) => {
-    if (isUpdatingFromStorage.current) return;
+    if (isUpdatingFromStorage.current || typeof window === 'undefined') return;
 
-    const authState: AuthState = {
-      isAuthenticated: !!user,
-      userId: user?.uid || null,
-      email: user?.email || null,
-      timestamp: Date.now()
-    };
+    try {
+      const authState: AuthState = {
+        isAuthenticated: !!user,
+        userId: user?.uid || null,
+        email: user?.email || null,
+        timestamp: Date.now()
+      };
 
-    // Only update if state actually changed
-    if (JSON.stringify(currentAuthState.current) !== JSON.stringify(authState)) {
-      currentAuthState.current = authState;
-      localStorage.setItem(STORAGE_KEYS.AUTH_STATE, JSON.stringify(authState));
+      // Only update if state actually changed
+      const currentStateStr = JSON.stringify(currentAuthState.current);
+      const newStateStr = JSON.stringify(authState);
       
-      if (newUserData) {
-        localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(newUserData));
-      } else if (!user) {
-        localStorage.removeItem(STORAGE_KEYS.USER_DATA);
-      }
+      if (currentStateStr !== newStateStr) {
+        currentAuthState.current = authState;
+        localStorage.setItem(STORAGE_KEYS.AUTH_STATE, newStateStr);
+        
+        if (newUserData) {
+          localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(newUserData));
+        } else if (!user) {
+          localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+        }
 
-      // Dispatch custom event for immediate cross-tab sync
-      window.dispatchEvent(new CustomEvent(STORAGE_KEYS.AUTH_EVENT, {
-        detail: { authState, userData: newUserData, timestamp: Date.now() }
-      }));
+        // Dispatch custom event for immediate cross-tab sync
+        window.dispatchEvent(new CustomEvent(STORAGE_KEYS.AUTH_EVENT, {
+          detail: { authState, userData: newUserData, timestamp: Date.now() }
+        }));
+      }
+    } catch (error) {
+      console.error('Error updating auth storage:', error);
     }
   };
 
-  // Centralized logout function
+  // Function to refresh user data
+  const refreshUserData = async () => {
+    if (!firebaseUser) return;
+    
+    try {
+      // Force refresh of the current user's data
+      const userDocRef = doc(db, "users", firebaseUser.uid);
+      // The onSnapshot listener will automatically update the data
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+    }
+  };
+
+  // Centralized logout function with enhanced error handling
   const logout = async () => {
     try {
       // Set logout flag to prevent loops
-      localStorage.setItem(STORAGE_KEYS.LOGOUT_EVENT, Date.now().toString());
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(STORAGE_KEYS.LOGOUT_EVENT, Date.now().toString());
+        
+        // Dispatch logout event to all tabs
+        window.dispatchEvent(new CustomEvent(STORAGE_KEYS.LOGOUT_EVENT, {
+          detail: { timestamp: Date.now() }
+        }));
+      }
+
+      // Clean up user data listener
+      if (userDataUnsubscribe.current) {
+        userDataUnsubscribe.current();
+        userDataUnsubscribe.current = null;
+      }
+
+      // Clear local state immediately
+      setFirebaseUser(null);
+      setUserData(null);
       
-      // Dispatch logout event to all tabs
-      window.dispatchEvent(new CustomEvent(STORAGE_KEYS.LOGOUT_EVENT, {
-        detail: { timestamp: Date.now() }
-      }));
+      // Clear storage
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(STORAGE_KEYS.AUTH_STATE);
+        localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+      }
 
       // Sign out from Firebase (this will trigger onAuthStateChanged)
       await signOut(auth);
+      
     } catch (error) {
       console.error('Logout error:', error);
+      // Even if signOut fails, we should clear local state
+      setFirebaseUser(null);
+      setUserData(null);
     }
   };
 
   // Handle Firebase auth state changes
   useEffect(() => {
-    const authUnsubscribe = onAuthStateChanged(auth, async (user) => {
+    if (authUnsubscribeRef.current) {
+      authUnsubscribeRef.current();
+    }
+
+    const authStateChangeHandler = async (user: FirebaseUser | null) => {
       try {
         // Clean up previous user data listener
         if (userDataUnsubscribe.current) {
@@ -109,19 +157,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setFirebaseUser(user);
 
         if (user) {
-          // User is authenticated
+          // User is authenticated - set up user data listener
           const userDocRef = doc(db, "users", user.uid);
           
           userDataUnsubscribe.current = onSnapshot(
             userDocRef,
-            (doc) => {
-              const data = doc.exists() ? (doc.data() as UserData) : null;
-              setUserData(data);
-              updateAuthStorage(user, data);
-              
-              if (!isInitialized) {
-                setLoading(false);
-                setIsInitialized(true);
+            (docSnapshot) => {
+              try {
+                const data = docSnapshot.exists() ? (docSnapshot.data() as UserData) : null;
+                setUserData(data);
+                updateAuthStorage(user, data);
+                
+                // Mark as initialized only after we have both auth and user data state
+                if (!isInitialized) {
+                  setLoading(false);
+                  setIsInitialized(true);
+                }
+              } catch (error) {
+                console.error('Error processing user document snapshot:', error);
+                setUserData(null);
+                updateAuthStorage(user, null);
+                
+                if (!isInitialized) {
+                  setLoading(false);
+                  setIsInitialized(true);
+                }
               }
             },
             (error) => {
@@ -147,23 +207,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error('Auth state change error:', error);
+        // Ensure we always initialize even on error
         if (!isInitialized) {
           setLoading(false);
           setIsInitialized(true);
         }
       }
-    });
+    };
+
+    authUnsubscribeRef.current = onAuthStateChanged(auth, authStateChangeHandler);
 
     return () => {
-      authUnsubscribe();
+      if (authUnsubscribeRef.current) {
+        authUnsubscribeRef.current();
+        authUnsubscribeRef.current = null;
+      }
       if (userDataUnsubscribe.current) {
         userDataUnsubscribe.current();
+        userDataUnsubscribe.current = null;
       }
     };
   }, [isInitialized]);
 
   // Handle cross-tab synchronization
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+
     // Handle storage events (from other tabs)
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === STORAGE_KEYS.AUTH_STATE && event.newValue !== event.oldValue) {
@@ -201,19 +270,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Handle custom auth events (for immediate sync)
     const handleAuthEvent = (event: CustomEvent) => {
-      const { authState, userData: newUserData } = event.detail;
-      
-      if (!authState.isAuthenticated && firebaseUser) {
-        // Logout in another tab
-        signOut(auth).catch(console.error);
-      } else if (authState.isAuthenticated && newUserData) {
-        // Update user data if needed
-        setUserData(newUserData);
+      try {
+        const { authState, userData: newUserData } = event.detail;
+        
+        if (!authState.isAuthenticated && firebaseUser) {
+          // Logout in another tab
+          signOut(auth).catch(console.error);
+        } else if (authState.isAuthenticated && newUserData && authState.userId === firebaseUser?.uid) {
+          // Update user data if it's for the same user
+          setUserData(newUserData);
+        }
+      } catch (error) {
+        console.error('Error handling auth event:', error);
       }
     };
 
     // Handle logout events
-    const handleLogoutEvent = (event: CustomEvent | StorageEvent) => {
+    const handleLogoutEvent = () => {
       if (firebaseUser) {
         signOut(auth).catch(console.error);
       }
@@ -222,7 +295,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Add event listeners
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener(STORAGE_KEYS.AUTH_EVENT, handleAuthEvent as EventListener);
-    window.addEventListener(STORAGE_KEYS.LOGOUT_EVENT, handleLogoutEvent as EventListener);
+    window.addEventListener(STORAGE_KEYS.LOGOUT_EVENT, handleLogoutEvent);
 
     // Handle page visibility change (when tab becomes active)
     const handleVisibilityChange = () => {
@@ -237,7 +310,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (!authState.isAuthenticated && firebaseUser) {
               // User was logged out in another tab
               signOut(auth).catch(console.error);
-            } else if (authState.isAuthenticated && storedUserData) {
+            } else if (authState.isAuthenticated && storedUserData && authState.userId === firebaseUser?.uid) {
               try {
                 const userData = JSON.parse(storedUserData) as UserData;
                 setUserData(userData);
@@ -258,14 +331,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener(STORAGE_KEYS.AUTH_EVENT, handleAuthEvent as EventListener);
-      window.removeEventListener(STORAGE_KEYS.LOGOUT_EVENT, handleLogoutEvent as EventListener);
+      window.removeEventListener(STORAGE_KEYS.LOGOUT_EVENT, handleLogoutEvent);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [firebaseUser, isInitialized]);
 
   // Initialize from localStorage on first load
   useEffect(() => {
-    if (!isInitialized) {
+    if (!isInitialized && typeof window !== 'undefined') {
       try {
         const storedAuthState = localStorage.getItem(STORAGE_KEYS.AUTH_STATE);
         const storedUserData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
@@ -291,6 +364,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: !!firebaseUser,
     loading,
     logout,
+    refreshUserData,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

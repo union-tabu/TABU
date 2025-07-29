@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { Header } from '@/components/layout/header';
 
 const SignupFormTe = dynamic(() => import('@/components/auth/signup-form-te'), { 
   ssr: false,
@@ -14,7 +15,7 @@ const SignupFormTe = dynamic(() => import('@/components/auth/signup-form-te'), {
 
 function SignupSkeleton() {
     return (
-        <div className="flex items-center justify-center min-h-[calc(100vh-14rem)] bg-background px-4 py-12">
+        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-background px-4 py-12">
             <div className="mx-auto max-w-2xl w-full space-y-4">
                 <div className="space-y-2 text-center">
                     <Skeleton className="h-8 w-48 mx-auto" />
@@ -55,5 +56,12 @@ export default function SignupPageTe() {
     return null;
   }
 
-  return <SignupFormTe />;
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-grow">
+        <SignupFormTe />
+      </main>
+    </div>
+  );
 }
