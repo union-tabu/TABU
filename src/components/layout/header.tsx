@@ -46,6 +46,7 @@ export function Header() {
           {/* Logo */}
           <Link href={homeLink} className="flex items-center gap-2">
             <HardHat className="w-8 h-8 text-primary" />
+            <span className="font-bold text-lg">TABU</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -98,6 +99,7 @@ export function Header() {
                     onClick={() => setIsOpen(false)}
                   >
                     <HardHat className="w-8 h-8 text-primary" />
+                    <span className="font-bold text-lg">TABU</span>
                   </Link>
                 </SheetTitle>
               </SheetHeader>

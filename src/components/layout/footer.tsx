@@ -32,7 +32,7 @@ export function Footer() {
               <div className="flex items-center gap-2">
                 <HardHat className="w-8 h-8 text-primary" />
                 <span className="text-lg font-bold text-gray-900 leading-tight">
-                  Telangana All Building Workers Union
+                  TABU
                 </span>
               </div>
             </div>

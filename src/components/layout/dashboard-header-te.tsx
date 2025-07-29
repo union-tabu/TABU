@@ -45,7 +45,7 @@ export function DashboardHeaderTe() {
           className="flex items-center gap-2 text-lg font-semibold md:text-base"
         >
           <HardHat className="w-8 h-8 text-primary" />
-          <span className="sr-only">సంఘిక సమాఖ్య</span>
+          <span className="font-bold">TABU</span>
         </Link>
       <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
         {navItems.map((item) => (
