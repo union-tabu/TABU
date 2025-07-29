@@ -4,7 +4,7 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Inter', 'Noto Sans Telugu', sans-serif;
+  font-family: 'Tiro Telugu', 'Inter', 'Noto Sans Telugu', sans-serif;
 }
 
 @layer base {
