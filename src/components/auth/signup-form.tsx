@@ -151,19 +151,27 @@ export default function SignupForm() {
 
     } catch (error: any) {
         console.error("Signup Error:", error);
-        let errorMessage = "An unknown error occurred.";
-        if (error.code === 'auth/invalid-verification-code') {
-            errorMessage = "The OTP is incorrect. Please check and try again.";
-        } else if (error.code === 'auth/email-already-in-use') {
-             errorMessage = "This phone number is already registered. Please login instead.";
-        } else if (error.code === 'auth/code-expired') {
-            errorMessage = "The OTP has expired. Please request a new one.";
+
+        if (error.code === 'auth/email-already-in-use') {
+            shadToast({
+                title: "Account Already Exists",
+                description: "This phone number is already registered. Please login instead.",
+                variant: "destructive",
+            });
+            router.push('/login');
+        } else {
+            let errorMessage = "An unknown error occurred.";
+            if (error.code === 'auth/invalid-verification-code') {
+                errorMessage = "The OTP is incorrect. Please check and try again.";
+            } else if (error.code === 'auth/code-expired') {
+                errorMessage = "The OTP has expired. Please request a new one.";
+            }
+            shadToast({
+                title: "Signup Failed",
+                description: errorMessage,
+                variant: "destructive",
+            });
         }
-        shadToast({
-            title: "Signup Failed",
-            description: errorMessage,
-            variant: "destructive",
-        });
     } finally {
         setLoading(false);
     }
