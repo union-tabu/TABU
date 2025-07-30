@@ -74,27 +74,8 @@ export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolea
     
     const userStatus = userData?.subscription?.status || 'not subscribed';
 
-    if (!userData || !userData.subscription || userStatus === 'not subscribed' || userStatus === 'inactive') {
-        const subscribeLink = isTelugu ? '/te/subscribe' : '/subscribe';
-        const titleText = isTelugu 
-            ? (userStatus === 'inactive' ? "మీ సభ్యత్వం నిష్క్రియంగా ఉంది" : "సభ్యత్వం పొందలేదు")
-            : (userStatus === 'inactive' ? "Your Subscription is Inactive" : "You are not subscribed");
-        const descriptionText = isTelugu ? "అన్ని ప్రయోజనాలను అన్‌లాక్ చేయడానికి మరియు క్రియాశీల సభ్యులుగా మారడానికి సభ్యత్వాన్ని పొందండి." : "Get a subscription to unlock all benefits and become an active member.";
-        const buttonText = isTelugu ? "ఇప్పుడే సభ్యత్వాన్ని పొందండి" : "Subscribe Now";
-
-        return (
-            <Card className="text-center">
-                 <CardHeader>
-                    <CardTitle>{titleText}</CardTitle>
-                    <CardDescription>{descriptionText}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Button asChild>
-                        <Link href={subscribeLink}>{buttonText}</Link>
-                    </Button>
-                </CardContent>
-            </Card>
-        )
+    if (!userData || !userData.subscription || userStatus !== 'active') {
+       return null;
     }
 
     const { plan, status, renewalDate: renewalDateData } = userData.subscription;
