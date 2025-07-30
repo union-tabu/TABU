@@ -41,20 +41,27 @@ export default function DashboardPageTe() {
 
   let daysLeft: number | null = null;
   let expiryDate: Date | null = null;
+  let accountIsInactive = false;
   const userStatus = userData?.subscription?.status || 'not subscribed';
 
-  if (userData && userStatus === 'not subscribed' && userData.createdAt) {
-      const now = new Date();
-      const registrationDate = new Date(userData.createdAt.seconds * 1000);
+  if (userData && userStatus === 'not subscribed') {
+    const now = new Date();
+    // Determine the start date for the grace period calculation
+    const gracePeriodStartDate = userData.subscription?.renewalDate
+        ? new Date(userData.subscription.renewalDate.seconds * 1000) // For expired members
+        : new Date(userData.createdAt.seconds * 1000); // For new members
 
-      // Grace period ends at the start of the month, 2 months after registration month.
-      const calculatedExpiryDate = startOfMonth(addMonths(registrationDate, 2));
-      const calculatedDaysLeft = differenceInDays(calculatedExpiryDate, now);
-
-      if (calculatedDaysLeft > 0) {
-          daysLeft = calculatedDaysLeft;
-          expiryDate = calculatedExpiryDate;
-      }
+    // Grace period ends at the start of the month, 2 months after the start date's month.
+    const calculatedExpiryDate = startOfMonth(addMonths(gracePeriodStartDate, 2));
+    const calculatedDaysLeft = differenceInDays(calculatedExpiryDate, now);
+      
+    if (calculatedDaysLeft > 0) {
+      daysLeft = calculatedDaysLeft;
+      expiryDate = calculatedExpiryDate;
+    } else {
+      // This means the grace period has passed
+      accountIsInactive = true;
+    }
   }
 
 
@@ -125,7 +132,7 @@ export default function DashboardPageTe() {
             </Card>
           )}
 
-          {daysLeft === null && userStatus !== 'active' && (
+          {accountIsInactive && userStatus !== 'active' && (
              <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>ఖాతా నిష్క్రియం చేయబడింది</AlertTitle>

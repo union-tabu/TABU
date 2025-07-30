@@ -9,7 +9,7 @@ import { SubscriptionStatusCard } from "@/components/dashboard/subscription-stat
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { differenceInMonths } from 'date-fns';
+import { differenceInMonths, startOfMonth } from 'date-fns';
 
 export default function SubscribePage() {
   const { userData, loading } = useAuth();
@@ -47,20 +47,16 @@ export default function SubscribePage() {
   const MONTHLY_PRICE = 100;
   const YEARLY_PRICE = 1200;
 
-  if (userData) {
+  if (userData?.subscription?.status === 'not subscribed') {
     const now = new Date();
-    const status = userData.subscription?.status;
-    
-    if (status === 'not subscribed' && userData.createdAt) {
-      const accountCreationDate = new Date(userData.createdAt.seconds * 1000);
-      if (differenceInMonths(now, accountCreationDate) >= 2) {
-        isLapsed = true;
-      }
-    } else if (status === 'inactive' && userData.subscription?.renewalDate) {
-      const renewalDate = new Date(userData.subscription.renewalDate.seconds * 1000);
-       if (differenceInMonths(now, renewalDate) >= 2) {
-        isLapsed = true;
-      }
+    // Determine the start date for the lapse calculation
+    const gracePeriodStartDate = userData.subscription?.renewalDate
+        ? new Date(userData.subscription.renewalDate.seconds * 1000) // For expired members
+        : new Date(userData.createdAt.seconds * 1000); // For new members
+
+    // If it's been 2 or more calendar months since the grace period started, it's lapsed.
+    if (differenceInMonths(startOfMonth(now), startOfMonth(gracePeriodStartDate)) >= 2) {
+      isLapsed = true;
     }
   }
   

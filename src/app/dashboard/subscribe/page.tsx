@@ -46,25 +46,16 @@ export default function SubscribePage() {
   const MONTHLY_PRICE = 100;
   const YEARLY_PRICE = 1200;
 
-  if (userData) {
+  if (userData?.subscription?.status === 'not subscribed') {
     const now = new Date();
-    const status = userData.subscription?.status;
-    
-    // Check for lapsed status if not subscribed
-    if (status === 'not subscribed' && userData.createdAt) {
-      const registrationDate = new Date(userData.createdAt.seconds * 1000);
-      // Grace period is registration month + 1 full month.
-      // So, if diff is >= 2 months from the start of their respective months, it's lapsed.
-      if (differenceInMonths(startOfMonth(now), startOfMonth(registrationDate)) >= 2) {
-        isLapsed = true;
-      }
-    // Check for lapsed status if subscription became inactive
-    } else if (status === 'inactive' && userData.subscription?.renewalDate) {
-      const renewalDate = new Date(userData.subscription.renewalDate.seconds * 1000);
-      // If the last renewal date was 2 or more months ago, it's lapsed.
-       if (differenceInMonths(startOfMonth(now), startOfMonth(renewalDate)) >= 2) {
-        isLapsed = true;
-      }
+    // Determine the start date for the lapse calculation
+    const gracePeriodStartDate = userData.subscription?.renewalDate
+        ? new Date(userData.subscription.renewalDate.seconds * 1000) // For expired members
+        : new Date(userData.createdAt.seconds * 1000); // For new members
+
+    // If it's been 2 or more calendar months since the grace period started, it's lapsed.
+    if (differenceInMonths(startOfMonth(now), startOfMonth(gracePeriodStartDate)) >= 2) {
+      isLapsed = true;
     }
   }
   

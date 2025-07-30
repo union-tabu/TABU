@@ -40,21 +40,26 @@ export default function DashboardPage() {
   
   let daysLeft: number | null = null;
   let expiryDate: Date | null = null;
+  let accountIsInactive = false;
   const userStatus = userData?.subscription?.status || 'not subscribed';
 
-  if (userData && userStatus === 'not subscribed' && userData.createdAt) {
+  if (userData && userStatus === 'not subscribed') {
       const now = new Date();
-      const registrationDate = new Date(userData.createdAt.seconds * 1000);
-      
-      // Grace period ends at the start of the month, 2 months after registration month.
-      // e.g., register in April -> grace period covers April + May -> ends June 1st.
-      const calculatedExpiryDate = startOfMonth(addMonths(registrationDate, 2));
+      // Determine the start date for the grace period calculation
+      const gracePeriodStartDate = userData.subscription?.renewalDate
+          ? new Date(userData.subscription.renewalDate.seconds * 1000) // For expired members
+          : new Date(userData.createdAt.seconds * 1000); // For new members
+
+      // Grace period ends at the start of the month, 2 months after the start date's month.
+      const calculatedExpiryDate = startOfMonth(addMonths(gracePeriodStartDate, 2));
       const calculatedDaysLeft = differenceInDays(calculatedExpiryDate, now);
       
-      // We only show the grace period card if there's time left.
       if (calculatedDaysLeft > 0) {
         daysLeft = calculatedDaysLeft;
         expiryDate = calculatedExpiryDate;
+      } else {
+        // This means the grace period has passed
+        accountIsInactive = true;
       }
   }
 
@@ -126,7 +131,7 @@ export default function DashboardPage() {
             </Card>
           )}
 
-          {daysLeft === null && userStatus !== 'active' && (
+          {accountIsInactive && userStatus !== 'active' && (
              <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Account Inactive</AlertTitle>
