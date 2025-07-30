@@ -162,7 +162,6 @@ export function DashboardHeaderTe() {
                 <DropdownMenuItem asChild>
                     <Link href="/te/profile">ప్రొఫైల్</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem disabled>సెట్టింగ్‌లు</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>లాగ్ అవుట్</DropdownMenuItem>
             </DropdownMenuContent>

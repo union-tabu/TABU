@@ -162,7 +162,6 @@ export function DashboardHeader() {
                     <DropdownMenuItem asChild>
                         <Link href="/profile">Profile</Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem disabled>Settings</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
                 </DropdownMenuContent>
