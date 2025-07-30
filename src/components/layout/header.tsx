@@ -129,15 +129,15 @@ export function Header() {
           <div className="hidden md:flex items-center space-x-2">
              <LanguageToggle />
             {isAuthenticated ? (
-              <Button asChild className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-md text-sm font-medium">
+              <Button asChild>
                 <Link href={dashboardLink}>{dashboardText}</Link>
               </Button>
             ) : (
               <>
-                <Button asChild variant="ghost" className="text-gray-700 px-4 py-2 text-sm font-medium">
+                <Button asChild variant="ghost">
                   <Link href={loginLink}>{loginText}</Link>
                 </Button>
-                <Button asChild className="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-md text-sm font-medium">
+                <Button asChild>
                   <Link href={signupLink}>{registerText}</Link>
                 </Button>
               </>
@@ -204,7 +204,7 @@ export function Header() {
                 </div>
                 <div className="pt-6 border-t space-y-3">
                   {isAuthenticated ? (
-                    <Button asChild size="lg" className="w-full bg-gray-900 hover:bg-gray-800 text-white">
+                    <Button asChild size="lg" className="w-full">
                       <Link href={dashboardLink} onClick={() => setIsOpen(false)}>
                         {dashboardText}
                       </Link>
@@ -216,7 +216,7 @@ export function Header() {
                           {loginText}
                         </Link>
                       </Button>
-                      <Button asChild size="lg" className="w-full bg-gray-900 hover:bg-gray-800 text-white">
+                      <Button asChild size="lg" className="w-full">
                         <Link href={signupLink} onClick={() => setIsOpen(false)}>
                           {registerText}
                         </Link>

@@ -20,10 +20,10 @@ export function HeroSection() {
               most. It only takes a few minutes to get started.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button asChild size="lg" className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 text-base font-medium">
+              <Button asChild size="lg">
                 <Link href="/signup">Register</Link>
               </Button>
-              <Button asChild size="lg" variant="ghost" className="text-gray-700 px-8 py-3 text-base font-medium border border-gray-300 hover:border-gray-400">
+              <Button asChild size="lg" variant="outline">
                 <Link href="/login">Sign In</Link>
               </Button>
             </div>

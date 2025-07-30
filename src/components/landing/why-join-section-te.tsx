@@ -70,7 +70,7 @@ export function WhyJoinSectionTe() {
           
           {/* CTA Button */}
           <div className="text-center">
-            <Button asChild size="lg" className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 text-base font-medium">
+            <Button asChild size="lg">
               <Link href="/te/signup">నమోదు చేసుకోండి</Link>
             </Button>
           </div>

@@ -18,10 +18,10 @@ export function HeroSectionTe() {
               తెలంగాణ ఆల్ బిల్డింగ్ వర్కర్స్ యూనియన్‌లో సభ్యులుగా నమోదు చేసుకుని, అధికారిక గుర్తింపు కార్డు, భీమా ప్రయోజనాలు, మరియు మీకు అత్యంత అవసరమైనప్పుడు మద్దతును పొందండి. ప్రారంభించడానికి కేవలం కొన్ని నిమిషాలు మాత్రమే పడుతుంది.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Button asChild size="lg" className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 text-base font-medium">
+              <Button asChild size="lg">
                 <Link href="/te/signup">నమోదు చేసుకోండి</Link>
               </Button>
-              <Button asChild size="lg" variant="ghost" className="text-gray-700 px-8 py-3 text-base font-medium border border-gray-300 hover:border-gray-400">
+              <Button asChild size="lg" variant="outline">
                 <Link href="/te/login">సైన్ ఇన్</Link>
               </Button>
             </div>
