@@ -1,4 +1,3 @@
-
 // src/app/signup/page.tsx
 "use client";
 
@@ -8,6 +7,7 @@ import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Header } from '@/components/layout/header';
+import { Suspense } from 'react';
 
 const SignupForm = dynamic(() => import('@/components/auth/signup-form'), { 
   ssr: false,
@@ -65,7 +65,8 @@ function SignupSkeleton() {
   );
 }
 
-export default function SignupPage() {
+
+function SignupPageClient() {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
@@ -78,23 +79,22 @@ export default function SignupPage() {
 
   // Show a skeleton while checking auth state or if user is authenticated to prevent flashing
   if (loading || isAuthenticated) {
-     return (
-        <div className="flex flex-col min-h-screen">
-            <Header />
-            <main className="flex-grow">
-                <SignupSkeleton />
-            </main>
-        </div>
-    );
+     return <SignupSkeleton />;
   }
 
   // Only render signup form if user is not authenticated
-  return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-grow">
-        <SignupForm />
-      </main>
-    </div>
-  );
+  return <SignupForm />;
+}
+
+export default function SignupPage() {
+    return (
+        <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-grow">
+                <Suspense fallback={<SignupSkeleton />}>
+                    <SignupPageClient />
+                </Suspense>
+            </main>
+        </div>
+    );
 }

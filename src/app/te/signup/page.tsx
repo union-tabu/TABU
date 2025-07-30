@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { Header } from '@/components/layout/header';
 
 const SignupFormTe = dynamic(() => import('@/components/auth/signup-form-te'), { 
@@ -42,7 +42,7 @@ function SignupSkeleton() {
     );
 }
 
-export default function SignupPageTe() {
+function SignupPageTeClient() {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
@@ -53,14 +53,20 @@ export default function SignupPageTe() {
   }, [isAuthenticated, loading, router]);
 
   if (loading || isAuthenticated) {
-    return null;
+    return <SignupSkeleton />;
   }
+  
+  return <SignupFormTe />;
+}
 
+export default function SignupPageTe() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
-        <SignupFormTe />
+        <Suspense fallback={<SignupSkeleton />}>
+          <SignupPageTeClient />
+        </Suspense>
       </main>
     </div>
   );
