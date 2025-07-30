@@ -14,7 +14,15 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/auth-context';
 import { usePathname, useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { HardHat, Languages } from 'lucide-react';
+import { HardHat, Languages, Menu } from 'lucide-react';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import React from 'react';
 
 function LanguageToggle() {
   const router = useRouter();
@@ -60,6 +68,7 @@ export function DashboardHeaderTe() {
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
+  const [isSheetOpen, setIsSheetOpen] = React.useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -81,7 +90,7 @@ export function DashboardHeaderTe() {
     <header className="sticky top-0 flex h-16 items-center justify-between border-b bg-background px-4 md:px-6 z-50">
        <Link
           href="/te"
-          className="flex items-center gap-2 text-lg font-semibold md:text-base"
+          className="flex items-center gap-2 text-lg font-semibold"
         >
           <HardHat className="w-8 h-8 text-primary" />
           <span className="font-bold">TABU</span>
@@ -98,30 +107,89 @@ export function DashboardHeaderTe() {
         ))}
       </nav>
       <div className="flex items-center gap-2">
-        <LanguageToggle />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="secondary" size="icon" className="rounded-full">
-              {/* Using a fallback for when user data is loading */}
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                 {loading ? '' : userData?.firstName?.[0]}{userData?.lastName?.[0]}
-              </div>
-              <span className="sr-only">Toggle user menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>
-              {loading ? 'లోడ్ అవుతోంది...' : `${userData?.firstName} ${userData?.lastName}`}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-                <Link href="/te/profile">ప్రొఫైల్</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled>సెట్టింగ్‌లు</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>లాగ్ అవుట్</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="hidden md:flex items-center gap-2">
+            <LanguageToggle />
+            <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="secondary" size="icon" className="rounded-full">
+                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                    {loading ? '' : userData?.firstName?.[0]}{userData?.lastName?.[0]}
+                </div>
+                <span className="sr-only">Toggle user menu</span>
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuLabel>
+                {loading ? 'లోడ్ అవుతోంది...' : `${userData?.firstName} ${userData?.lastName}`}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                    <Link href="/te/profile">ప్రొఫైల్</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled>సెట్టింగ్‌లు</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>లాగ్ అవుట్</DropdownMenuItem>
+            </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
+
+        {/* Mobile Menu */}
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-80">
+                 <SheetHeader>
+                    <SheetTitle>
+                        <Link 
+                            href="/te/dashboard" 
+                            className="flex items-center gap-2" 
+                            onClick={() => setIsSheetOpen(false)}
+                        >
+                            <HardHat className="w-8 h-8 text-primary" />
+                            <span className="font-bold text-lg">TABU</span>
+                        </Link>
+                    </SheetTitle>
+                </SheetHeader>
+                <div className="mt-8 flex flex-col space-y-4">
+                     <div className="border-b pb-4">
+                        <p className="text-sm font-medium text-muted-foreground px-2">
+                            {loading ? 'లోడ్ అవుతోంది...' : `${userData?.firstName} ${userData?.lastName}`}
+                        </p>
+                    </div>
+                    {navItems.map((item) => (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            className={`text-lg font-medium transition-colors hover:text-foreground ${pathname === item.href ? 'text-foreground' : 'text-muted-foreground'}`}
+                            onClick={() => setIsSheetOpen(false)}
+                        >
+                            {item.label}
+                        </Link>
+                    ))}
+                    <div className="pt-4 border-t space-y-2">
+                         <Button 
+                            variant="ghost"
+                            asChild
+                            className="w-full justify-start text-lg font-medium text-muted-foreground">
+                            <Link href="/te/profile" onClick={() => setIsSheetOpen(false)}>ప్రొఫైల్</Link>
+                        </Button>
+                         <Button 
+                            variant="ghost" 
+                            className="w-full justify-start text-lg font-medium text-muted-foreground"
+                            onClick={handleLogout}>
+                            లాగ్ అవుట్
+                         </Button>
+                         <div className="flex items-center justify-start pt-4">
+                            <LanguageToggle />
+                         </div>
+                    </div>
+                </div>
+            </SheetContent>
+        </Sheet>
       </div>
     </header>
   )

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: 'TABU',
   description: 'Workers\' Union for a better future.',
   icons: {
-    icon: `data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='white' rx='10' ry='10'></rect><path fill='black' d='M50,25a25,25,0,0,0-25,25v10h50v-10a25,25,0,0,0-25-25zm12.5,40h-25a2.5,2.5,0,0,0,0,5h25a2.5,2.5,0,0,0,0-5z'/></svg>`,
+    icon: '/tabu-logo-website.png'
   }
 };
 
