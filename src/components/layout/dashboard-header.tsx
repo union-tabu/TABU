@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/auth-context';
 import { usePathname, useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { HardHat, Languages, Menu, LogOut, User } from 'lucide-react';
+import { Languages, Menu, LogOut, User } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -29,6 +29,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import Image from 'next/image';
 
 
 function LanguageToggle({ inSheet = false }: { inSheet?: boolean }) {
@@ -128,7 +129,7 @@ export function DashboardHeader() {
           href="/"
           className="flex items-center gap-2 text-lg font-semibold"
         >
-          <HardHat className="w-8 h-8 text-primary" />
+          <Image src="/tabu-logo-website.png" alt="TABU Logo" width={40} height={40} className="h-10 w-auto" />
           <span className="font-bold">TABU</span>
         </Link>
       <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
@@ -184,7 +185,7 @@ export function DashboardHeader() {
                             className="flex items-center gap-2" 
                             onClick={() => setIsSheetOpen(false)}
                         >
-                            <HardHat className="w-8 h-8 text-primary" />
+                            <Image src="/tabu-logo-website.png" alt="TABU Logo" width={40} height={40} className="h-10 w-auto" />
                             <span className="font-bold text-lg">TABU</span>
                         </Link>
                     </SheetTitle>

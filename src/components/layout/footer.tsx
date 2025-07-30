@@ -2,8 +2,9 @@
 "use client";
 
 import Link from 'next/link';
-import { Twitter, Facebook, Instagram, HardHat } from 'lucide-react';
+import { Twitter, Facebook, Instagram } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 
 export function Footer() {
   const pathname = usePathname();
@@ -30,7 +31,7 @@ export function Footer() {
             {/* Logo and brand */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:col-span-1">
               <div className="flex items-center gap-2">
-                <HardHat className="w-8 h-8 text-primary" />
+                <Image src="/tabu-logo-website.png" alt="TABU Logo" width={40} height={40} className="h-10 w-auto" />
                 <span className="text-lg font-bold text-gray-900 leading-tight">
                   TABU
                 </span>

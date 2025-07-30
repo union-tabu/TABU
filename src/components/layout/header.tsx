@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Menu, HardHat, Languages } from 'lucide-react';
+import { Menu, Languages } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -26,6 +26,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import Image from 'next/image';
 
 
 function LanguageToggle() {
@@ -107,7 +108,7 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href={homeLink} className="flex items-center gap-2">
-            <HardHat className="w-8 h-8 text-primary" />
+            <Image src="/tabu-logo-website.png" alt="TABU Logo" width={40} height={40} className="h-10 w-auto" />
             <span className="font-bold text-lg">TABU</span>
           </Link>
 
@@ -159,7 +160,7 @@ export function Header() {
                     className="flex items-center gap-2" 
                     onClick={() => setIsOpen(false)}
                   >
-                    <HardHat className="w-8 h-8 text-primary" />
+                    <Image src="/tabu-logo-website.png" alt="TABU Logo" width={40} height={40} className="h-10 w-auto" />
                     <span className="font-bold text-lg">TABU</span>
                   </Link>
                 </SheetTitle>
