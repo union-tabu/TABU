@@ -14,10 +14,12 @@ export function Footer() {
   const aboutLink = isTelugu ? '/te#about' : '/#about';
   const benefitsLink = isTelugu ? '/te#benefits' : '/#benefits';
   const faqLink = isTelugu ? '/te#faq' : '/#faq';
+  const termsLink = isTelugu ? '/te/terms' : '/terms';
 
   const aboutText = isTelugu ? 'మా గురించి' : 'About';
   const benefitsText = isTelugu ? 'ప్రయోజనాలు' : 'Benefits';
   const faqText = isTelugu ? 'FAQ' : 'FAQ';
+  const termsText = isTelugu ? 'నిబంధనలు & షరతులు' : 'Terms & Conditions';
   const copyrightText = isTelugu ? 
     '© 2024 తెలంగాణ బిల్డింగ్ వర్కర్స్ యూనియన్. అన్ని హక్కులూ ప్రత్యేకించుకోవడమైనది.' : 
     '© 2024 Telangana Building Workers Union. All rights reserved.';
@@ -57,6 +59,12 @@ export function Footer() {
                 className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
               >
                 {faqText}
+              </Link>
+              <Link 
+                href={termsLink} 
+                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                {termsText}
               </Link>
             </nav>
             
