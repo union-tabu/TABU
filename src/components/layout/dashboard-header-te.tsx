@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/auth-context';
 import { usePathname, useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { HardHat, Languages, Menu } from 'lucide-react';
+import { HardHat, Languages, Menu, LogOut, User } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/sheet"
 import React from 'react';
 
-function LanguageToggle() {
+function LanguageToggle({ inSheet = false }: { inSheet?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -41,6 +41,27 @@ function LanguageToggle() {
     }
     router.push(newPath);
   };
+  
+   if (inSheet) {
+    return (
+       <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="w-full justify-start text-lg font-medium text-muted-foreground">
+            <Languages className="mr-2 h-5 w-5" />
+            భాష
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={() => handleLanguageChange('en')}>
+            English
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => handleLanguageChange('te')}>
+            తెలుగు (Telugu)
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
+  }
 
   return (
     <DropdownMenu>
@@ -141,7 +162,7 @@ export function DashboardHeaderTe() {
                 <span className="sr-only">Open menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-80">
+            <SheetContent side="right" className="w-80 flex flex-col">
                  <SheetHeader>
                     <SheetTitle>
                         <Link 
@@ -154,7 +175,7 @@ export function DashboardHeaderTe() {
                         </Link>
                     </SheetTitle>
                 </SheetHeader>
-                <div className="mt-8 flex flex-col space-y-4">
+                <div className="mt-8 flex flex-col space-y-4 flex-grow">
                      <div className="border-b pb-4">
                         <p className="text-sm font-medium text-muted-foreground px-2">
                             {loading ? 'లోడ్ అవుతోంది...' : `${userData?.firstName} ${userData?.lastName}`}
@@ -175,18 +196,22 @@ export function DashboardHeaderTe() {
                             variant="ghost"
                             asChild
                             className="w-full justify-start text-lg font-medium text-muted-foreground">
-                            <Link href="/te/profile" onClick={() => setIsSheetOpen(false)}>ప్రొఫైల్</Link>
+                            <Link href="/te/profile" onClick={() => setIsSheetOpen(false)}>
+                                <User className="mr-2 h-5 w-5" />
+                                ప్రొఫైల్
+                            </Link>
                         </Button>
-                         <Button 
-                            variant="ghost" 
-                            className="w-full justify-start text-lg font-medium text-muted-foreground"
-                            onClick={handleLogout}>
-                            లాగ్ అవుట్
-                         </Button>
-                         <div className="flex items-center justify-start pt-4">
-                            <LanguageToggle />
-                         </div>
+                        <LanguageToggle inSheet={true} />
                     </div>
+                </div>
+                <div className="mt-auto border-t pt-4">
+                    <Button 
+                        variant="ghost" 
+                        className="w-full justify-start text-lg font-medium text-muted-foreground"
+                        onClick={handleLogout}>
+                        <LogOut className="mr-2 h-5 w-5" />
+                        లాగ్ అవుట్
+                    </Button>
                 </div>
             </SheetContent>
         </Sheet>
