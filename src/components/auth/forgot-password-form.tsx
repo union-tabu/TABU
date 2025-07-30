@@ -399,7 +399,7 @@ export default function ForgotPasswordForm() {
     <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-background px-4 py-12">
       <Card className="mx-auto max-w-md w-full shadow-xl">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline">Reset Password</CardTitle>
+          <CardTitle className="text-2xl">Reset Password</CardTitle>
           <CardDescription>
             {otpSent 
               ? "Enter the OTP sent to your phone and set your new password" 

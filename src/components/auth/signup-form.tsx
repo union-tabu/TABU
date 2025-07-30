@@ -495,7 +495,7 @@ export default function SignupForm() {
     <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-background px-4 py-12">
       <Card className="mx-auto max-w-2xl w-full shadow-xl">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline">Create New Account</CardTitle>
+          <CardTitle className="text-2xl">Create New Account</CardTitle>
           <CardDescription>
             {otpSent 
               ? "Enter the OTP sent to your phone and create your password" 
