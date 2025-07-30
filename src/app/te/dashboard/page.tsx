@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import { UserCheck, Clock, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { addMonths, differenceInDays, startOfMonth } from 'date-fns';
+import { addMonths, differenceInDays, startOfMonth, format } from 'date-fns';
+import { te } from 'date-fns/locale';
 
 export default function DashboardPageTe() {
   const { userData, isAuthenticated, loading } = useAuth();
@@ -39,6 +40,7 @@ export default function DashboardPageTe() {
   const isProfileIncomplete = userData && (!userData.address || !userData.email || !userData.dob);
 
   let daysLeft: number | null = null;
+  let expiryDate: Date | null = null;
   const userStatus = userData?.subscription?.status || 'not subscribed';
 
   if (userData && userStatus === 'not subscribed' && userData.createdAt) {
@@ -46,11 +48,12 @@ export default function DashboardPageTe() {
       const registrationDate = new Date(userData.createdAt.seconds * 1000);
 
       // Grace period ends at the start of the month, 2 months after registration month.
-      const expiryDate = startOfMonth(addMonths(registrationDate, 2));
-      const calculatedDaysLeft = differenceInDays(expiryDate, now);
+      const calculatedExpiryDate = startOfMonth(addMonths(registrationDate, 2));
+      const calculatedDaysLeft = differenceInDays(calculatedExpiryDate, now);
 
       if (calculatedDaysLeft > 0) {
           daysLeft = calculatedDaysLeft;
+          expiryDate = calculatedExpiryDate;
       }
   }
 
@@ -102,7 +105,7 @@ export default function DashboardPageTe() {
             </Alert>
           )}
 
-          {daysLeft !== null && userStatus !== 'active' && (
+          {daysLeft !== null && expiryDate && userStatus !== 'active' && (
              <Card className="border-amber-500 bg-amber-50/50">
               <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2">
                 <Clock className="h-6 w-6 text-amber-600" />
@@ -111,6 +114,9 @@ export default function DashboardPageTe() {
               <CardContent>
                 <p className="text-lg">
                    మీ ఖాతా నిష్క్రియంగా మారడానికి ముందు సభ్యత్వాన్ని పొందడానికి మీకు <span className="font-bold">{daysLeft}</span> రోజులు మిగిలి ఉన్నాయి.
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                    మీ గ్రేస్ పీరియడ్ {format(expiryDate, "MMMM dd, yyyy", { locale: te })}న ముగుస్తుంది.
                 </p>
                  <Button asChild size="sm" className="mt-4">
                   <Link href="/te/subscribe">ఇప్పుడే సభ్యత్వాన్ని పొందండి</Link>

@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { UserCheck, Clock, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { addMonths, differenceInDays, startOfMonth } from 'date-fns';
+import { addMonths, differenceInDays, startOfMonth, format } from 'date-fns';
 
 export default function DashboardPage() {
   const { userData, isAuthenticated, loading } = useAuth();
@@ -39,6 +39,7 @@ export default function DashboardPage() {
   const isProfileIncomplete = userData && (!userData.address || !userData.email || !userData.dob);
   
   let daysLeft: number | null = null;
+  let expiryDate: Date | null = null;
   const userStatus = userData?.subscription?.status || 'not subscribed';
 
   if (userData && userStatus === 'not subscribed' && userData.createdAt) {
@@ -47,12 +48,13 @@ export default function DashboardPage() {
       
       // Grace period ends at the start of the month, 2 months after registration month.
       // e.g., register in April -> grace period covers April + May -> ends June 1st.
-      const expiryDate = startOfMonth(addMonths(registrationDate, 2));
-      const calculatedDaysLeft = differenceInDays(expiryDate, now);
+      const calculatedExpiryDate = startOfMonth(addMonths(registrationDate, 2));
+      const calculatedDaysLeft = differenceInDays(calculatedExpiryDate, now);
       
       // We only show the grace period card if there's time left.
       if (calculatedDaysLeft > 0) {
         daysLeft = calculatedDaysLeft;
+        expiryDate = calculatedExpiryDate;
       }
   }
 
@@ -104,7 +106,7 @@ export default function DashboardPage() {
             </Alert>
           )}
           
-          {daysLeft !== null && userStatus !== 'active' && (
+          {daysLeft !== null && expiryDate && userStatus !== 'active' && (
              <Card className="border-amber-500 bg-amber-50/50">
               <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2">
                 <Clock className="h-6 w-6 text-amber-600" />
@@ -113,6 +115,9 @@ export default function DashboardPage() {
               <CardContent>
                 <p className="text-lg">
                   You have <span className="font-bold">{daysLeft}</span> days left to subscribe before your account becomes inactive.
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                    Your grace period ends on {format(expiryDate, "MMMM dd, yyyy")}.
                 </p>
                  <Button asChild size="sm" className="mt-4">
                   <Link href="/subscribe">Subscribe Now</Link>
