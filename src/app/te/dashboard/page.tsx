@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { UserCheck, Clock, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { addMonths, differenceInDays } from 'date-fns';
+import { addMonths, differenceInDays, startOfMonth } from 'date-fns';
 
 export default function DashboardPageTe() {
   const { userData, isAuthenticated, loading } = useAuth();
@@ -41,19 +41,19 @@ export default function DashboardPageTe() {
   let daysLeft: number | null = null;
   const userStatus = userData?.subscription?.status || 'not subscribed';
 
-  if (userData && (userStatus === 'not subscribed' || userStatus === 'inactive')) {
-    const now = new Date();
-    let startDate: Date;
-    if (userStatus === 'not subscribed' && userData.createdAt) {
-      startDate = new Date(userData.createdAt.seconds * 1000);
-    } else if (userStatus === 'inactive' && userData.subscription?.renewalDate) {
-      startDate = new Date(userData.subscription.renewalDate.seconds * 1000);
-    } else {
-      startDate = now;
-    }
-    const expiryDate = addMonths(startDate, 2);
-    daysLeft = differenceInDays(expiryDate, now);
+  if (userData && userStatus === 'not subscribed' && userData.createdAt) {
+      const now = new Date();
+      const registrationDate = new Date(userData.createdAt.seconds * 1000);
+
+      // Grace period ends at the start of the month, 2 months after registration month.
+      const expiryDate = startOfMonth(addMonths(registrationDate, 2));
+      const calculatedDaysLeft = differenceInDays(expiryDate, now);
+
+      if (calculatedDaysLeft > 0) {
+          daysLeft = calculatedDaysLeft;
+      }
   }
+
 
   if (loading || !isAuthenticated) {
     return (
@@ -102,7 +102,7 @@ export default function DashboardPageTe() {
             </Alert>
           )}
 
-          {daysLeft !== null && daysLeft > 0 && userStatus !== 'active' && (
+          {daysLeft !== null && userStatus !== 'active' && (
              <Card className="border-amber-500 bg-amber-50/50">
               <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2">
                 <Clock className="h-6 w-6 text-amber-600" />
@@ -119,7 +119,7 @@ export default function DashboardPageTe() {
             </Card>
           )}
 
-          {daysLeft !== null && daysLeft <= 0 && userStatus !== 'active' && (
+          {daysLeft === null && userStatus !== 'active' && (
              <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>ఖాతా నిష్క్రియం చేయబడింది</AlertTitle>

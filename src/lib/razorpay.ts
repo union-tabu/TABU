@@ -5,7 +5,7 @@ import Razorpay from 'razorpay';
 import { z } from 'zod';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { startOfMonth, addMonths, addYears } from 'date-fns';
+import { startOfMonth, addMonths, addYears, endOfMonth } from 'date-fns';
 import crypto from 'crypto';
 
 const OrderOptionsSchema = z.object({
@@ -200,7 +200,7 @@ export async function handlePaymentSuccess(data: PaymentSuccessData) {
         const now = new Date();
         // The subscription starts from the first day of the current month.
         const firstDayOfCurrentMonth = startOfMonth(now);
-        // The renewal date is the first day of the next month or year.
+        // The renewal date is the first day of the next subscription period.
         const renewalDate = plan === 'monthly' 
             ? addMonths(firstDayOfCurrentMonth, 1) 
             : addYears(firstDayOfCurrentMonth, 1);

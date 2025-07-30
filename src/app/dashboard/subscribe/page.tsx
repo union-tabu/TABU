@@ -8,7 +8,7 @@ import { SubscriptionStatusCard } from "@/components/dashboard/subscription-stat
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { differenceInMonths } from 'date-fns';
+import { differenceInMonths, startOfMonth } from 'date-fns';
 
 export default function SubscribePage() {
   const { userData, loading } = useAuth();
@@ -50,14 +50,19 @@ export default function SubscribePage() {
     const now = new Date();
     const status = userData.subscription?.status;
     
+    // Check for lapsed status if not subscribed
     if (status === 'not subscribed' && userData.createdAt) {
-      const accountCreationDate = new Date(userData.createdAt.seconds * 1000);
-      if (differenceInMonths(now, accountCreationDate) >= 2) {
+      const registrationDate = new Date(userData.createdAt.seconds * 1000);
+      // Grace period is registration month + 1 full month.
+      // So, if diff is >= 2 months from the start of their respective months, it's lapsed.
+      if (differenceInMonths(startOfMonth(now), startOfMonth(registrationDate)) >= 2) {
         isLapsed = true;
       }
+    // Check for lapsed status if subscription became inactive
     } else if (status === 'inactive' && userData.subscription?.renewalDate) {
       const renewalDate = new Date(userData.subscription.renewalDate.seconds * 1000);
-       if (differenceInMonths(now, renewalDate) >= 2) {
+      // If the last renewal date was 2 or more months ago, it's lapsed.
+       if (differenceInMonths(startOfMonth(now), startOfMonth(renewalDate)) >= 2) {
         isLapsed = true;
       }
     }

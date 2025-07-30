@@ -8,7 +8,7 @@ import { SubscriptionStatusCard } from "@/components/dashboard/subscription-stat
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { differenceInMonths } from 'date-fns';
+import { differenceInMonths, startOfMonth } from 'date-fns';
 
 export default function SubscribePageTe() {
   const { userData, loading } = useAuth();
@@ -50,13 +50,13 @@ export default function SubscribePageTe() {
     const status = userData.subscription?.status;
     
     if (status === 'not subscribed' && userData.createdAt) {
-      const accountCreationDate = new Date(userData.createdAt.seconds * 1000);
-      if (differenceInMonths(now, accountCreationDate) >= 2) {
+      const registrationDate = new Date(userData.createdAt.seconds * 1000);
+      if (differenceInMonths(startOfMonth(now), startOfMonth(registrationDate)) >= 2) {
         isLapsed = true;
       }
     } else if (status === 'inactive' && userData.subscription?.renewalDate) {
       const renewalDate = new Date(userData.subscription.renewalDate.seconds * 1000);
-       if (differenceInMonths(now, renewalDate) >= 2) {
+       if (differenceInMonths(startOfMonth(now), startOfMonth(renewalDate)) >= 2) {
         isLapsed = true;
       }
     }
