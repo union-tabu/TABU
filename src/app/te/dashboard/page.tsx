@@ -9,8 +9,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { UserCheck } from "lucide-react";
+import { UserCheck, Clock, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { addMonths, differenceInDays } from 'date-fns';
 
 export default function DashboardPageTe() {
   const { userData, isAuthenticated, loading } = useAuth();
@@ -35,6 +37,23 @@ export default function DashboardPageTe() {
   }, []);
 
   const isProfileIncomplete = userData && (!userData.address || !userData.email || !userData.dob);
+
+  let daysLeft: number | null = null;
+  const userStatus = userData?.subscription?.status || 'not subscribed';
+
+  if (userData && (userStatus === 'not subscribed' || userStatus === 'inactive')) {
+    const now = new Date();
+    let startDate: Date;
+    if (userStatus === 'not subscribed' && userData.createdAt) {
+      startDate = new Date(userData.createdAt.seconds * 1000);
+    } else if (userStatus === 'inactive' && userData.subscription?.renewalDate) {
+      startDate = new Date(userData.subscription.renewalDate.seconds * 1000);
+    } else {
+      startDate = now;
+    }
+    const expiryDate = addMonths(startDate, 2);
+    daysLeft = differenceInDays(expiryDate, now);
+  }
 
   if (loading || !isAuthenticated) {
     return (
@@ -78,6 +97,36 @@ export default function DashboardPageTe() {
                 <p>దయచేసి మీ ప్రొఫైల్‌ను పూర్తి చేయడానికి మీ చిరునామా, ఇమెయిల్ మరియు పుట్టిన తేదీని జోడించండి.</p>
                 <Button asChild size="sm">
                   <Link href="/te/profile">ప్రొఫైల్‌కు వెళ్లండి</Link>
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {daysLeft !== null && daysLeft > 0 && userStatus !== 'active' && (
+             <Card className="border-amber-500 bg-amber-50/50">
+              <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2">
+                <Clock className="h-6 w-6 text-amber-600" />
+                <CardTitle className="text-amber-800">సభ్యత్వ గ్రేస్ పీరియడ్</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-lg">
+                   మీ ఖాతా నిష్క్రియంగా మారడానికి ముందు సభ్యత్వాన్ని పొందడానికి మీకు <span className="font-bold">{daysLeft}</span> రోజులు మిగిలి ఉన్నాయి.
+                </p>
+                 <Button asChild size="sm" className="mt-4">
+                  <Link href="/te/subscribe">ఇప్పుడే సభ్యత్వాన్ని పొందండి</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {daysLeft !== null && daysLeft <= 0 && userStatus !== 'active' && (
+             <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>ఖాతా నిష్క్రియం చేయబడింది</AlertTitle>
+              <AlertDescription className="flex justify-between items-center">
+                <p>మీ గ్రేస్ పీరియడ్ ముగిసింది. దయచేసి మీ ఖాతాను పునఃప్రారంభించడానికి మరియు అన్ని ప్రయోజనాలను పొందడానికి సభ్యత్వాన్ని పొందండి.</p>
+                <Button asChild size="sm" variant="destructive">
+                  <Link href="/te/subscribe">ఇప్పుడే సభ్యత్వాన్ని పొందండి</Link>
                 </Button>
               </AlertDescription>
             </Alert>
