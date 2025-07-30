@@ -46,13 +46,13 @@ export function WhyJoinSection() {
               <Card 
                 key={index} 
                 className={`
-                  text-center group bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-200
+                  text-left group bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-lg transition-shadow duration-200
                   ${index === 0 ? 'md:col-span-2 lg:col-span-1' : ''}
                 `}
               >
-                <CardContent className="flex flex-col items-center p-0">
+                <CardContent className="flex flex-col items-start p-0">
                   <div className="mb-6">
-                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
                       <div className="text-gray-700">
                         {benefit.icon}
                       </div>
