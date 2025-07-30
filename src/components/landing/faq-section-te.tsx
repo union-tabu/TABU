@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -36,36 +35,30 @@ export function FaqSectionTe() {
     <section id="faq" className="w-full bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-16 sm:py-20 lg:py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 xl:gap-20 items-start">
-            {/* Left side - Header */}
-            <div className="flex flex-col justify-start space-y-6">
+          <div className="max-w-3xl mx-auto">
+            {/* Header */}
+            <div className="text-center mb-12">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
                 తరచుగా అడిగే ప్రశ్నలు
               </h2>
-              <p className="text-lg sm:text-xl text-gray-600 leading-relaxed">
-                యూనియన్‌లో చేరడం గురించి లేదా అది ఎలా పనిచేస్తుందనే దాని గురించి ప్రశ్నలు ఉన్నాయా? మీకు విశ్వాసంతో ప్రారంభించడానికి సహాయపడటానికి అత్యంత సాధారణ ప్రశ్నలకు ఇక్కడ సమాధానాలు ఉన్నాయి.
-              </p>
             </div>
             
-            {/* Right side - FAQ Accordion */}
-            <div className="w-full">
-              <Accordion type="single" collapsible className="w-full space-y-4">
-                {faqs.map((faq, index) => (
-                  <AccordionItem 
-                    value={`item-${index+1}`} 
-                    key={index}
-                    className="border border-gray-200 rounded-lg px-6 py-2 bg-white hover:bg-gray-50 transition-colors duration-200"
-                  >
-                    <AccordionTrigger className="text-left text-lg font-semibold text-gray-900 hover:text-gray-700 py-4 [&[data-state=open]>svg]:rotate-180">
-                      {faq.question}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-base text-gray-600 leading-relaxed pb-4">
-                      {faq.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </div>
+            {/* FAQ Accordion */}
+            <Accordion type="single" collapsible className="w-full space-y-2">
+              {faqs.map((faq, index) => (
+                <AccordionItem 
+                  value={`item-${index+1}`} 
+                  key={index}
+                >
+                  <AccordionTrigger className="text-left text-lg font-semibold text-gray-800 hover:text-gray-900 py-4">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-base text-gray-600 leading-relaxed pb-4">
+                    {faq.answer}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
         </div>
       </div>
