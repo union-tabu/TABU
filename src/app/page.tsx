@@ -13,8 +13,8 @@ export default function Home() {
       <Header />
       <main className="flex-grow">
         <HeroSection />
-        <AboutUsSection />
         <WhyJoinSection />
+        <AboutUsSection />
         <FaqSection />
       </main>
       <Footer />

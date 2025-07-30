@@ -1,4 +1,3 @@
-
 "use client";
 
 import { HeroSectionTe } from '@/components/landing/hero-section-new-te';
@@ -14,8 +13,8 @@ export default function HomeTe() {
       <Header />
       <main className="flex-grow">
         <HeroSectionTe />
-        <AboutUsSectionTe />
         <WhyJoinSectionTe />
+        <AboutUsSectionTe />
         <FaqSectionTe />
       </main>
       <Footer />
