@@ -97,7 +97,10 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <UnionIdCard />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+             <UnionIdCard />
+             <SubscriptionStatusCard />
+          </div>
           
           {daysLeft !== null && expiryDate && userStatus !== 'active' && (
              <Card className="border-amber-500 bg-amber-50/50">
@@ -132,8 +135,6 @@ export default function DashboardPage() {
             </Alert>
           )}
 
-
-          <SubscriptionStatusCard />
         </div>
       </main>
     </div>
