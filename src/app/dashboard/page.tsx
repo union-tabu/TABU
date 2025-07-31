@@ -36,8 +36,6 @@ export default function DashboardPage() {
     }
   }, []);
 
-  const isProfileIncomplete = userData && (!userData.address || !userData.email || !userData.dob);
-  
   let daysLeft: number | null = null;
   let expiryDate: Date | null = null;
   let accountIsInactive = false;
@@ -97,19 +95,6 @@ export default function DashboardPage() {
                 </p>
             )}
           </div>
-
-          {isProfileIncomplete && (
-            <Alert>
-              <UserCheck className="h-4 w-4" />
-              <AlertTitle>Complete Your Profile</AlertTitle>
-              <AlertDescription className="flex justify-between items-center">
-                <p>Please add your address, email, and date of birth to complete your profile.</p>
-                <Button asChild size="sm">
-                  <Link href="/profile">Go to Profile</Link>
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
           
           {daysLeft !== null && expiryDate && userStatus !== 'active' && (
              <Card className="border-amber-500 bg-amber-50/50">
