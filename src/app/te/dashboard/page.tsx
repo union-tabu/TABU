@@ -14,6 +14,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { addMonths, differenceInDays, startOfMonth, format } from 'date-fns';
 import { te } from 'date-fns/locale';
+import { UnionIdCardTe } from "@/components/dashboard/union-id-card-te";
 
 export default function DashboardPageTe() {
   const { userData, isAuthenticated, loading } = useAuth();
@@ -97,6 +98,8 @@ export default function DashboardPageTe() {
             )}
           </div>
           
+          <UnionIdCardTe />
+
           {daysLeft !== null && expiryDate && userStatus !== 'active' && (
              <Card className="border-amber-500 bg-amber-50/50">
               <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2">

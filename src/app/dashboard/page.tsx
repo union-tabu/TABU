@@ -13,6 +13,7 @@ import { UserCheck, Clock, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { addMonths, differenceInDays, startOfMonth, format } from 'date-fns';
+import { UnionIdCard } from "@/components/dashboard/union-id-card";
 
 export default function DashboardPage() {
   const { userData, isAuthenticated, loading } = useAuth();
@@ -95,6 +96,8 @@ export default function DashboardPage() {
                 </p>
             )}
           </div>
+
+          <UnionIdCard />
           
           {daysLeft !== null && expiryDate && userStatus !== 'active' && (
              <Card className="border-amber-500 bg-amber-50/50">
