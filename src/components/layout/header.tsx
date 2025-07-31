@@ -94,10 +94,10 @@ export function Header() {
     { href: '/#benefits', label: 'Benefits' },
   ];
   
-  const loginLink = isTelugu ? '/te/login' : '/login';
+  const signinLink = isTelugu ? '/te/signin' : '/signin';
   const signupLink = isTelugu ? '/te/signup' : '/signup';
   const dashboardLink = isTelugu ? '/te/dashboard' : '/dashboard';
-  const loginText = isTelugu ? 'సైన్ ఇన్' : 'Sign In';
+  const signinText = isTelugu ? 'సైన్ ఇన్' : 'Sign In';
   const registerText = isTelugu ? 'నమోదు చేసుకోండి' : 'Register';
   const dashboardText = isTelugu ? 'డాష్‌బోర్డ్' : 'Dashboard';
   const homeLink = isTelugu ? '/te' : '/';
@@ -135,7 +135,7 @@ export function Header() {
             ) : (
               <>
                 <Button asChild variant="ghost">
-                  <Link href={loginLink}>{loginText}</Link>
+                  <Link href={signinLink}>{signinText}</Link>
                 </Button>
                 <Button asChild>
                   <Link href={signupLink}>{registerText}</Link>
@@ -212,8 +212,8 @@ export function Header() {
                   ) : (
                     <>
                       <Button asChild variant="ghost" size="lg" className="w-full text-gray-700 hover:text-white hover:bg-gray-900">
-                        <Link href={loginLink} onClick={() => setIsOpen(false)}>
-                          {loginText}
+                        <Link href={signinLink} onClick={() => setIsOpen(false)}>
+                          {signinText}
                         </Link>
                       </Button>
                       <Button asChild size="lg" className="w-full">

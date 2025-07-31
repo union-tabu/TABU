@@ -19,10 +19,10 @@ export default function ProtectedRouteLayout({
   const isTelugu = pathname ? pathname.startsWith('/te') : false;
 
   useEffect(() => {
-    // If not loading and not authenticated, redirect to login
+    // If not loading and not authenticated, redirect to signin
     if (!loading && !isAuthenticated) {
-      const loginPath = isTelugu ? '/te/login' : '/login';
-      router.replace(loginPath);
+      const signinPath = isTelugu ? '/te/signin' : '/signin';
+      router.replace(signinPath);
     }
   }, [isAuthenticated, loading, router, isTelugu]);
 

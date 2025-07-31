@@ -168,7 +168,7 @@ export default function ForgotPasswordFormTe() {
       
       toast({ title: "పాస్‌వర్డ్ విజయవంతంగా రీసెట్ చేయబడింది!", description: "మీరు ఇప్పుడు మీ కొత్త పాస్‌వర్డ్‌తో సైన్ ఇన్ చేయవచ్చు." });
       await auth.signOut();
-      router.push('/te/login?reset=success');
+      router.push('/te/signin?reset=success');
 
     } catch (error: any) {
       console.error("పాస్‌వర్డ్ రీసెట్ లోపం:", error);
@@ -234,7 +234,7 @@ export default function ForgotPasswordFormTe() {
 
           <div className="mt-4 text-center text-sm">
             మీ పాస్‌వర్డ్ గుర్తుందా?{' '}
-            <Link href="/te/login" className="underline">
+            <Link href="/te/signin" className="underline">
               సైన్ ఇన్ కు తిరిగి వెళ్లండి
             </Link>
           </div>

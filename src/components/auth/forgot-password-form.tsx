@@ -292,7 +292,7 @@ export default function ForgotPasswordForm() {
       });
 
       await auth.signOut();
-      router.push('/login?reset=success');
+      router.push('/signin?reset=success');
 
     } catch (error: any) {
       console.error("Password Reset Error:", error);
@@ -445,7 +445,7 @@ export default function ForgotPasswordForm() {
 
           <div className="mt-4 text-center text-sm">
             Remember your password?{' '}
-            <Link href="/login" className="underline hover:text-primary">
+            <Link href="/signin" className="underline hover:text-primary">
               Back to Sign In
             </Link>
           </div>

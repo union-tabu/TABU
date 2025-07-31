@@ -1,5 +1,5 @@
 
-// src/components/auth/login-form.tsx
+// src/components/auth/signin-form.tsx
 "use client";
 
 import Link from 'next/link';
@@ -20,7 +20,7 @@ interface FormErrors {
   password?: string;
 }
 
-export default function LoginForm() {
+export default function SigninForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -28,7 +28,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
-  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [signinAttempts, setSigninAttempts] = useState(0);
   const [isBlocked, setIsBlocked] = useState(false);
   const [blockTimeRemaining, setBlockTimeRemaining] = useState(0);
 
@@ -39,17 +39,17 @@ export default function LoginForm() {
         title: "Password Reset Successful!",
         description: "You can now sign in with your new password.",
       });
-      router.replace('/login', { scroll: false });
+      router.replace('/signin', { scroll: false });
     }
   }, [searchParams, router, toast]);
 
-  // Handle login attempt blocking
+  // Handle signin attempt blocking
   useEffect(() => {
-    const storedAttempts = localStorage.getItem('loginAttempts');
-    const storedBlockTime = localStorage.getItem('loginBlockTime');
+    const storedAttempts = localStorage.getItem('signinAttempts');
+    const storedBlockTime = localStorage.getItem('signinBlockTime');
     
     if (storedAttempts) {
-      setLoginAttempts(parseInt(storedAttempts));
+      setSigninAttempts(parseInt(storedAttempts));
     }
     
     if (storedBlockTime) {
@@ -65,9 +65,9 @@ export default function LoginForm() {
           if (remaining <= 0) {
             setIsBlocked(false);
             setBlockTimeRemaining(0);
-            setLoginAttempts(0);
-            localStorage.removeItem('loginAttempts');
-            localStorage.removeItem('loginBlockTime');
+            setSigninAttempts(0);
+            localStorage.removeItem('signinAttempts');
+            localStorage.removeItem('signinBlockTime');
             clearInterval(timer);
           } else {
             setBlockTimeRemaining(remaining);
@@ -77,9 +77,9 @@ export default function LoginForm() {
         return () => clearInterval(timer);
       } else {
         // Block time expired, reset
-        setLoginAttempts(0);
-        localStorage.removeItem('loginAttempts');
-        localStorage.removeItem('loginBlockTime');
+        setSigninAttempts(0);
+        localStorage.removeItem('signinAttempts');
+        localStorage.removeItem('signinBlockTime');
       }
     }
   }, []);
@@ -118,15 +118,15 @@ export default function LoginForm() {
     }
   };
 
-  const handleFailedLogin = () => {
-    const newAttempts = loginAttempts + 1;
-    setLoginAttempts(newAttempts);
-    localStorage.setItem('loginAttempts', newAttempts.toString());
+  const handleFailedSignin = () => {
+    const newAttempts = signinAttempts + 1;
+    setSigninAttempts(newAttempts);
+    localStorage.setItem('signinAttempts', newAttempts.toString());
     
     if (newAttempts >= 5) {
       // Block for 15 minutes after 5 failed attempts
       const blockUntil = Date.now() + (15 * 60 * 1000);
-      localStorage.setItem('loginBlockTime', blockUntil.toString());
+      localStorage.setItem('signinBlockTime', blockUntil.toString());
       setIsBlocked(true);
       setBlockTimeRemaining(15 * 60);
       
@@ -145,11 +145,11 @@ export default function LoginForm() {
     }
   };
 
-  const handleSuccessfulLogin = () => {
-    // Clear any stored login attempts on successful login
-    setLoginAttempts(0);
-    localStorage.removeItem('loginAttempts');
-    localStorage.removeItem('loginBlockTime');
+  const handleSuccessfulSignin = () => {
+    // Clear any stored signin attempts on successful signin
+    setSigninAttempts(0);
+    localStorage.removeItem('signinAttempts');
+    localStorage.removeItem('signinBlockTime');
     
     toast({
       title: "Sign In Successful!",
@@ -161,7 +161,7 @@ export default function LoginForm() {
     }, 1000);
   };
 
-  const handleLogin = async (event: React.FormEvent) => {
+  const handleSignin = async (event: React.FormEvent) => {
     event.preventDefault();
 
     if (isBlocked) {
@@ -190,10 +190,10 @@ export default function LoginForm() {
       // This will work with the linked credential approach
       await signInWithEmailAndPassword(auth, email, password);
       
-      handleSuccessfulLogin();
+      handleSuccessfulSignin();
       
     } catch (error: any) {
-      console.error("Login Error:", error);
+      console.error("Signin Error:", error);
       
       let errorMessage = "An unexpected error occurred. Please try again.";
       let errorTitle = "Sign In Failed";
@@ -202,9 +202,9 @@ export default function LoginForm() {
           error.code === 'auth/user-not-found' || 
           error.code === 'auth/wrong-password' ||
           error.code === 'auth/invalid-email') {
-        handleFailedLogin();
+        handleFailedSignin();
         setLoading(false); // Make sure to stop loading indicator
-        return; // handleFailedLogin shows its own toast
+        return; // handleFailedSignin shows its own toast
       } else if (error.code === 'auth/user-disabled') {
         errorTitle = "Account Disabled";
         errorMessage = "Your account has been disabled. Please contact support for assistance.";
@@ -225,7 +225,7 @@ export default function LoginForm() {
         variant: "destructive",
       });
     } finally {
-      // Don't set loading to false if handleFailedLogin is called, as it does it itself.
+      // Don't set loading to false if handleFailedSignin is called, as it does it itself.
       if (auth.currentUser === null) {
           setLoading(false);
       }
@@ -269,7 +269,7 @@ export default function LoginForm() {
             </div>
           )}
 
-          <form className="grid gap-4" onSubmit={handleLogin}>
+          <form className="grid gap-4" onSubmit={handleSignin}>
             <div className="grid gap-2">
               <Label htmlFor="phone">Phone Number *</Label>
               <Input
@@ -313,9 +313,9 @@ export default function LoginForm() {
               )}
             </div>
 
-            {loginAttempts > 0 && loginAttempts < 5 && !isBlocked && (
+            {signinAttempts > 0 && signinAttempts < 5 && !isBlocked && (
               <div className="text-sm text-amber-600 bg-amber-50 p-2 rounded border border-amber-200">
-                <strong>Warning:</strong> {5 - loginAttempts} attempt{5 - loginAttempts !== 1 ? 's' : ''} remaining before account lock.
+                <strong>Warning:</strong> {5 - signinAttempts} attempt{5 - signinAttempts !== 1 ? 's' : ''} remaining before account lock.
               </div>
             )}
             

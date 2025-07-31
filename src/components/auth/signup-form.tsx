@@ -90,7 +90,7 @@ export default function SignupForm() {
           description: "An account with this phone number already exists. Please proceed to sign in.",
           variant: "destructive",
         });
-        router.push('/login');
+        router.push('/signin');
         return;
       }
 
@@ -184,7 +184,7 @@ export default function SignupForm() {
           </form>
           <div className="mt-4 text-center text-sm">
             Already have an account?{' '}
-            <Link href="/login" className="underline hover:text-primary">
+            <Link href="/signin" className="underline hover:text-primary">
               Sign In
             </Link>
           </div>

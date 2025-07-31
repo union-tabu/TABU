@@ -22,7 +22,7 @@ export default function DashboardPageTe() {
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      router.replace('/te/login');
+      router.replace('/te/signin');
     }
   }, [isAuthenticated, loading, router]);
 

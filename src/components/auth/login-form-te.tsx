@@ -14,7 +14,7 @@ import React, { useEffect } from 'react';
 
 const FAKE_EMAIL_DOMAIN = "@sanghika.samakhya";
 
-export default function LoginFormTe() {
+export default function SigninFormTe() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { toast } = useToast();
@@ -28,11 +28,11 @@ export default function LoginFormTe() {
             title: "పాస్‌వర్డ్ రీసెట్ విజయవంతమైంది!",
             description: "మీరు ఇప్పుడు మీ కొత్త పాస్‌వర్డ్‌తో సైన్ ఇన్ చేయవచ్చు.",
         });
-        router.replace('/te/login', { scroll: false });
+        router.replace('/te/signin', { scroll: false });
         }
     }, [searchParams, router, toast]);
 
-    const handleLogin = async (event: React.FormEvent) => {
+    const handleSignin = async (event: React.FormEvent) => {
         event.preventDefault();
         setLoading(true);
 
@@ -57,7 +57,7 @@ export default function LoginFormTe() {
             router.push('/te/dashboard');
             
         } catch (error: any) {
-            console.error("Login Error:", error);
+            console.error("Signin Error:", error);
             let errorMessage = "తెలియని లోపం సంభవించింది. దయచేసి మళ్లీ ప్రయత్నించండి.";
             if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
                 errorMessage = "తప్పు ఫోన్ నంబర్ లేదా పాస్‌వర్డ్. దయచేసి మీ వివరాలను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.";
@@ -82,7 +82,7 @@ export default function LoginFormTe() {
           <CardDescription>సైన్ ఇన్ చేయడానికి మీ ఫోన్ నంబర్ మరియు పాస్‌వర్డ్‌ను నమోదు చేయండి</CardDescription>
         </CardHeader>
         <CardContent>
-            <form className="grid gap-4" onSubmit={handleLogin}>
+            <form className="grid gap-4" onSubmit={handleSignin}>
                 <div className="grid gap-2">
                     <Label htmlFor="phone">ఫోన్ నంబర్</Label>
                     <Input
