@@ -3,7 +3,7 @@
 
 import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { UserCircle, BadgeCheck } from "lucide-react";
+import { UserCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { db } from "@/lib/firebase";
 import { doc, updateDoc } from "firebase/firestore";
 import { useState, useEffect } from "react";
+import { UnionIdCard } from "@/components/dashboard/union-id-card";
 
 export default function ProfilePage() {
     const { userData, firebaseUser, loading } = useAuth();
@@ -75,13 +76,13 @@ export default function ProfilePage() {
     if (loading) {
         return (
              <div className="space-y-6">
+                 <Skeleton className="h-64 w-full max-w-md mx-auto" />
                 <Card>
                     <CardHeader>
                         <Skeleton className="h-8 w-48 mb-2" />
                         <Skeleton className="h-4 w-64" />
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                            <div className="space-y-2 md:col-span-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
                            <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
@@ -105,22 +106,17 @@ export default function ProfilePage() {
     }
     
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
+            <div className="max-w-md mx-auto">
+              <UnionIdCard />
+            </div>
+
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><UserCircle className="text-primary" /> Personal Information</CardTitle>
                     <CardDescription>View and manage your personal details. This information is kept private.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                   {userData.unionId && (
-                     <div className="space-y-2">
-                        <Label htmlFor="unionId">Union ID</Label>
-                        <div className="flex items-center gap-2">
-                            <BadgeCheck className="h-5 w-5 text-green-600" />
-                            <Input id="unionId" value={userData.unionId} readOnly className="font-mono bg-gray-100 cursor-not-allowed" />
-                        </div>
-                     </div>
-                   )}
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2 md:col-span-2">
                             <Label htmlFor="fullName">Full Name</Label>
@@ -128,7 +124,7 @@ export default function ProfilePage() {
                         </div>
                          <div className="space-y-2">
                             <Label htmlFor="phone">Phone</Label>
-                            <Input id="phone" value={formData.phone} onChange={handleChange} placeholder="Your 10-digit phone number" />
+                            <Input id="phone" value={formData.phone} onChange={handleChange} placeholder="Your 10-digit phone number" readOnly className="bg-gray-100 cursor-not-allowed"/>
                         </div>
                          <div className="space-y-2">
                             <Label htmlFor="email">Email (Optional)</Label>

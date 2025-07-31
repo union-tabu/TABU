@@ -9,12 +9,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { UserCheck, Clock, AlertCircle } from "lucide-react";
+import { UserCheck, Clock, AlertCircle, BadgeCheck } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { addMonths, differenceInDays, startOfMonth, format } from 'date-fns';
 import { te } from 'date-fns/locale';
-import { UnionIdCardTe } from "@/components/dashboard/union-id-card-te";
 
 export default function DashboardPageTe() {
   const { userData, isAuthenticated, loading } = useAuth();
@@ -98,10 +99,24 @@ export default function DashboardPageTe() {
             )}
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-             <UnionIdCardTe />
-             <SubscriptionStatusCard isTelugu={true} />
-          </div>
+           {userData?.unionId && (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline">మీ యూనియన్ ID</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2">
+                        <Label htmlFor="unionId">ఇది మీ అధికారిక సభ్యత్వ ID.</Label>
+                        <div className="flex items-center gap-2">
+                            <BadgeCheck className="h-5 w-5 text-green-600" />
+                            <Input id="unionId" value={userData.unionId} readOnly className="font-mono bg-gray-100 cursor-not-allowed max-w-sm" />
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+           )}
+
+          <SubscriptionStatusCard isTelugu={true} />
 
           {daysLeft !== null && expiryDate && userStatus !== 'active' && (
              <Card className="border-amber-500 bg-amber-50/50">

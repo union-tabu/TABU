@@ -9,11 +9,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { UserCheck, Clock, AlertCircle } from "lucide-react";
+import { UserCheck, Clock, AlertCircle, BadgeCheck } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { addMonths, differenceInDays, startOfMonth, format } from 'date-fns';
-import { UnionIdCard } from "@/components/dashboard/union-id-card";
 
 export default function DashboardPage() {
   const { userData, isAuthenticated, loading } = useAuth();
@@ -97,10 +98,24 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-             <UnionIdCard />
-             <SubscriptionStatusCard />
-          </div>
+           {userData?.unionId && (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Your Union ID</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2">
+                        <Label htmlFor="unionId">This is your official membership ID.</Label>
+                        <div className="flex items-center gap-2">
+                            <BadgeCheck className="h-5 w-5 text-green-600" />
+                            <Input id="unionId" value={userData.unionId} readOnly className="font-mono bg-gray-100 cursor-not-allowed max-w-sm" />
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+           )}
+
+          <SubscriptionStatusCard />
           
           {daysLeft !== null && expiryDate && userStatus !== 'active' && (
              <Card className="border-amber-500 bg-amber-50/50">
