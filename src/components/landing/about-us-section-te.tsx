@@ -12,14 +12,16 @@ export function AboutUsSectionTe() {
         <div className="py-16 sm:py-20 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 xl:gap-20 items-start">
             {/* Left side - Image */}
-            <div className="order-2 lg:order-1">
-               <Image 
-                  src="/about-sec.jpg" 
-                  alt="నిర్మాణ కార్మికులు సహకరిస్తున్నారు"
-                  width={500}
-                  height={450}
-                  className="w-full h-auto object-cover rounded-lg shadow-lg"
-                />
+            <div className="order-2 lg:order-1 flex justify-center lg:justify-start">
+              <div className="max-w-lg">
+                <Image 
+                    src="/about-sec.jpg" 
+                    alt="నిర్మాణ కార్మికులు సహకరిస్తున్నారు"
+                    width={500}
+                    height={450}
+                    className="w-full h-auto object-cover rounded-lg shadow-lg"
+                  />
+              </div>
             </div>
             
             {/* Right side - Content */}
