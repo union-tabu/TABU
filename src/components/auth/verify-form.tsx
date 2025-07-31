@@ -70,15 +70,13 @@ export default function VerifyForm() {
       const credential = EmailAuthProvider.credential(email, formData.password);
       await linkWithCredential(user, credential);
       
-      const nameParts = signupData.fullName.trim().split(' ');
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
-
       await setDoc(doc(db, "users", user.uid), {
-        firstName,
-        lastName,
+        fullName: signupData.fullName,
         phone: signupData.phone,
-        address: `${signupData.address}, ${signupData.city}, ${signupData.state}, ${signupData.country} - ${signupData.pin}`,
+        addressLine: signupData.address,
+        city: signupData.city,
+        state: signupData.state,
+        pinCode: signupData.pin,
         createdAt: new Date(),
         subscription: { status: 'not subscribed' },
         email: ''
@@ -115,7 +113,7 @@ export default function VerifyForm() {
     <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-background px-4 py-12">
       <Card className="mx-auto max-w-md w-full shadow-xl">
         <CardHeader>
-          <CardTitle className="text-2xl">Verify & Create Password</CardTitle>
+          <CardTitle>Verify & Create Password</CardTitle>
           <CardDescription>Enter the OTP sent to {signupData.phone} and set your password.</CardDescription>
         </CardHeader>
         <CardContent>

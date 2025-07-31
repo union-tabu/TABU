@@ -3,7 +3,7 @@
 
 import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { UserCircle, CalendarIcon } from "lucide-react";
+import { UserCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,12 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { db } from "@/lib/firebase";
 import { doc, updateDoc } from "firebase/firestore";
 import { useState, useEffect } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format, parse } from "date-fns";
 import { te } from "date-fns/locale";
-import { cn } from "@/lib/utils";
-
 
 export default function ProfilePage() {
     const { userData, firebaseUser, loading } = useAuth();
@@ -25,34 +20,26 @@ export default function ProfilePage() {
     const [isSaving, setIsSaving] = useState(false);
     
     const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
+        fullName: '',
         phone: '',
-        address: '',
         email: '',
+        addressLine: '',
+        city: '',
+        state: '',
+        pinCode: '',
     });
-    const [dob, setDob] = useState<Date | undefined>(undefined);
 
      useEffect(() => {
         if (userData) {
             setFormData({
-                firstName: userData.firstName || '',
-                lastName: userData.lastName || '',
+                fullName: userData.fullName || '',
                 phone: userData.phone || '',
-                address: userData.address || '',
                 email: userData.email || '',
+                addressLine: userData.addressLine || '',
+                city: userData.city || '',
+                state: userData.state || '',
+                pinCode: userData.pinCode || '',
             });
-             if (userData.dob) {
-                try {
-                    const [year, month, day] = userData.dob.split('-').map(Number);
-                    setDob(new Date(year, month - 1, day));
-                } catch (e) {
-                    console.warn("Invalid date format for DOB:", userData.dob)
-                    setDob(undefined);
-                }
-            } else {
-                setDob(undefined);
-            }
         }
     }, [userData]);
 
@@ -68,7 +55,6 @@ export default function ProfilePage() {
             const userDocRef = doc(db, "users", firebaseUser.uid);
             await updateDoc(userDocRef, {
                 ...formData,
-                dob: dob ? format(dob, 'yyyy-MM-dd') : null,
             });
             toast({
                 title: "ప్రొఫైల్ నవీకరించబడింది!",
@@ -97,10 +83,11 @@ export default function ProfilePage() {
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                           <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
+                           <div className="space-y-2 md:col-span-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
                            <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
                            <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
                            <div className="space-y-2 md:col-span-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
+                           <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
                            <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
                            <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
                         </div>
@@ -121,18 +108,14 @@ export default function ProfilePage() {
         <div className="space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><UserCircle className="text-primary" /> వ్యక్తిగత సమాచారం</CardTitle>
+                    <CardTitle className="flex items-center gap-2 font-headline"><UserCircle className="text-primary" /> వ్యక్తిగత సమాచారం</CardTitle>
                     <CardDescription>మీ వ్యక్తిగత వివరాలను వీక్షించండి మరియు నిర్వహించండి. ఈ సమాచారం ప్రైవేట్‌గా ఉంచబడుతుంది.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="firstName">మొదటి పేరు</Label>
-                            <Input id="firstName" value={formData.firstName} onChange={handleChange} placeholder="మీ మొదటి పేరు" />
-                        </div>
-                         <div className="space-y-2">
-                            <Label htmlFor="lastName">ఇంటి పేరు</Label>
-                            <Input id="lastName" value={formData.lastName} onChange={handleChange} placeholder="మీ ఇంటి పేరు" />
+                        <div className="space-y-2 md:col-span-2">
+                            <Label htmlFor="fullName">పూర్తి పేరు</Label>
+                            <Input id="fullName" value={formData.fullName} onChange={handleChange} placeholder="మీ పూర్తి పేరు" />
                         </div>
                          <div className="space-y-2">
                             <Label htmlFor="phone">ఫోన్</Label>
@@ -143,37 +126,20 @@ export default function ProfilePage() {
                             <Input id="email" type="email" value={formData.email} onChange={handleChange} placeholder="మీరు@ఉదాహరణ.com" />
                         </div>
                         <div className="space-y-2 md:col-span-2">
-                            <Label htmlFor="address">పూర్తి చిరునామా</Label>
-                            <Input id="address" value={formData.address} onChange={handleChange} placeholder="వీధి, నగరం, రాష్ట్రం, పిన్ కోడ్" />
+                            <Label htmlFor="addressLine">చిరునామా</Label>
+                            <Input id="addressLine" value={formData.addressLine} onChange={handleChange} placeholder="వీధి, అపార్ట్‌మెంట్, మొదలైనవి." />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="dob">పుట్టిన తేది (ఐచ్ఛికం)</Label>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                  <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                      "w-full justify-start text-left font-normal",
-                                      !dob && "text-muted-foreground"
-                                    )}
-                                  >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {dob ? format(dob, "PPP", { locale: te }) : <span>తేదీని ఎంచుకోండి</span>}
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0">
-                                  <Calendar
-                                    mode="single"
-                                    selected={dob}
-                                    onSelect={setDob}
-                                    initialFocus
-                                    locale={te}
-                                    captionLayout="dropdown-buttons"
-                                    fromYear={1950}
-                                    toYear={new Date().getFullYear() - 18}
-                                  />
-                                </PopoverContent>
-                            </Popover>
+                            <Label htmlFor="city">నగరం</Label>
+                            <Input id="city" value={formData.city} onChange={handleChange} placeholder="ఉదా. హైదరాబాద్" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="state">రాష్ట్రం</Label>
+                            <Input id="state" value={formData.state} onChange={handleChange} placeholder="ఉదా. తెలంగాణ" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="pinCode">పిన్ కోడ్</Label>
+                            <Input id="pinCode" value={formData.pinCode} onChange={handleChange} placeholder="ఉదా. 500001" />
                         </div>
                    </div>
                 </CardContent>

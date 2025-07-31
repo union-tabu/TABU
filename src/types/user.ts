@@ -1,11 +1,12 @@
 
 export interface UserData {
-  firstName: string;
-  lastName: string;
+  fullName: string;
   phone: string;
-  address: string;
+  addressLine: string;
+  city: string;
+  state: string;
+  pinCode: string;
   email?: string;
-  dob?: string;
   subscription?: {
     plan: 'monthly' | 'yearly';
     status: 'active' | 'inactive' | 'cancelled' | 'not subscribed' | 'lapsed';

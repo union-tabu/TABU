@@ -46,7 +46,7 @@ export default function UnionMembersPage() {
     
     const filteredUsers = useMemo(() => {
         return users.filter(user => {
-            const matchesSearch = `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) || user.phone.includes(searchTerm);
+            const matchesSearch = user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || user.phone.includes(searchTerm);
             const status = user.subscription?.status || 'not subscribed';
             const matchesStatus = filterStatus === 'all' || status === filterStatus;
             return matchesSearch && matchesStatus;
@@ -116,7 +116,7 @@ export default function UnionMembersPage() {
                                 paginatedUsers.map((user) => (
                                     <TableRow key={user.id}>
                                         <TableCell className="font-mono text-xs">{user.id.substring(0, 6)}...</TableCell>
-                                        <TableCell>{`${user.firstName} ${user.lastName}`}</TableCell>
+                                        <TableCell>{user.fullName}</TableCell>
                                         <TableCell>{user.phone}</TableCell>
                                         <TableCell>
                                             <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
@@ -129,7 +129,7 @@ export default function UnionMembersPage() {
                                                 ? format(new Date(user.createdAt.seconds * 1000), "MMMM yyyy") 
                                                 : 'N/A'}
                                         </TableCell>
-                                        <TableCell>{user.address}</TableCell>
+                                        <TableCell>{`${user.addressLine}, ${user.city}, ${user.state}`}</TableCell>
                                     </TableRow>
                                 ))
                             ) : (

@@ -122,6 +122,14 @@ export function DashboardHeaderTe() {
     { href: '/te/payments', label: 'చెల్లింపులు' },
     { href: '/te/subscribe', label: 'సభ్యత్వం' },
   ];
+  
+  const getInitials = (name: string | undefined) => {
+    if (!name) return '';
+    const nameParts = name.split(' ');
+    const firstInitial = nameParts[0] ? nameParts[0][0] : '';
+    const lastInitial = nameParts.length > 1 ? nameParts[nameParts.length - 1][0] : '';
+    return `${firstInitial}${lastInitial}`.toUpperCase();
+  }
 
   return (
     <header className="sticky top-0 flex h-16 items-center justify-between border-b bg-background px-4 md:px-6 z-50">
@@ -149,15 +157,15 @@ export function DashboardHeaderTe() {
             <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="secondary" size="icon" className="rounded-full">
-                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                    {loading ? '' : userData?.firstName?.[0]}{userData?.lastName?.[0]}
+                <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center font-bold">
+                    {loading ? '' : getInitials(userData?.fullName)}
                 </div>
                 <span className="sr-only">Toggle user menu</span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
                 <DropdownMenuLabel>
-                {loading ? 'లోడ్ అవుతోంది...' : `${userData?.firstName} ${userData?.lastName}`}
+                {loading ? 'లోడ్ అవుతోంది...' : userData?.fullName}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
@@ -193,7 +201,7 @@ export function DashboardHeaderTe() {
                 <div className="mt-8 flex flex-col space-y-4 flex-grow">
                      <div className="border-b pb-4">
                         <p className="text-sm font-medium text-muted-foreground px-2">
-                            {loading ? 'లోడ్ అవుతోంది...' : `${userData?.firstName} ${userData?.lastName}`}
+                            {loading ? 'లోడ్ అవుతోంది...' : userData?.fullName}
                         </p>
                     </div>
                     {navItems.map((item) => (
