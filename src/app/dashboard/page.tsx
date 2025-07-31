@@ -98,23 +98,6 @@ export default function DashboardPage() {
             )}
           </div>
 
-           {userData?.unionId && (
-            <Card>
-                <CardHeader>
-                    <CardTitle>Your Union ID</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-2">
-                        <Label htmlFor="unionId">This is your official membership ID.</Label>
-                        <div className="flex items-center gap-2">
-                            <BadgeCheck className="h-5 w-5 text-green-600" />
-                            <Input id="unionId" value={userData.unionId} readOnly className="font-mono bg-gray-100 cursor-not-allowed max-w-sm" />
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-           )}
-
           <SubscriptionStatusCard />
           
           {daysLeft !== null && expiryDate && userStatus !== 'active' && (

@@ -9,21 +9,11 @@ import { te } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, ShieldCheck, Clock, BadgeCheck } from 'lucide-react';
 
-const planMap: { [key: string]: string } = {
-    'monthly': 'Monthly',
-    'yearly': 'Yearly'
-};
 const planMapTe: { [key: string]: string } = {
     'monthly': 'నెలవారీ',
     'yearly': 'వార్షిక'
 };
 
-const statusMap: { [key: string]: string } = {
-    'active': 'Active',
-    'inactive': 'Inactive',
-    'cancelled': 'Cancelled',
-    'pending': 'Pending'
-};
 const statusMapTe: { [key: string]: string } = {
     'active': 'క్రియాశీలం',
     'inactive': 'నిష్క్రియం',
@@ -31,7 +21,7 @@ const statusMapTe: { [key: string]: string } = {
     'pending': 'పెండింగ్‌లో ఉంది'
 };
 
-export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolean }) {
+export function SubscriptionStatusCardTe() {
     const { userData, loading } = useAuth();
 
     if (loading) {
@@ -61,24 +51,23 @@ export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolea
     if (!userData) {
        return null;
     }
-    
-    const userStatus = userData.subscription?.status || 'pending';
 
+    const userStatus = userData.subscription?.status || 'pending';
     const { plan, status, renewalDate: renewalDateData } = userData.subscription || {};
     
     const renewalDate = renewalDateData?.seconds
-        ? format(new Date(renewalDateData.seconds * 1000), "MMMM dd, yyyy", { locale: isTelugu ? te : undefined })
+        ? format(new Date(renewalDateData.seconds * 1000), "MMMM dd, yyyy", { locale: te })
         : "N/A";
     
-    const currentPlan = plan ? (isTelugu ? (planMapTe[plan] || plan) : (planMap[plan] || plan)) : (isTelugu ? 'వర్తించదు' : 'N/A');
-    const currentStatus = status ? (isTelugu ? (statusMapTe[status] || status) : (statusMap[status] || status)) : (isTelugu ? 'పెండింగ్‌లో ఉంది' : 'Pending');
+    const currentPlan = plan ? (planMapTe[plan] || plan) : 'వర్తించదు';
+    const currentStatus = status ? (statusMapTe[status] || status) : 'పెండింగ్‌లో ఉంది';
 
-    const titleText = isTelugu ? "మీ ఖాతా వివరాలు" : "Your Account Details";
-    const descriptionText = isTelugu ? "మీ యూనియన్ ID, ప్రస్తుత ప్లాన్ మరియు స్థితిని వీక్షించండి." : "View your Union ID, current plan and status.";
-    const idLabel = isTelugu ? "యూనియన్ ID" : "Union ID";
-    const planLabel = isTelugu ? "ప్రస్తుత ప్లాన్" : "Current Plan";
-    const statusLabel = isTelugu ? "స్థితి" : "Status";
-    const renewalLabel = isTelugu ? "తదుపరి చెల్లింపు" : "Next Payment";
+    const titleText = "మీ ఖాతా వివరాలు";
+    const descriptionText = "మీ యూనియన్ ID, ప్రస్తుత ప్లాన్ మరియు స్థితిని వీక్షించండి.";
+    const idLabel = "యూనియన్ ID";
+    const planLabel = "ప్రస్తుత ప్లాన్";
+    const statusLabel = "స్థితి";
+    const renewalLabel = "తదుపరి చెల్లింపు";
     
     const statusBadgeVariant = userStatus === 'active' ? 'default' : 'destructive';
     const statusBadgeClass = userStatus === 'active' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800';
@@ -128,7 +117,7 @@ export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolea
                             </div>
                         </>
                     ) : (
-                        <div className="flex items-center gap-3 md:col-span-3">
+                         <div className="flex items-center gap-3 md:col-span-3">
                             <Clock className="h-8 w-8 text-amber-600" />
                             <div>
                                 <span className="font-semibold text-muted-foreground">{statusLabel}</span>

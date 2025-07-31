@@ -99,23 +99,6 @@ export default function DashboardPageTe() {
             )}
           </div>
           
-           {userData?.unionId && (
-            <Card>
-                <CardHeader>
-                    <CardTitle className="font-headline">మీ యూనియన్ ID</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-2">
-                        <Label htmlFor="unionId">ఇది మీ అధికారిక సభ్యత్వ ID.</Label>
-                        <div className="flex items-center gap-2">
-                            <BadgeCheck className="h-5 w-5 text-green-600" />
-                            <Input id="unionId" value={userData.unionId} readOnly className="font-mono bg-gray-100 cursor-not-allowed max-w-sm" />
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-           )}
-
           <SubscriptionStatusCard isTelugu={true} />
 
           {daysLeft !== null && expiryDate && userStatus !== 'active' && (
