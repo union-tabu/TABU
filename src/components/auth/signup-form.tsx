@@ -178,7 +178,7 @@ export default function SignupForm() {
             </div>
             <div id="recaptcha-container"></div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Sending OTP...' : 'Send OTP & Continue'}
+              {loading ? 'Sending OTP...' : 'Continue'}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">

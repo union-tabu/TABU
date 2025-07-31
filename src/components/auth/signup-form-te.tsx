@@ -164,7 +164,7 @@ export default function SignupFormTe() {
             </div>
             <div id="recaptcha-container"></div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'OTP పంపుతోంది...' : 'OTP పంపి కొనసాగండి'}
+              {loading ? 'OTP పంపుతోంది...' : 'కొనసాగండి'}
             </Button>
           </form>
           <div className="mt-4 text-center text-sm">
