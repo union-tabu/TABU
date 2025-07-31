@@ -33,14 +33,14 @@ export default function UnionMembersPageTe() {
     const statusMap: { [key: string]: string } = {
         'active': 'క్రియాశీలం',
         'inactive': 'నిష్క్రియం',
-        'not subscribed': 'సభ్యత్వం లేదు'
+        'pending': 'పెండింగ్‌లో ఉంది'
     };
     
     const filterMap: { [key: string]: string } = {
         'all': 'అన్నీ',
         'active': 'క్రియాశీలం',
         'inactive': 'నిష్క్రియం',
-        'not subscribed': 'సభ్యత్వం లేదు'
+        'pending': 'పెండింగ్‌లో ఉంది'
     };
 
     useEffect(() => {
@@ -67,8 +67,8 @@ export default function UnionMembersPageTe() {
             const lowercasedSearchTerm = searchTerm.toLowerCase();
             const matchesSearch = `${user.fullName}`.toLowerCase().includes(lowercasedSearchTerm) || 
                                   user.phone.includes(searchTerm) ||
-                                  user.id.toLowerCase().includes(lowercasedSearchTerm);
-            const status = user.subscription?.status || 'not subscribed';
+                                  (user.unionId && user.unionId.toLowerCase().includes(lowercasedSearchTerm));
+            const status = user.subscription?.status || 'pending';
             const matchesStatus = filterStatus === 'all' || status === filterStatus;
             return matchesSearch && matchesStatus;
         });
@@ -118,7 +118,7 @@ export default function UnionMembersPageTe() {
                                     <TabsTrigger value="all">{filterMap['all']}</TabsTrigger>
                                     <TabsTrigger value="active">{filterMap['active']}</TabsTrigger>
                                     <TabsTrigger value="inactive">{filterMap['inactive']}</TabsTrigger>
-                                    <TabsTrigger value="not subscribed">{filterMap['not subscribed']}</TabsTrigger>
+                                    <TabsTrigger value="pending">{filterMap['pending']}</TabsTrigger>
                                 </TabsList>
                             </ScrollArea>
                         </Tabs>
@@ -149,16 +149,16 @@ export default function UnionMembersPageTe() {
                                             </div>
                                             <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
                                                 className={`${user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} shrink-0`}>
-                                                {statusMap[user.subscription?.status || 'not subscribed'] || user.subscription?.status}
+                                                {statusMap[user.subscription?.status || 'pending'] || user.subscription?.status}
                                             </Badge>
                                         </div>
                                     </CardHeader>
                                     <CardContent className="text-sm text-muted-foreground space-y-2">
-                                         <p><span className="font-semibold">చేరారు:</span> {user.createdAt?.seconds 
+                                        <p><span className="font-semibold">ID:</span> <span className="font-mono text-xs">{user.unionId || 'N/A'}</span></p>
+                                        <p><span className="font-semibold">చేరారు:</span> {user.createdAt?.seconds 
                                                 ? format(new Date(user.createdAt.seconds * 1000), "MMMM yyyy", { locale: te }) 
                                                 : 'N/A'}</p>
                                         <p><span className="font-semibold">చిరునామా:</span> {`${user.addressLine}, ${user.city}, ${user.state}`}</p>
-                                        <p><span className="font-semibold">ID:</span> <span className="font-mono text-xs">{user.id}</span></p>
                                     </CardContent>
                                 </Card>
                             ))
@@ -188,13 +188,13 @@ export default function UnionMembersPageTe() {
                                 ) : paginatedUsers.length > 0 ? (
                                     paginatedUsers.map((user) => (
                                         <TableRow key={user.id}>
-                                            <TableCell className="font-mono text-xs">{user.id.substring(0, 6)}...</TableCell>
+                                            <TableCell className="font-mono text-sm">{user.unionId || 'N/A'}</TableCell>
                                             <TableCell>{`${user.fullName}`}</TableCell>
                                             <TableCell>{user.phone}</TableCell>
                                             <TableCell>
                                                 <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
                                                     className={user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                                                    {statusMap[user.subscription?.status || 'not subscribed'] || user.subscription?.status}
+                                                    {statusMap[user.subscription?.status || 'pending'] || user.subscription?.status}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
@@ -243,5 +243,3 @@ export default function UnionMembersPageTe() {
         </div>
     );
 }
-
-    

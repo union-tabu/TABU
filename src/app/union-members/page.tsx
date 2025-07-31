@@ -52,7 +52,7 @@ export default function UnionMembersPage() {
             const lowercasedSearchTerm = searchTerm.toLowerCase();
             const matchesSearch = `${user.fullName}`.toLowerCase().includes(lowercasedSearchTerm) || 
                                   user.phone.includes(searchTerm) ||
-                                  user.id.toLowerCase().includes(lowercasedSearchTerm);
+                                  (user.unionId && user.unionId.toLowerCase().includes(lowercasedSearchTerm));
             const status = user.subscription?.status || 'pending';
             const matchesStatus = filterStatus === 'all' || status === filterStatus;
             return matchesSearch && matchesStatus;
@@ -140,11 +140,11 @@ export default function UnionMembersPage() {
                                         </div>
                                     </CardHeader>
                                     <CardContent className="text-sm text-muted-foreground space-y-2">
+                                        <p><span className="font-semibold">ID:</span> <span className="font-mono text-xs">{user.unionId || 'N/A'}</span></p>
                                         <p><span className="font-semibold">Joined:</span> {user.createdAt?.seconds 
                                                 ? format(new Date(user.createdAt.seconds * 1000), "MMMM yyyy") 
                                                 : 'N/A'}</p>
                                         <p><span className="font-semibold">Address:</span> {`${user.addressLine}, ${user.city}, ${user.state}`}</p>
-                                        <p><span className="font-semibold">ID:</span> <span className="font-mono text-xs">{user.id}</span></p>
                                     </CardContent>
                                 </Card>
                             ))
@@ -174,7 +174,7 @@ export default function UnionMembersPage() {
                                 ) : paginatedUsers.length > 0 ? (
                                     paginatedUsers.map((user) => (
                                         <TableRow key={user.id}>
-                                            <TableCell className="font-mono text-xs">{user.id.substring(0, 6)}...</TableCell>
+                                            <TableCell className="font-mono text-sm">{user.unionId || 'N/A'}</TableCell>
                                             <TableCell>{`${user.fullName}`}</TableCell>
                                             <TableCell>{user.phone}</TableCell>
                                             <TableCell>
@@ -230,5 +230,3 @@ export default function UnionMembersPage() {
         </div>
     );
 }
-
-    
