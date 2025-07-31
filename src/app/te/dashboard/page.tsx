@@ -92,7 +92,7 @@ export default function DashboardPageTe() {
             <h1 className="text-3xl font-bold tracking-tight">డాష్‌బోర్డ్</h1>
             {userData && (
                 <p className="text-lg text-muted-foreground mt-2">
-                   {greeting}, {userData.firstName}!
+                   {greeting}, {userData.fullName}!
                 </p>
             )}
           </div>

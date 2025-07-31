@@ -50,7 +50,7 @@ export default function UnionMembersPage() {
     const filteredUsers = useMemo(() => {
         return users.filter(user => {
             const lowercasedSearchTerm = searchTerm.toLowerCase();
-            const matchesSearch = `${user.firstName} ${user.lastName}`.toLowerCase().includes(lowercasedSearchTerm) || 
+            const matchesSearch = `${user.fullName}`.toLowerCase().includes(lowercasedSearchTerm) || 
                                   user.phone.includes(searchTerm) ||
                                   user.id.toLowerCase().includes(lowercasedSearchTerm);
             const status = user.subscription?.status || 'not subscribed';
@@ -130,7 +130,7 @@ export default function UnionMembersPage() {
                                     <CardHeader>
                                         <div className="flex justify-between items-start">
                                             <div>
-                                                <CardTitle className="text-lg">{`${user.firstName} ${user.lastName}`}</CardTitle>
+                                                <CardTitle className="text-lg">{`${user.fullName}`}</CardTitle>
                                                 <CardDescription>{user.phone}</CardDescription>
                                             </div>
                                             <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
@@ -143,7 +143,7 @@ export default function UnionMembersPage() {
                                         <p><span className="font-semibold">Joined:</span> {user.createdAt?.seconds 
                                                 ? format(new Date(user.createdAt.seconds * 1000), "MMMM yyyy") 
                                                 : 'N/A'}</p>
-                                        <p><span className="font-semibold">Address:</span> {user.address}</p>
+                                        <p><span className="font-semibold">Address:</span> {`${user.addressLine}, ${user.city}, ${user.state}`}</p>
                                         <p><span className="font-semibold">ID:</span> <span className="font-mono text-xs">{user.id}</span></p>
                                     </CardContent>
                                 </Card>
@@ -175,7 +175,7 @@ export default function UnionMembersPage() {
                                     paginatedUsers.map((user) => (
                                         <TableRow key={user.id}>
                                             <TableCell className="font-mono text-xs">{user.id.substring(0, 6)}...</TableCell>
-                                            <TableCell>{`${user.firstName} ${user.lastName}`}</TableCell>
+                                            <TableCell>{`${user.fullName}`}</TableCell>
                                             <TableCell>{user.phone}</TableCell>
                                             <TableCell>
                                                 <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
@@ -188,7 +188,7 @@ export default function UnionMembersPage() {
                                                     ? format(new Date(user.createdAt.seconds * 1000), "MMMM yyyy") 
                                                     : 'N/A'}
                                             </TableCell>
-                                            <TableCell>{user.address}</TableCell>
+                                            <TableCell>{`${user.addressLine}, ${user.city}, ${user.state}`}</TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
