@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { auth, db } from '@/lib/firebase';
-import { ConfirmationResult, linkWithCredential, EmailAuthProvider, signOut } from 'firebase/auth';
+import { ConfirmationResult, linkWithCredential, EmailAuthProvider, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -83,10 +83,13 @@ export default function VerifyFormTe() {
         subscription: { status: 'not subscribed' },
         email: ''
       });
+      
+      // Auto-login after successful registration
+      await signInWithEmailAndPassword(auth, email, formData.password);
 
       sessionStorage.removeItem('signupFormDataTe');
-      toast({ title: 'ఖాతా విజయవంతంగా సృష్టించబడింది!', description: 'దయచేసి లాగిన్ పేజీకి మళ్ళిస్తున్నాము.' });
-      router.push('/te/login?registered=true');
+      toast({ title: 'ఖాతా సృష్టించబడింది!', description: 'డాష్‌బోర్డ్‌కు మళ్ళిస్తున్నాము...' });
+      router.push('/te/dashboard');
 
     } catch (error: any) {
       console.error("Signup Error:", error);

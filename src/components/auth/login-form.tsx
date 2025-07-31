@@ -1,3 +1,4 @@
+
 // src/components/auth/login-form.tsx
 "use client";
 
@@ -31,15 +32,8 @@ export default function LoginForm() {
   const [isBlocked, setIsBlocked] = useState(false);
   const [blockTimeRemaining, setBlockTimeRemaining] = useState(0);
 
-  // Check for registration or password reset success message
+  // Check for password reset success message
   useEffect(() => {
-    if (searchParams.get('registered') === 'true') {
-      toast({
-        title: "Account Created!",
-        description: "Your account has been created successfully. Please log in to continue.",
-      });
-      router.replace('/login', { scroll: false });
-    }
     if (searchParams.get('reset') === 'success') {
       toast({
         title: "Password Reset Successful!",

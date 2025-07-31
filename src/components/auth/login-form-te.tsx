@@ -23,13 +23,6 @@ export default function LoginFormTe() {
     const [loading, setLoading] = React.useState(false);
 
     useEffect(() => {
-        if (searchParams.get('registered') === 'true') {
-        toast({
-            title: "ఖాతా సృష్టించబడింది!",
-            description: "మీ ఖాతా విజయవంతంగా సృష్టించబడింది. దయచేసి లాగిన్ చేయండి.",
-        });
-        router.replace('/te/login', { scroll: false });
-        }
         if (searchParams.get('reset') === 'success') {
         toast({
             title: "పాస్‌వర్డ్ రీసెట్ విజయవంతమైంది!",
