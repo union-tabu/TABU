@@ -1,5 +1,6 @@
 
 export interface UserData {
+  unionId?: string;
   fullName: string;
   phone: string;
   addressLine: string;

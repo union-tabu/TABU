@@ -12,6 +12,7 @@ import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect } from 'react';
+import { generateUniqueUnionId } from '@/ai/flows/union-id-flow';
 
 const FAKE_EMAIL_DOMAIN = "@sanghika.samakhya";
 
@@ -66,11 +67,15 @@ export default function VerifyForm() {
       const userCredential = await confirmationResult.confirm(formData.otp);
       const user = userCredential.user;
 
+      // Generate a unique ID for the user
+      const unionId = await generateUniqueUnionId();
+
       const email = `${signupData.phone}${FAKE_EMAIL_DOMAIN}`;
       const credential = EmailAuthProvider.credential(email, formData.password);
       await linkWithCredential(user, credential);
       
       await setDoc(doc(db, "users", user.uid), {
+        unionId: `TABU-${unionId}`,
         fullName: signupData.fullName,
         phone: signupData.phone,
         addressLine: signupData.addressLine,
