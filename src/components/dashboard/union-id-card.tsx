@@ -30,7 +30,8 @@ export function UnionIdCard() {
                 cacheBust: true, 
                 quality: 0.95,
                 backgroundColor: 'white',
-                pixelRatio: 2 // Increase for better quality on high-res screens
+                pixelRatio: 2, // Increase for better quality on high-res screens
+                skipFonts: true // Skips embedding external fonts to avoid CORS issues
             })
             .then((dataUrl) => {
                 const link = document.createElement('a');

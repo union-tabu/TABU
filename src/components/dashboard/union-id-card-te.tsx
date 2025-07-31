@@ -29,7 +29,12 @@ export function UnionIdCardTe() {
             return;
         }
 
-        toJpeg(idCardRef.current, { cacheBust: true, quality: 0.95, backgroundColor: 'white' })
+        toJpeg(idCardRef.current, { 
+            cacheBust: true, 
+            quality: 0.95, 
+            backgroundColor: 'white',
+            skipFonts: true // Skips embedding external fonts to avoid CORS issues
+        })
             .then((dataUrl) => {
                 const link = document.createElement('a');
                 link.download = `TABU-ID-Card-${userData?.unionId || 'member'}.jpg`;
