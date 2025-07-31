@@ -20,7 +20,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 type UserWithId = UserData & { id: string };
 
-const USERS_PER_PAGE = 10;
+const USERS_PER_PAGE = 25;
 
 export default function UnionMembersPageTe() {
     const [users, setUsers] = useState<UserWithId[]>([]);

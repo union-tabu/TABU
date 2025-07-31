@@ -14,7 +14,7 @@ import { format } from "date-fns";
 import type { Payment } from '@/types/payment';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const PAYMENTS_PER_PAGE = 10;
+const PAYMENTS_PER_PAGE = 25;
 
 export default function PaymentsPage() {
     const { firebaseUser, loading: authLoading } = useAuth();
