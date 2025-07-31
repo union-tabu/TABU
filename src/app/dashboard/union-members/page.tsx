@@ -47,7 +47,7 @@ export default function UnionMembersPage() {
     const filteredUsers = useMemo(() => {
         return users.filter(user => {
             const matchesSearch = user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || user.phone.includes(searchTerm);
-            const status = user.subscription?.status || 'not subscribed';
+            const status = user.subscription?.status || 'pending';
             const matchesStatus = filterStatus === 'all' || status === filterStatus;
             return matchesSearch && matchesStatus;
         });
@@ -83,7 +83,7 @@ export default function UnionMembersPage() {
                                 <TabsTrigger value="all">All</TabsTrigger>
                                 <TabsTrigger value="active">Active</TabsTrigger>
                                 <TabsTrigger value="inactive">Inactive</TabsTrigger>
-                                <TabsTrigger value="not subscribed">Not Subscribed</TabsTrigger>
+                                <TabsTrigger value="pending">Pending</TabsTrigger>
                             </TabsList>
                         </Tabs>
                         <form onSubmit={handleSearch} className="flex gap-2">
@@ -121,7 +121,7 @@ export default function UnionMembersPage() {
                                         <TableCell>
                                             <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
                                                 className={user.subscription?.status === 'active' ? 'bg-green-100 text-green-800 capitalize' : 'bg-red-100 text-red-800 capitalize'}>
-                                                {user.subscription?.status || 'not subscribed'}
+                                                {user.subscription?.status || 'pending'}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>

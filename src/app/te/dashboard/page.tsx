@@ -40,9 +40,9 @@ export default function DashboardPageTe() {
   let daysLeft: number | null = null;
   let expiryDate: Date | null = null;
   let accountIsInactive = false;
-  const userStatus = userData?.subscription?.status || 'not subscribed';
+  const userStatus = userData?.subscription?.status || 'pending';
 
-  if (userData && userStatus === 'not subscribed') {
+  if (userData && userStatus === 'pending') {
     const now = new Date();
     // Determine the start date for the grace period calculation
     const gracePeriodStartDate = userData.subscription?.renewalDate

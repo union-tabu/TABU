@@ -9,7 +9,7 @@ export interface UserData {
   email?: string;
   subscription?: {
     plan: 'monthly' | 'yearly';
-    status: 'active' | 'inactive' | 'cancelled' | 'not subscribed' | 'lapsed';
+    status: 'active' | 'inactive' | 'cancelled' | 'pending' | 'lapsed';
     renewalDate: {
       seconds: number;
       nanoseconds: number;

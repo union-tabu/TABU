@@ -53,7 +53,7 @@ export default function UnionMembersPage() {
             const matchesSearch = `${user.fullName}`.toLowerCase().includes(lowercasedSearchTerm) || 
                                   user.phone.includes(searchTerm) ||
                                   user.id.toLowerCase().includes(lowercasedSearchTerm);
-            const status = user.subscription?.status || 'not subscribed';
+            const status = user.subscription?.status || 'pending';
             const matchesStatus = filterStatus === 'all' || status === filterStatus;
             return matchesSearch && matchesStatus;
         });
@@ -104,7 +104,7 @@ export default function UnionMembersPage() {
                                     <TabsTrigger value="all">All</TabsTrigger>
                                     <TabsTrigger value="active">Active</TabsTrigger>
                                     <TabsTrigger value="inactive">Inactive</TabsTrigger>
-                                    <TabsTrigger value="not subscribed">Not Subscribed</TabsTrigger>
+                                    <TabsTrigger value="pending">Pending</TabsTrigger>
                                 </TabsList>
                             </ScrollArea>
                         </Tabs>
@@ -135,7 +135,7 @@ export default function UnionMembersPage() {
                                             </div>
                                             <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
                                                 className={`${user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} capitalize shrink-0`}>
-                                                {user.subscription?.status || 'not subscribed'}
+                                                {user.subscription?.status || 'pending'}
                                             </Badge>
                                         </div>
                                     </CardHeader>
@@ -180,7 +180,7 @@ export default function UnionMembersPage() {
                                             <TableCell>
                                                 <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
                                                     className={user.subscription?.status === 'active' ? 'bg-green-100 text-green-800 capitalize' : 'bg-red-100 text-red-800 capitalize'}>
-                                                    {user.subscription?.status || 'not subscribed'}
+                                                    {user.subscription?.status || 'pending'}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>

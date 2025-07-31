@@ -29,14 +29,14 @@ export default function UnionMembersPageTe() {
     const statusMap: { [key: string]: string } = {
         'active': 'క్రియాశీలం',
         'inactive': 'నిష్క్రియం',
-        'not subscribed': 'సభ్యత్వం లేదు'
+        'pending': 'పెండింగ్‌లో ఉంది'
     };
     
     const filterMap: { [key: string]: string } = {
         'all': 'అన్నీ',
         'active': 'క్రియాశీలం',
         'inactive': 'నిష్క్రియం',
-        'not subscribed': 'సభ్యత్వం లేదు'
+        'pending': 'పెండింగ్‌లో ఉంది'
     };
 
     useEffect(() => {
@@ -61,7 +61,7 @@ export default function UnionMembersPageTe() {
     const filteredUsers = useMemo(() => {
         return users.filter(user => {
             const matchesSearch = user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || user.phone.includes(searchTerm);
-            const status = user.subscription?.status || 'not subscribed';
+            const status = user.subscription?.status || 'pending';
             const matchesStatus = filterStatus === 'all' || status === filterStatus;
             return matchesSearch && matchesStatus;
         });
@@ -96,7 +96,7 @@ export default function UnionMembersPageTe() {
                                 <TabsTrigger value="all">{filterMap['all']}</TabsTrigger>
                                 <TabsTrigger value="active">{filterMap['active']}</TabsTrigger>
                                 <TabsTrigger value="inactive">{filterMap['inactive']}</TabsTrigger>
-                                <TabsTrigger value="not subscribed">{filterMap['not subscribed']}</TabsTrigger>
+                                <TabsTrigger value="pending">{filterMap['pending']}</TabsTrigger>
                             </TabsList>
                         </Tabs>
                         <form onSubmit={handleSearch} className="flex gap-2">
@@ -134,7 +134,7 @@ export default function UnionMembersPageTe() {
                                         <TableCell>
                                             <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
                                                 className={user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                                                {statusMap[user.subscription?.status || 'not subscribed'] || user.subscription?.status}
+                                                {statusMap[user.subscription?.status || 'pending'] || user.subscription?.status}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>

@@ -46,7 +46,7 @@ export default function SubscribePageTe() {
   const MONTHLY_PRICE = 100;
   const YEARLY_PRICE = 1200;
 
-  if (userData?.subscription?.status === 'not subscribed') {
+  if (userData?.subscription?.status === 'pending') {
     const now = new Date();
     // Determine the start date for the lapse calculation
     const gracePeriodStartDate = userData.subscription?.renewalDate
@@ -121,4 +121,3 @@ export default function SubscribePageTe() {
     </div>
   );
 }
-

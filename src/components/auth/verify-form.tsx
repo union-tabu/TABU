@@ -73,12 +73,12 @@ export default function VerifyForm() {
       await setDoc(doc(db, "users", user.uid), {
         fullName: signupData.fullName,
         phone: signupData.phone,
-        addressLine: signupData.address,
+        addressLine: signupData.addressLine,
         city: signupData.city,
         state: signupData.state,
-        pinCode: signupData.pin,
+        pinCode: signupData.pinCode,
         createdAt: new Date(),
-        subscription: { status: 'not subscribed' },
+        subscription: { status: 'pending' },
         email: ''
       });
 

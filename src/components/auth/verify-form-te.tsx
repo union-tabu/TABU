@@ -78,7 +78,7 @@ export default function VerifyFormTe() {
         state: signupData.state,
         pinCode: signupData.pin,
         createdAt: new Date(),
-        subscription: { status: 'not subscribed' },
+        subscription: { status: 'pending' },
         email: ''
       });
       

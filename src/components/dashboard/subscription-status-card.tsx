@@ -22,13 +22,13 @@ const statusMap: { [key: string]: string } = {
     'active': 'Active',
     'inactive': 'Inactive',
     'cancelled': 'Cancelled',
-    'not subscribed': 'Not Subscribed'
+    'pending': 'Pending'
 };
 const statusMapTe: { [key: string]: string } = {
     'active': 'క్రియాశీలం',
     'inactive': 'నిష్క్రియం',
     'cancelled': 'రద్దు చేయబడింది',
-    'not subscribed': 'సభ్యత్వం పొందలేదు'
+    'pending': 'పెండింగ్‌లో ఉంది'
 };
 
 export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolean }) {
@@ -70,7 +70,7 @@ export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolea
         );
     }
     
-    const userStatus = userData?.subscription?.status || 'not subscribed';
+    const userStatus = userData?.subscription?.status || 'pending';
 
     if (!userData || !userData.subscription || userStatus !== 'active') {
        return null;
