@@ -87,9 +87,9 @@ export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolea
 
     const titleText = isTelugu ? "మీ ఖాతా వివరాలు" : "Your Account Details";
     const descriptionText = isTelugu ? "మీ ప్రస్తుత ప్లాన్ మరియు స్థితిని వీక్షించండి." : "View your current plan and status.";
-    const planLabel = isTelugu ? "ప్లాన్" : "Plan";
+    const planLabel = isTelugu ? "ప్రస్తుత ప్లాన్" : "Current Plan";
     const statusLabel = isTelugu ? "స్థితి" : "Status";
-    const renewalLabel = isTelugu ? "తదుపరి పునరుద్ధరణ" : "Next Renewal";
+    const renewalLabel = isTelugu ? "తదుపరి చెల్లింపు" : "Next Payment";
     
     const statusBadgeVariant = status === 'active' ? 'default' : 'destructive';
     const statusBadgeClass = status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
