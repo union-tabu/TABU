@@ -3,6 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 export function HeroSectionTe() {
   return (
@@ -27,9 +28,16 @@ export function HeroSectionTe() {
             </div>
           </div>
           
-          {/* Image placeholder */}
+          {/* Image */}
           <div className="order-1 lg:order-2">
-            <div data-ai-hint="construction worker" className="w-full h-64 sm:h-80 lg:h-96 xl:h-[500px] bg-gray-200 rounded-lg shadow-sm"></div>
+            <Image 
+              src="/logo.png" 
+              alt="Telangana All Building Workers Union Logo"
+              width={500}
+              height={500}
+              className="w-full h-auto rounded-lg shadow-sm"
+              priority
+            />
           </div>
         </div>
       </div>

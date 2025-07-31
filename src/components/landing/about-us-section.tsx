@@ -3,6 +3,7 @@
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from 'next/image';
 
 export function AboutUsSection() {
   return (
@@ -10,9 +11,15 @@ export function AboutUsSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-16 sm:py-20 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 xl:gap-20 items-start">
-            {/* Left side - Image placeholder */}
+            {/* Left side - Image */}
             <div className="order-2 lg:order-1">
-              <div data-ai-hint="construction workers" className="w-full h-64 sm:h-80 lg:h-96 bg-gray-200 rounded-lg shadow-sm"></div>
+               <Image 
+                  src="/about-sec.jpg" 
+                  alt="Construction workers collaborating"
+                  width={600}
+                  height={400}
+                  className="w-full h-auto object-cover rounded-lg shadow-sm"
+                />
             </div>
             
             {/* Right side - Content */}
