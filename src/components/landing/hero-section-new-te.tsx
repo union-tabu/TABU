@@ -29,13 +29,13 @@ export function HeroSectionTe() {
           </div>
           
           {/* Image */}
-          <div className="order-1 lg:order-2">
+          <div className="order-1 lg:order-2 flex justify-center">
             <Image 
-              src="/logo.png" 
+              src="/tabu-logo-website.png" 
               alt="Telangana All Building Workers Union Logo"
-              width={500}
-              height={500}
-              className="w-full h-auto rounded-lg shadow-sm"
+              width={400}
+              height={400}
+              className="w-auto h-auto rounded-lg"
               priority
             />
           </div>
