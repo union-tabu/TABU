@@ -7,9 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { te } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Star, Calendar, ShieldCheck, Clock } from 'lucide-react';
+import { Calendar, ShieldCheck, Clock } from 'lucide-react';
 
 const planMap: { [key: string]: string } = {
     'monthly': 'Monthly',
@@ -87,7 +85,7 @@ export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolea
     const currentPlan = plan ? (isTelugu ? (planMapTe[plan] || plan) : (planMap[plan] || plan)) : 'N/A';
     const currentStatus = isTelugu ? (statusMapTe[status] || status) : (statusMap[status] || status);
 
-    const titleText = isTelugu ? "మీ సభ్యత్వ వివరాలు" : "Your Subscription Details";
+    const titleText = isTelugu ? "మీ ఖాతా వివరాలు" : "Your Account Details";
     const descriptionText = isTelugu ? "మీ ప్రస్తుత ప్లాన్ మరియు స్థితిని వీక్షించండి." : "View your current plan and status.";
     const planLabel = isTelugu ? "ప్లాన్" : "Plan";
     const statusLabel = isTelugu ? "స్థితి" : "Status";
@@ -99,7 +97,7 @@ export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolea
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Star className="text-primary" /> {titleText}</CardTitle>
+                <CardTitle>{titleText}</CardTitle>
                 <CardDescription>{descriptionText}</CardDescription>
             </CardHeader>
             <CardContent>
