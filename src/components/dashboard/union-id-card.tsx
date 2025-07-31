@@ -1,6 +1,7 @@
 
 "use client";
 
+import * as React from "react";
 import { useRef, useCallback } from "react";
 import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
