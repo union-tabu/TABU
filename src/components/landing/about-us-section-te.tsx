@@ -16,8 +16,8 @@ export function AboutUsSectionTe() {
                <Image 
                   src="/about-sec.jpg" 
                   alt="నిర్మాణ కార్మికులు సహకరిస్తున్నారు"
-                  width={550}
-                  height={350}
+                  width={500}
+                  height={450}
                   className="w-full h-auto object-cover rounded-lg shadow-lg"
                 />
             </div>

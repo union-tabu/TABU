@@ -16,8 +16,8 @@ export function AboutUsSection() {
                <Image 
                   src="/about-sec.jpg" 
                   alt="Construction workers collaborating"
-                  width={550}
-                  height={350}
+                  width={500}
+                  height={450}
                   className="w-full h-auto object-cover rounded-lg shadow-lg"
                 />
             </div>
