@@ -1,3 +1,4 @@
+
 // src/components/auth/forgot-password-form.tsx
 "use client";
 
@@ -287,7 +288,7 @@ export default function ForgotPasswordForm() {
       
       toast({
         title: "Password Reset Successful!",
-        description: "Your password has been updated. Redirecting to login...",
+        description: "Your password has been updated. Redirecting to sign in...",
       });
 
       await auth.signOut();
@@ -445,7 +446,7 @@ export default function ForgotPasswordForm() {
           <div className="mt-4 text-center text-sm">
             Remember your password?{' '}
             <Link href="/login" className="underline hover:text-primary">
-              Back to Login
+              Back to Sign In
             </Link>
           </div>
         </CardContent>

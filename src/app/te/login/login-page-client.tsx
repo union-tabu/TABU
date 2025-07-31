@@ -49,7 +49,7 @@ export default function LoginPageClient() {
          if (searchParams.get('reset') === 'success') {
             toast({
                 title: "పాస్‌వర్డ్ రీసెట్ విజయవంతమైంది!",
-                description: "మీరు ఇప్పుడు మీ కొత్త పాస్‌వర్డ్‌తో లాగిన్ చేయవచ్చు.",
+                description: "మీరు ఇప్పుడు మీ కొత్త పాస్‌వర్డ్‌తో సైన్ ఇన్ చేయవచ్చు.",
             });
             router.replace('/te/login', { scroll: false });
         }

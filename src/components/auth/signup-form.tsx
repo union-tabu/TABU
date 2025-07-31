@@ -1,3 +1,4 @@
+
 // src/components/auth/signup-form.tsx
 "use client";
 
@@ -23,11 +24,11 @@ declare global {
 interface FormData {
   fullName: string;
   phone: string;
-  address: string;
+  addressLine: string;
   city: string;
   state: string;
   country: string;
-  pin: string;
+  pinCode: string;
 }
 
 interface FormErrors {
@@ -43,11 +44,11 @@ export default function SignupForm() {
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
     phone: '',
-    address: '',
+    addressLine: '',
     city: '',
     state: '',
     country: 'India',
-    pin: '',
+    pinCode: '',
   });
 
   useEffect(() => {
@@ -62,10 +63,10 @@ export default function SignupForm() {
     const errors: FormErrors = {};
     if (!formData.fullName.trim()) errors.fullName = 'Full name is required';
     if (!/^[6-9]\d{9}$/.test(formData.phone)) errors.phone = 'Please enter a valid 10-digit Indian phone number';
-    if (!formData.address.trim()) errors.address = 'Address is required';
+    if (!formData.addressLine.trim()) errors.addressLine = 'Address is required';
     if (!formData.city.trim()) errors.city = 'City is required';
     if (!formData.state.trim()) errors.state = 'State is required';
-    if (!/^\d{6}$/.test(formData.pin)) errors.pin = 'PIN code must be 6 digits';
+    if (!/^\d{6}$/.test(formData.pinCode)) errors.pinCode = 'PIN code must be 6 digits';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -73,7 +74,7 @@ export default function SignupForm() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     if (formErrors[id]) setFormErrors(prev => ({ ...prev, [id]: '' }));
-    setFormData(prev => ({ ...prev, [id]: value }));
+    setFormData(prev => ({ ...prev, [id]: value as any }));
   };
 
   const handleSendOtp = async (event: React.FormEvent) => {
@@ -86,7 +87,7 @@ export default function SignupForm() {
       if (phoneExists) {
         toast({
           title: "Phone Number Already Registered",
-          description: "An account with this phone number already exists. Please proceed to login.",
+          description: "An account with this phone number already exists. Please proceed to sign in.",
           variant: "destructive",
         });
         router.push('/login');
@@ -149,9 +150,9 @@ export default function SignupForm() {
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="address">Address *</Label>
-              <Input id="address" placeholder="11-2-333, Landmark, Street Name" required onChange={handleInputChange} value={formData.address} className={formErrors.address ? 'border-red-500' : ''}/>
-              {formErrors.address && <p className="text-xs text-red-500">{formErrors.address}</p>}
+              <Label htmlFor="addressLine">Address *</Label>
+              <Input id="addressLine" placeholder="11-2-333, Landmark, Street Name" required onChange={handleInputChange} value={formData.addressLine} className={formErrors.addressLine ? 'border-red-500' : ''}/>
+              {formErrors.addressLine && <p className="text-xs text-red-500">{formErrors.addressLine}</p>}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
@@ -171,9 +172,9 @@ export default function SignupForm() {
                 <Input id="country" value={formData.country} disabled/>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="pin">PIN Code *</Label>
-                <Input id="pin" placeholder="500089" required onChange={handleInputChange} value={formData.pin} maxLength={6} className={formErrors.pin ? 'border-red-500' : ''}/>
-                {formErrors.pin && <p className="text-xs text-red-500">{formErrors.pin}</p>}
+                <Label htmlFor="pinCode">PIN Code *</Label>
+                <Input id="pinCode" placeholder="500089" required onChange={handleInputChange} value={formData.pinCode} maxLength={6} className={formErrors.pinCode ? 'border-red-500' : ''}/>
+                {formErrors.pinCode && <p className="text-xs text-red-500">{formErrors.pinCode}</p>}
               </div>
             </div>
             <div id="recaptcha-container"></div>
@@ -184,7 +185,7 @@ export default function SignupForm() {
           <div className="mt-4 text-center text-sm">
             Already have an account?{' '}
             <Link href="/login" className="underline hover:text-primary">
-              Login
+              Sign In
             </Link>
           </div>
         </CardContent>

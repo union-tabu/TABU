@@ -26,7 +26,7 @@ export default function LoginFormTe() {
         if (searchParams.get('reset') === 'success') {
         toast({
             title: "పాస్‌వర్డ్ రీసెట్ విజయవంతమైంది!",
-            description: "మీరు ఇప్పుడు మీ కొత్త పాస్‌వర్డ్‌తో లాగిన్ చేయవచ్చు.",
+            description: "మీరు ఇప్పుడు మీ కొత్త పాస్‌వర్డ్‌తో సైన్ ఇన్ చేయవచ్చు.",
         });
         router.replace('/te/login', { scroll: false });
         }
@@ -51,7 +51,7 @@ export default function LoginFormTe() {
             await signInWithEmailAndPassword(auth, email, password);
             
             toast({
-                title: "లాగిన్ విజయవంతమైంది!",
+                title: "సైన్ ఇన్ విజయవంతమైంది!",
                 description: "స్వాగతం! డాష్‌బోర్డ్‌కు మళ్ళిస్తున్నాము...",
             });
             router.push('/te/dashboard');
@@ -62,10 +62,10 @@ export default function LoginFormTe() {
             if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
                 errorMessage = "తప్పు ఫోన్ నంబర్ లేదా పాస్‌వర్డ్. దయచేసి మీ వివరాలను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.";
             } else if (error.code === 'auth/too-many-requests') {
-                errorMessage = "చాలా విఫలమైన లాగిన్ ప్రయత్నాల కారణంగా ఈ ఖాతాకు యాక్సెస్ తాత్కాలికంగా నిలిపివేయబడింది. దయచేసి కొన్ని నిమిషాలు ఆగి మళ్ళీ ప్రయత్నించండి.";
+                errorMessage = "చాలా విఫలమైన సైన్-ఇన్ ప్రయత్నాల కారణంగా ఈ ఖాతాకు యాక్సెస్ తాత్కాలికంగా నిలిపివేయబడింది. దయచేసి కొన్ని నిమిషాలు ఆగి మళ్ళీ ప్రయత్నించండి.";
             }
             toast({
-                title: "లాగిన్ విఫలమైంది",
+                title: "సైన్ ఇన్ విఫలమైంది",
                 description: errorMessage,
                 variant: "destructive",
             });
@@ -78,8 +78,8 @@ export default function LoginFormTe() {
     <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-background px-4 py-12">
       <Card className="mx-auto max-w-sm w-full shadow-xl">
         <CardHeader>
-          <CardTitle className="text-2xl font-headline">లాగిన్</CardTitle>
-          <CardDescription>లాగిన్ చేయడానికి మీ ఫోన్ నంబర్ మరియు పాస్‌వర్డ్‌ను నమోదు చేయండి</CardDescription>
+          <CardTitle className="text-2xl font-headline">సైన్ ఇన్</CardTitle>
+          <CardDescription>సైన్ ఇన్ చేయడానికి మీ ఫోన్ నంబర్ మరియు పాస్‌వర్డ్‌ను నమోదు చేయండి</CardDescription>
         </CardHeader>
         <CardContent>
             <form className="grid gap-4" onSubmit={handleLogin}>
@@ -114,7 +114,7 @@ export default function LoginFormTe() {
                     />
                 </div>
                 <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={loading}>
-                    {loading ? 'లాగిన్ అవుతోంది...' : 'లాగిన్'}
+                    {loading ? 'సైన్ ఇన్ అవుతోంది...' : 'సైన్ ఇన్'}
                 </Button>
             </form>
           <div className="mt-4 text-center text-sm">

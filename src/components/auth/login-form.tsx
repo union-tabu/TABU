@@ -37,7 +37,7 @@ export default function LoginForm() {
     if (searchParams.get('reset') === 'success') {
       toast({
         title: "Password Reset Successful!",
-        description: "You can now log in with your new password.",
+        description: "You can now sign in with your new password.",
       });
       router.replace('/login', { scroll: false });
     }
@@ -132,7 +132,7 @@ export default function LoginForm() {
       
       toast({
         title: "Account Temporarily Locked",
-        description: "Too many failed login attempts. Your account has been temporarily locked for 15 minutes for security reasons.",
+        description: "Too many failed sign-in attempts. Your account has been temporarily locked for 15 minutes for security reasons.",
         variant: "destructive",
       });
     } else {
@@ -152,7 +152,7 @@ export default function LoginForm() {
     localStorage.removeItem('loginBlockTime');
     
     toast({
-      title: "Login Successful!",
+      title: "Sign In Successful!",
       description: "Welcome back. Redirecting you to the dashboard...",
     });
     
@@ -196,7 +196,7 @@ export default function LoginForm() {
       console.error("Login Error:", error);
       
       let errorMessage = "An unexpected error occurred. Please try again.";
-      let errorTitle = "Login Failed";
+      let errorTitle = "Sign In Failed";
       
       if (error.code === 'auth/invalid-credential' || 
           error.code === 'auth/user-not-found' || 
@@ -242,11 +242,11 @@ export default function LoginForm() {
     <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-background px-4 py-12">
       <Card className="mx-auto max-w-sm w-full shadow-xl">
         <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardTitle className="text-2xl">Sign In</CardTitle>
           <CardDescription>
             {isBlocked 
               ? `Account locked. Try again in ${formatTime(blockTimeRemaining)}`
-              : "Enter your phone number and password to login"
+              : "Enter your phone number and password to sign in"
             }
           </CardDescription>
         </CardHeader>
@@ -262,7 +262,7 @@ export default function LoginForm() {
                 <div className="ml-3">
                   <h3 className="text-sm font-medium text-red-800">Account Temporarily Locked</h3>
                   <div className="mt-1 text-sm text-red-700">
-                    Too many failed login attempts. Please wait {formatTime(blockTimeRemaining)} before trying again.
+                    Too many failed sign-in attempts. Please wait {formatTime(blockTimeRemaining)} before trying again.
                   </div>
                 </div>
               </div>
@@ -327,10 +327,10 @@ export default function LoginForm() {
               {loading ? (
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Logging in...
+                  Signing In...
                 </div>
               ) : (
-                'Login'
+                'Sign In'
               )}
             </Button>
           </form>

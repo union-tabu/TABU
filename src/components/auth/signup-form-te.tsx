@@ -29,11 +29,11 @@ export default function SignupFormTe() {
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
-    address: '',
+    addressLine: '',
     city: '',
     state: '',
     country: 'భారతదేశం',
-    pin: '',
+    pinCode: '',
   });
 
   useEffect(() => {
@@ -48,10 +48,10 @@ export default function SignupFormTe() {
     const errors: { [key: string]: string } = {};
     if (!formData.fullName.trim()) errors.fullName = 'పూర్తి పేరు అవసరం';
     if (!/^[6-9]\d{9}$/.test(formData.phone)) errors.phone = 'దయచేసి చెల్లుబాటు అయ్యే 10-అంకెల భారతీయ ఫోన్ నంబర్‌ను నమోదు చేయండి';
-    if (!formData.address.trim()) errors.address = 'చిరునామా అవసరం';
+    if (!formData.addressLine.trim()) errors.addressLine = 'చిరునామా అవసరం';
     if (!formData.city.trim()) errors.city = 'నగరం అవసరం';
     if (!formData.state.trim()) errors.state = 'రాష్ట్రం అవసరం';
-    if (!/^\d{6}$/.test(formData.pin)) errors.pin = 'పిన్ కోడ్ 6 అంకెలు ఉండాలి';
+    if (!/^\d{6}$/.test(formData.pinCode)) errors.pinCode = 'పిన్ కోడ్ 6 అంకెలు ఉండాలి';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -59,7 +59,7 @@ export default function SignupFormTe() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     if (formErrors[id]) setFormErrors(prev => ({ ...prev, [id]: '' }));
-    setFormData(prev => ({ ...prev, [id]: value }));
+    setFormData(prev => ({ ...prev, [id]: value as any }));
   };
 
   const handleSendOtp = async (event: React.FormEvent) => {
@@ -72,7 +72,7 @@ export default function SignupFormTe() {
       if (phoneExists) {
         toast({
           title: 'ఫోన్ నంబర్ ఇప్పటికే నమోదు చేయబడింది',
-          description: 'ఈ ఫోన్ నంబర్‌తో ఖాతా ఇప్పటికే ఉంది. దయచేసి లాగిన్ చేయండి.',
+          description: 'ఈ ఫోన్ నంబర్‌తో ఖాతా ఇప్పటికే ఉంది. దయచేసి సైన్ ఇన్ చేయండి.',
           variant: 'destructive',
         });
         router.push('/te/login');
@@ -135,9 +135,9 @@ export default function SignupFormTe() {
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="address">చిరునామా *</Label>
-              <Input id="address" placeholder="11-2-333, ల్యాండ్‌మార్క్" required onChange={handleInputChange} value={formData.address} className={formErrors.address ? 'border-red-500' : ''} />
-              {formErrors.address && <p className="text-xs text-red-500">{formErrors.address}</p>}
+              <Label htmlFor="addressLine">చిరునామా *</Label>
+              <Input id="addressLine" placeholder="11-2-333, ల్యాండ్‌మార్క్" required onChange={handleInputChange} value={formData.addressLine} className={formErrors.addressLine ? 'border-red-500' : ''} />
+              {formErrors.addressLine && <p className="text-xs text-red-500">{formErrors.addressLine}</p>}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
@@ -157,9 +157,9 @@ export default function SignupFormTe() {
                 <Input id="country" value={formData.country} disabled />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="pin">పిన్ *</Label>
-                <Input id="pin" placeholder="500089" required onChange={handleInputChange} value={formData.pin} maxLength={6} className={formErrors.pin ? 'border-red-500' : ''} />
-                {formErrors.pin && <p className="text-xs text-red-500">{formErrors.pin}</p>}
+                <Label htmlFor="pinCode">పిన్ *</Label>
+                <Input id="pinCode" placeholder="500089" required onChange={handleInputChange} value={formData.pinCode} maxLength={6} className={formErrors.pinCode ? 'border-red-500' : ''} />
+                {formErrors.pinCode && <p className="text-xs text-red-500">{formErrors.pinCode}</p>}
               </div>
             </div>
             <div id="recaptcha-container"></div>
@@ -170,7 +170,7 @@ export default function SignupFormTe() {
           <div className="mt-4 text-center text-sm">
             ఇప్పటికే ఖాతా ఉందా?{' '}
             <Link href="/te/login" className="underline hover:text-primary">
-              లాగిన్
+              సైన్ ఇన్
             </Link>
           </div>
         </CardContent>
