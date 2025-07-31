@@ -6,20 +6,38 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
-import React from 'react';
+import React, { useEffect } from 'react';
 
 const FAKE_EMAIL_DOMAIN = "@sanghika.samakhya";
 
 export default function LoginFormTe() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { toast } = useToast();
     const [phone, setPhone] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [loading, setLoading] = React.useState(false);
+
+    useEffect(() => {
+        if (searchParams.get('registered') === 'true') {
+        toast({
+            title: "ఖాతా సృష్టించబడింది!",
+            description: "మీ ఖాతా విజయవంతంగా సృష్టించబడింది. దయచేసి లాగిన్ చేయండి.",
+        });
+        router.replace('/te/login', { scroll: false });
+        }
+        if (searchParams.get('reset') === 'success') {
+        toast({
+            title: "పాస్‌వర్డ్ రీసెట్ విజయవంతమైంది!",
+            description: "మీరు ఇప్పుడు మీ కొత్త పాస్‌వర్డ్‌తో లాగిన్ చేయవచ్చు.",
+        });
+        router.replace('/te/login', { scroll: false });
+        }
+    }, [searchParams, router, toast]);
 
     const handleLogin = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -39,6 +57,10 @@ export default function LoginFormTe() {
             const email = `${phone}${FAKE_EMAIL_DOMAIN}`;
             await signInWithEmailAndPassword(auth, email, password);
             
+            toast({
+                title: "లాగిన్ విజయవంతమైంది!",
+                description: "స్వాగతం! డాష్‌బోర్డ్‌కు మళ్ళిస్తున్నాము...",
+            });
             router.push('/te/dashboard');
             
         } catch (error: any) {
@@ -47,7 +69,7 @@ export default function LoginFormTe() {
             if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
                 errorMessage = "తప్పు ఫోన్ నంబర్ లేదా పాస్‌వర్డ్. దయచేసి మీ వివరాలను తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.";
             } else if (error.code === 'auth/too-many-requests') {
-                errorMessage = "చాలా విఫలమైన లాగిన్ ప్రయత్నాల కారణంగా ఈ ఖాతాకు యాక్సెస్ తాత్కాలికంగా నిలిపివేయబడింది. మీరు మీ పాస్‌వర్డ్‌ను రీసెట్ చేయడం ద్వారా దాన్ని వెంటనే పునరుద్ధరించవచ్చు లేదా మీరు తర్వాత మళ్లీ ప్రయత్నించవచ్చు.";
+                errorMessage = "చాలా విఫలమైన లాగిన్ ప్రయత్నాల కారణంగా ఈ ఖాతాకు యాక్సెస్ తాత్కాలికంగా నిలిపివేయబడింది. దయచేసి కొన్ని నిమిషాలు ఆగి మళ్ళీ ప్రయత్నించండి.";
             }
             toast({
                 title: "లాగిన్ విఫలమైంది",

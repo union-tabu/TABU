@@ -79,6 +79,9 @@ export default function SignupFormTe() {
         return;
       }
 
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+      }
       const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { size: 'invisible' });
       const fullPhoneNumber = `+91${formData.phone}`;
       const confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, recaptchaVerifier);
@@ -86,12 +89,18 @@ export default function SignupFormTe() {
       sessionStorage.setItem('signupFormDataTe', JSON.stringify(formData));
       window.confirmationResult = confirmationResult;
 
-      toast({ title: 'OTP విజయవంతంగా పంపబడింది!', description: `కోడ్ +91${formData.phone}కు పంపబడింది` });
+      toast({ title: 'OTP విజయవంతంగా పంపబడింది!', description: `ధృవీకరణ కోడ్ +91${formData.phone}కు పంపబడింది.` });
       router.push('/te/verify');
 
     } catch (error: any) {
       console.error("Error sending OTP:", error);
-      toast({ title: 'OTP పంపడంలో విఫలమైంది', description: error.message, variant: 'destructive' });
+      let errorMessage = "ఊహించని లోపం సంభవించింది. దయచేసి మళ్ళీ ప్రయత్నించండి.";
+        if (error.code === 'auth/too-many-requests') {
+            errorMessage = "చాలా అభ్యర్థనలు పంపబడ్డాయి. దయచేసి కొన్ని నిమిషాలు ఆగి మళ్ళీ ప్రయత్నించండి.";
+        } else if (error.code === 'auth/invalid-phone-number') {
+            errorMessage = "ఫోన్ నంబర్ ఫార్మాట్ చెల్లదు.";
+        }
+      toast({ title: 'OTP పంపడంలో విఫలమైంది', description: errorMessage, variant: 'destructive' });
     } finally {
       setLoading(false);
     }

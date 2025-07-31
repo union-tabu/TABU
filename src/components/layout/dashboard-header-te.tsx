@@ -111,8 +111,8 @@ export function DashboardHeaderTe() {
     await logout();
     router.push('/te');
     toast({
-      title: "లాగ్ అవుట్ చేయబడింది",
-      description: "మీరు విజయవంతంగా లాగ్ అవుట్ చేసారు.",
+      title: "మీరు లాగ్ అవుట్ చేసారు",
+      description: "మీరు మీ ఖాతా నుండి సురక్షితంగా సైన్ అవుట్ అయ్యారు.",
     });
   };
 

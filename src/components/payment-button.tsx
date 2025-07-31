@@ -63,19 +63,20 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             return;
         }
 
-        if (!userData.firstName || !userData.lastName || !userData.phone) {
+        if (!userData.firstName || !userData.lastName || !userData.phone || !userData.address) {
             toast({ 
                 title: 'Profile Incomplete', 
-                description: 'Please complete your profile before making a payment.', 
+                description: 'Please complete your profile with your name, phone, and address before making a payment.', 
                 variant: 'destructive' 
             });
+             router.push(`${isTelugu ? '/te' : ''}/profile`);
             setPaymentProcessing(false);
             return;
         }
 
         const scriptLoaded = await loadRazorpayScript();
         if (!scriptLoaded) {
-            toast({ title: 'Error', description: 'Could not load payment gateway.', variant: 'destructive' });
+            toast({ title: 'Payment Gateway Error', description: 'Could not load the payment gateway. Please check your internet connection and try again.', variant: 'destructive' });
             setPaymentProcessing(false);
             return;
         }
@@ -96,7 +97,7 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             if (!orderResponse.success || !orderResponse.order) {
                 toast({ 
                     title: 'Payment Error', 
-                    description: orderResponse.error || 'Could not create payment order.', 
+                    description: orderResponse.error || 'Could not create a payment order. Please try again.', 
                     variant: 'destructive' 
                 });
                 setPaymentProcessing(false);
@@ -109,10 +110,11 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
                 key: order.key,
                 amount: order.amount,
                 currency: order.currency,
-                name: "Sanghika Samakhya",
+                name: "Telangana All Building Workers Union",
                 description: `Membership - ${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan`,
                 order_id: order.id,
                 handler: async (response: any) => {
+                    setPaymentProcessing(true); // Keep it processing during server-side handling
                     try {
                         const paymentResult = await handlePaymentSuccess({
                             ...response,
@@ -122,29 +124,33 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
                         });
 
                         if (paymentResult.success) {
-                            toast({ title: 'Payment Successful!', description: 'Your membership is now active.' });
+                            toast({ title: 'Payment Successful!', description: 'Your membership is now active. Welcome!' });
+                            router.refresh(); // Refresh page to show updated status
                             router.push(isTelugu ? '/te/dashboard' : '/dashboard');
                         } else {
-                            toast({ title: 'Payment Failed', description: paymentResult.error, variant: 'destructive' });
+                            toast({ title: 'Payment Processing Failed', description: paymentResult.error, variant: 'destructive' });
                         }
                     } catch (error) {
-                        toast({ title: 'Payment Error', description: 'Failed to process payment', variant: 'destructive' });
+                        toast({ title: 'Server Error', description: 'Failed to update your membership after payment. Please contact support.', variant: 'destructive' });
+                    } finally {
+                       setPaymentProcessing(false);
                     }
-                    setPaymentProcessing(false);
                 },
                 prefill: {
                     name: order.userName,
                     contact: order.userPhone,
+                    email: userData.email || ''
                 },
                 notes: {
                     address: userData.address || 'Not provided',
                 },
                 theme: {
-                    color: "#FF9900"
+                    color: "#000080"
                 },
                 modal: {
                     ondismiss: () => {
                         setPaymentProcessing(false);
+                        toast({ title: 'Payment Cancelled', description: 'The payment process was not completed.'});
                     }
                 }
             };
@@ -152,9 +158,14 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             const rzp = new window.Razorpay(options);
             
             rzp.on('payment.failed', (response: any) => {
+                console.error("Razorpay payment failed:", response.error);
+                let description = response.error?.description || 'The payment could not be processed.';
+                if (response.error?.reason) {
+                    description += ` Reason: ${response.error.reason.replace(/_/g, ' ')}.`;
+                }
                 toast({ 
                     title: 'Payment Failed', 
-                    description: response.error?.description || 'Payment failed', 
+                    description: description, 
                     variant: 'destructive' 
                 });
                 setPaymentProcessing(false);
@@ -165,7 +176,7 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
         } catch (error) {
             toast({ 
                 title: 'Payment Error', 
-                description: 'An unexpected error occurred. Please try again.', 
+                description: 'An unexpected error occurred while setting up the payment. Please try again.', 
                 variant: 'destructive' 
             });
             setPaymentProcessing(false);
@@ -186,7 +197,7 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
 
     return (
         <Button size="lg" className={buttonClass} onClick={handlePayment} disabled={paymentProcessing}>
-            {paymentProcessing ? 'Processing...' : (firebaseUser ? buttonText : (isTelugu ? 'చెల్లించడానికి సైన్ అప్ చేయండి' : 'Sign up to Pay'))}
+            {paymentProcessing ? (isTelugu ? 'ప్రాసెస్ చేస్తోంది...' : 'Processing...') : (firebaseUser ? buttonText : (isTelugu ? 'చెల్లించడానికి సైన్ అప్ చేయండి' : 'Sign up to Pay'))}
         </Button>
     );
 }

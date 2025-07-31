@@ -42,7 +42,9 @@ export default function ProfilePage() {
             });
             if (userData.dob) {
                 try {
-                    setDob(parse(userData.dob, 'yyyy-MM-dd', new Date()));
+                    // Ensure the date is parsed correctly without timezone issues
+                    const [year, month, day] = userData.dob.split('-').map(Number);
+                    setDob(new Date(year, month - 1, day));
                 } catch (e) {
                     console.warn("Invalid date format for DOB:", userData.dob)
                     setDob(undefined);
@@ -68,14 +70,14 @@ export default function ProfilePage() {
                 dob: dob ? format(dob, 'yyyy-MM-dd') : null,
             });
             toast({
-                title: "Profile Updated",
-                description: "Your information has been successfully updated.",
+                title: "Profile Updated!",
+                description: "Your information has been successfully saved.",
             });
         } catch (error) {
             console.error("Error updating profile: ", error);
             toast({
-                title: "Error",
-                description: "Could not update your profile. Please try again.",
+                title: "Update Failed",
+                description: "Could not save your profile. Please check your connection and try again.",
                 variant: "destructive",
             });
         } finally {
@@ -97,8 +99,9 @@ export default function ProfilePage() {
                            <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
                            <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
                            <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
-                           <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
                            <div className="space-y-2 md:col-span-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
+                           <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
+                           <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
                         </div>
                     </CardContent>
                     <CardFooter>
@@ -118,28 +121,32 @@ export default function ProfilePage() {
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><UserCircle className="text-primary" /> Personal Information</CardTitle>
-                    <CardDescription>View and manage your personal details.</CardDescription>
+                    <CardDescription>View and manage your personal details. This information is kept private.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="firstName">First Name</Label>
-                            <Input id="firstName" value={formData.firstName} onChange={handleChange} />
+                            <Input id="firstName" value={formData.firstName} onChange={handleChange} placeholder="Your first name" />
                         </div>
                          <div className="space-y-2">
                             <Label htmlFor="lastName">Last Name</Label>
-                            <Input id="lastName" value={formData.lastName} onChange={handleChange} />
+                            <Input id="lastName" value={formData.lastName} onChange={handleChange} placeholder="Your last name" />
                         </div>
                          <div className="space-y-2">
                             <Label htmlFor="phone">Phone</Label>
-                            <Input id="phone" value={formData.phone} onChange={handleChange} />
+                            <Input id="phone" value={formData.phone} onChange={handleChange} placeholder="Your 10-digit phone number" />
                         </div>
                          <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email">Email (Optional)</Label>
                             <Input id="email" type="email" value={formData.email} onChange={handleChange} placeholder="you@example.com" />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="dob">Date of Birth</Label>
+                        <div className="space-y-2 md:col-span-2">
+                            <Label htmlFor="address">Full Address</Label>
+                            <Input id="address" value={formData.address} onChange={handleChange} placeholder="Street, City, State, PIN Code" />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="dob">Date of Birth (Optional)</Label>
                             <Popover>
                                 <PopoverTrigger asChild>
                                   <Button
@@ -165,10 +172,6 @@ export default function ProfilePage() {
                                   />
                                 </PopoverContent>
                             </Popover>
-                        </div>
-                        <div className="space-y-2 md:col-span-2">
-                            <Label htmlFor="address">Address</Label>
-                            <Input id="address" value={formData.address} onChange={handleChange} placeholder="123 Main St, Anytown, State, 12345" />
                         </div>
                    </div>
                 </CardContent>

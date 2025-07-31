@@ -59,9 +59,11 @@ export default function ForgotPasswordFormTe() {
   const validateForm = () => {
     const errors: {[key: string]: string} = {};
     if (!/^[6-9]\d{9}$/.test(formData.phone)) errors.phone = 'దయచేసి చెల్లుబాటు అయ్యే 10-అంకెల భారతీయ ఫోన్ నంబర్‌ను నమోదు చేయండి';
-    if (otpSent && !/^\d{6}$/.test(formData.otp)) errors.otp = 'OTP తప్పనిసరిగా 6 అంకెలు ఉండాలి';
-    if (otpSent && formData.newPassword.length < 8) errors.newPassword = 'పాస్‌వర్డ్ కనీసం 8 అక్షరాలు ఉండాలి';
-    if (otpSent && formData.newPassword !== formData.confirmPassword) errors.confirmPassword = 'పాస్‌వర్డ్‌లు సరిపోలడం లేదు';
+    if (otpSent) {
+        if (!/^\d{6}$/.test(formData.otp)) errors.otp = 'OTP తప్పనిసరిగా 6 అంకెలు ఉండాలి';
+        if (formData.newPassword.length < 8) errors.newPassword = 'పాస్‌వర్డ్ కనీసం 8 అక్షరాలు ఉండాలి';
+        if (formData.newPassword !== formData.confirmPassword) errors.confirmPassword = 'పాస్‌వర్డ్‌లు సరిపోలడం లేదు';
+    }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -70,6 +72,18 @@ export default function ForgotPasswordFormTe() {
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
     if (formErrors[id]) setFormErrors(prev => ({ ...prev, [id]: '' }));
+  };
+  
+  const setupRecaptcha = () => {
+    if (window.recaptchaVerifier) {
+       window.recaptchaVerifier.clear();
+    }
+    try {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
+    } catch (error) {
+      console.error('reCAPTCHA సెటప్ లోపం:', error);
+      throw new Error('భద్రతా ధృవీకరణను ప్రారంభించడంలో విఫలమైంది');
+    }
   };
 
   const handleSendOtp = async (event: React.FormEvent) => {
@@ -83,25 +97,27 @@ export default function ForgotPasswordFormTe() {
       const querySnapshot = await getDocs(q);
       
       if (querySnapshot.empty) {
-        toast({ title: "ఫోన్ నంబర్ కనుగొనబడలేదు", description: "ఈ ఫోన్ నంబర్‌తో ఖాతా లేదు.", variant: "destructive" });
+        toast({ title: "ఫోన్ నంబర్ కనుగొనబడలేదు", description: "ఈ ఫోన్ నంబర్‌తో ఏ ఖాతా అనుబంధించబడలేదు. దయచేసి నంబర్‌ను తనిఖీ చేయండి లేదా సైన్ అప్ చేయండి.", variant: "destructive" });
         setLoading(false);
         return;
       }
-
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-      }
-      const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
+      
+      setupRecaptcha();
       const fullPhoneNumber = `+91${formData.phone}`;
-      window.confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, recaptchaVerifier);
+      
+      if (!window.recaptchaVerifier) {
+        throw new Error('భద్రతా ధృవీకరణ ప్రారంభించబడలేదు.');
+      }
+      
+      window.confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, window.recaptchaVerifier);
       
       setOtpSent(true);
       startResendTimer();
-      toast({ title: "OTP పంపబడింది", description: `ధృవీకరణ కోడ్ +91${formData.phone}కు పంపబడింది` });
+      toast({ title: "OTP పంపబడింది", description: `ధృవీకరణ కోడ్ +91${formData.phone}కు పంపబడింది.` });
 
     } catch (error: any) {
       console.error("OTP పంపడంలో లోపం:", error);
-      toast({ title: "OTP పంపడంలో విఫలమైంది", description: error.message, variant: "destructive" });
+      toast({ title: "OTP పంపడంలో విఫలమైంది", description: "OTP పంపడంలో ఒక లోపం ఉంది. దయచేసి మళ్లీ ప్రయత్నించండి.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -109,8 +125,19 @@ export default function ForgotPasswordFormTe() {
 
   const handleResendOtp = async () => {
     if (otpResendTimer > 0) return;
-    // Simplified resend logic to reuse handleSendOtp's core functionality
-    handleSendOtp(new Event('submit') as any);
+    setLoading(true);
+    try {
+        setupRecaptcha();
+        const fullPhoneNumber = `+91${formData.phone}`;
+        if (!window.recaptchaVerifier) throw new Error('భద్రతా ధృవీకరణ ప్రారంభించబడలేదు.');
+        window.confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, window.recaptchaVerifier);
+        startResendTimer();
+        toast({ title: "OTP మళ్ళీ పంపబడింది", description: `కొత్త ధృవీకరణ కోడ్ +91${formData.phone}కు పంపబడింది.` });
+    } catch (error) {
+        toast({ title: "OTP మళ్ళీ పంపడంలో విఫలమైంది", description: "దయచేసి మళ్లీ ప్రయత్నించండి.", variant: "destructive" });
+    } finally {
+        setLoading(false);
+    }
   };
   
   const startResendTimer = () => {
@@ -132,7 +159,7 @@ export default function ForgotPasswordFormTe() {
     setLoading(true);
 
     try {
-      if (!window.confirmationResult) throw new Error("OTP ధృవీకరణ ప్రారంభించబడలేదు.");
+      if (!window.confirmationResult) throw new Error("OTP ధృవీకరణ సెషన్ గడువు ముగిసింది. దయచేసి కొత్త OTPని అభ్యర్థించండి.");
 
       const userCredential = await window.confirmationResult.confirm(formData.otp);
       const user = userCredential.user;
@@ -141,11 +168,17 @@ export default function ForgotPasswordFormTe() {
       
       toast({ title: "పాస్‌వర్డ్ విజయవంతంగా రీసెట్ చేయబడింది!", description: "మీరు ఇప్పుడు మీ కొత్త పాస్‌వర్డ్‌తో లాగిన్ చేయవచ్చు." });
       await auth.signOut();
-      router.push('/te/login');
+      router.push('/te/login?reset=success');
 
     } catch (error: any) {
       console.error("పాస్‌వర్డ్ రీసెట్ లోపం:", error);
-      toast({ title: "పాస్‌వర్డ్ రీసెట్ విఫలమైంది", description: error.message, variant: "destructive" });
+      let errorMessage = "పాస్‌వర్డ్‌ను రీసెట్ చేయడంలో ఒక లోపం ఉంది. దయచేసి మళ్లీ ప్రయత్నించండి.";
+      if (error.code === 'auth/invalid-verification-code') {
+          errorMessage = "మీరు నమోదు చేసిన OTP తప్పు. దయచేసి తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.";
+      } else if (error.code === 'auth/code-expired') {
+          errorMessage = "OTP గడువు ముగిసింది. దయచేసి కొత్తదాన్ని అభ్యర్థించండి.";
+      }
+      toast({ title: "పాస్‌వర్డ్ రీసెట్ విఫలమైంది", description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -157,7 +190,7 @@ export default function ForgotPasswordFormTe() {
         <CardHeader>
           <CardTitle className="text-2xl font-headline">పాస్వర్డ్ రీసెట్ చేయండి</CardTitle>
           <CardDescription>
-            {otpSent ? "మీ ఫోన్‌కు పంపిన OTPని నమోదు చేసి, కొత్త పాస్‌వర్డ్‌ను సెట్ చేయండి" : "పాస్‌వర్డ్ రీసెట్ కోడ్‌ను స్వీకరించడానికి మీ ఫోన్ నంబర్‌ను నమోదు చేయండి"}
+            {otpSent ? "మీ ఫోన్‌కు పంపిన OTPని నమోదు చేసి, కొత్త పాస్‌వర్డ్‌ను సెట్ చేయండి" : "పాస్‌వర్డ్ రీసెట్ కోడ్‌ను స్వీకరించడానికి మీ నమోదిత ఫోన్ నంబర్‌ను నమోదు చేయండి"}
           </CardDescription>
         </CardHeader>
         <CardContent>

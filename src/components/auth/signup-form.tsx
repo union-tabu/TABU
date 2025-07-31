@@ -86,27 +86,35 @@ export default function SignupForm() {
       if (phoneExists) {
         toast({
           title: "Phone Number Already Registered",
-          description: "An account with this phone number already exists. Please login.",
+          description: "An account with this phone number already exists. Please proceed to login.",
           variant: "destructive",
         });
         router.push('/login');
         return;
       }
 
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+      }
       const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
       const fullPhoneNumber = `+91${formData.phone}`;
       const confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, recaptchaVerifier);
       
-      // Store form data and confirmation result in session storage
       sessionStorage.setItem('signupFormData', JSON.stringify(formData));
       window.confirmationResult = confirmationResult;
 
-      toast({ title: "OTP Sent Successfully", description: `Code sent to +91${formData.phone}` });
+      toast({ title: "OTP Sent Successfully!", description: `A verification code has been sent to +91${formData.phone}.` });
       router.push('/verify');
 
     } catch (error: any) {
       console.error("Error sending OTP:", error);
-      toast({ title: "Failed to send OTP", description: error.message, variant: "destructive" });
+      let errorMessage = "An unexpected error occurred. Please try again.";
+      if (error.code === 'auth/too-many-requests') {
+          errorMessage = "Too many requests. Please wait a few minutes before trying again.";
+      } else if (error.code === 'auth/invalid-phone-number') {
+          errorMessage = "The phone number format is invalid.";
+      }
+      toast({ title: "Failed to Send OTP", description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }

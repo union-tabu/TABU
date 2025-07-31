@@ -31,14 +31,20 @@ export default function LoginForm() {
   const [isBlocked, setIsBlocked] = useState(false);
   const [blockTimeRemaining, setBlockTimeRemaining] = useState(0);
 
-  // Check for registration success message
+  // Check for registration or password reset success message
   useEffect(() => {
     if (searchParams.get('registered') === 'true') {
       toast({
-        title: "Registration Successful!",
-        description: "Your account has been created successfully. Please log in with your credentials.",
+        title: "Account Created!",
+        description: "Your account has been created successfully. Please log in to continue.",
       });
-      // Clean up URL
+      router.replace('/login', { scroll: false });
+    }
+    if (searchParams.get('reset') === 'success') {
+      toast({
+        title: "Password Reset Successful!",
+        description: "You can now log in with your new password.",
+      });
       router.replace('/login', { scroll: false });
     }
   }, [searchParams, router, toast]);
@@ -152,8 +158,8 @@ export default function LoginForm() {
     localStorage.removeItem('loginBlockTime');
     
     toast({
-      title: "Login Successful",
-      description: "Welcome back! Redirecting to dashboard...",
+      title: "Login Successful!",
+      description: "Welcome back. Redirecting you to the dashboard...",
     });
     
     setTimeout(() => {
@@ -176,7 +182,7 @@ export default function LoginForm() {
     if (!validateForm()) {
       toast({
         title: "Form Validation Failed",
-        description: "Please correct the errors below and try again.",
+        description: "Please correct the errors marked in red and try again.",
         variant: "destructive",
       });
       return;
@@ -203,21 +209,20 @@ export default function LoginForm() {
           error.code === 'auth/wrong-password' ||
           error.code === 'auth/invalid-email') {
         handleFailedLogin();
+        setLoading(false); // Make sure to stop loading indicator
         return; // handleFailedLogin shows its own toast
       } else if (error.code === 'auth/user-disabled') {
         errorTitle = "Account Disabled";
         errorMessage = "Your account has been disabled. Please contact support for assistance.";
       } else if (error.code === 'auth/too-many-requests') {
         errorTitle = "Too Many Requests";
-        errorMessage = "Too many failed login attempts. Please wait a few minutes before trying again.";
+        errorMessage = "We have blocked all requests from this device due to unusual activity. Try again later.";
       } else if (error.code === 'auth/network-request-failed') {
         errorTitle = "Network Error";
         errorMessage = "Network connection failed. Please check your internet connection and try again.";
       } else if (error.code === 'auth/internal-error') {
         errorTitle = "Service Unavailable";
-        errorMessage = "Authentication service is temporarily unavailable. Please try again later.";
-      } else if (error.message) {
-        errorMessage = error.message;
+        errorMessage = "The authentication service is temporarily unavailable. Please try again later.";
       }
       
       toast({
@@ -226,7 +231,10 @@ export default function LoginForm() {
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      // Don't set loading to false if handleFailedLogin is called, as it does it itself.
+      if (auth.currentUser === null) {
+          setLoading(false);
+      }
     }
   };
 

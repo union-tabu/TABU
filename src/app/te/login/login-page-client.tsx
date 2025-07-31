@@ -48,11 +48,17 @@ export default function LoginPageClient() {
     useEffect(() => {
         if (searchParams.get('registered') === 'true') {
         toast({
-            title: "నమోదు విజయవంతమైంది!",
-            description: "దయచేసి మీ కొత్త వివరాలతో లాగిన్ అవ్వండి.",
+            title: "ఖాతా సృష్టించబడింది!",
+            description: "మీ ఖాతా విజయవంతంగా సృష్టించబడింది. దయచేసి లాగిన్ చేయండి.",
         });
-        // Remove the query param from the URL
         router.replace('/te/login', { scroll: false });
+        }
+         if (searchParams.get('reset') === 'success') {
+            toast({
+                title: "పాస్‌వర్డ్ రీసెట్ విజయవంతమైంది!",
+                description: "మీరు ఇప్పుడు మీ కొత్త పాస్‌వర్డ్‌తో లాగిన్ చేయవచ్చు.",
+            });
+            router.replace('/te/login', { scroll: false });
         }
     }, [searchParams, router, toast]);
 

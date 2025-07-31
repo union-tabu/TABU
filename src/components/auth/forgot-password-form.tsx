@@ -62,7 +62,6 @@ export default function ForgotPasswordForm() {
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
-      // Cleanup reCAPTCHA verifier
       const recaptchaContainer = document.getElementById('recaptcha-container');
       if (recaptchaContainer) {
         recaptchaContainer.innerHTML = '';
@@ -76,28 +75,23 @@ export default function ForgotPasswordForm() {
   const validateForm = (): boolean => {
     const errors: FormErrors = {};
 
-    // Phone validation
     if (!formData.phone) {
       errors.phone = 'Phone number is required';
     } else if (!/^[6-9]\d{9}$/.test(formData.phone)) {
       errors.phone = 'Please enter a valid 10-digit Indian phone number starting with 6-9';
     }
 
-    // OTP validation (if OTP is sent)
     if (otpSent && !formData.otp) {
       errors.otp = 'OTP is required';
     } else if (otpSent && !/^\d{6}$/.test(formData.otp)) {
       errors.otp = 'OTP must be exactly 6 digits';
     }
 
-    // Password validation (if OTP is sent)
     if (otpSent) {
       if (!formData.newPassword) {
         errors.newPassword = 'New password is required';
       } else if (formData.newPassword.length < 8) {
         errors.newPassword = 'Password must be at least 8 characters long';
-      } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.newPassword)) {
-        errors.newPassword = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
       }
 
       if (!formData.confirmPassword) {
@@ -114,7 +108,6 @@ export default function ForgotPasswordForm() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     
-    // Clear error for this field when user starts typing
     if (formErrors[id]) {
       setFormErrors(prev => ({ ...prev, [id]: '' }));
     }
@@ -124,7 +117,6 @@ export default function ForgotPasswordForm() {
 
   const checkPhoneExists = async (phone: string): Promise<boolean> => {
     try {
-      // Check in Firestore users collection
       const usersRef = collection(db, "users");
       const q = query(usersRef, where("phone", "==", phone));
       const querySnapshot = await getDocs(q);
@@ -143,14 +135,11 @@ export default function ForgotPasswordForm() {
     try {
       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         'size': 'invisible',
-        'callback': () => {
-          // reCAPTCHA solved
-        },
+        'callback': () => {},
         'expired-callback': () => {
-          // reCAPTCHA expired
           toast({
-            title: "Security Verification Expired",
-            description: "Please try sending OTP again.",
+            title: "reCAPTCHA Expired",
+            description: "Please try sending the OTP again.",
             variant: "destructive",
           });
         }
@@ -181,77 +170,52 @@ export default function ForgotPasswordForm() {
     event.preventDefault();
     
     if (!validateForm()) {
-      toast({
-        title: "Form Validation Failed",
-        description: "Please correct the errors below and try again.",
-        variant: "destructive",
-      });
       return;
     }
 
     setLoading(true);
 
     try {
-      // Check if phone number exists in our system
       const phoneExists = await checkPhoneExists(formData.phone);
       
       if (!phoneExists) {
         toast({
           title: "Phone Number Not Found",
-          description: "No account found with this phone number. Please check and try again or create a new account.",
+          description: "No account is associated with this phone number. Please check the number or sign up.",
           variant: "destructive",
         });
         setLoading(false);
         return;
       }
 
-      // Setup reCAPTCHA
       setupRecaptcha();
-      
       const fullPhoneNumber = `+91${formData.phone}`;
       
       if (!window.recaptchaVerifier) {
-        throw new Error('Security verification not initialized');
+        throw new Error('Security verification (reCAPTCHA) is not initialized.');
       }
 
-      window.confirmationResult = await signInWithPhoneNumber(
-        auth, 
-        fullPhoneNumber, 
-        window.recaptchaVerifier
-      );
+      window.confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, window.recaptchaVerifier);
       
       setOtpSent(true);
       startResendTimer();
       
       toast({
         title: "OTP Sent Successfully",
-        description: `A 6-digit verification code has been sent to +91${formData.phone} for password reset`,
+        description: `A 6-digit verification code has been sent to +91${formData.phone}.`,
       });
 
     } catch (error: any) {
       console.error("Error sending OTP:", error);
-      
-      let errorMessage = 'Failed to send OTP. Please try again.';
-      let errorTitle = 'OTP Send Failed';
-      
-      if (error.code === 'auth/captcha-check-failed' || error.code === 'auth/internal-error') {
-        errorTitle = 'Security Verification Failed';
-        errorMessage = "Security verification failed. Please ensure your domain is authorized in Firebase console and try again.";
-      } else if (error.code === 'auth/too-many-requests') {
-        errorTitle = 'Too Many Requests';
-        errorMessage = 'Too many SMS requests. Please wait a few minutes before trying again.';
-      } else if (error.code === 'auth/invalid-phone-number') {
-        errorTitle = 'Invalid Phone Number';
-        errorMessage = 'The phone number format is invalid. Please check and try again.';
-      } else if (error.code === 'auth/quota-exceeded') {
-        errorTitle = 'SMS Quota Exceeded';
-        errorMessage = 'SMS quota exceeded. Please try again later or contact support.';
+      let errorMessage = 'Failed to send OTP. Please try again later.';
+      if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many SMS requests have been sent. Please wait a few minutes before trying again.';
       } else if (error.message) {
         errorMessage = error.message;
       }
       
       toast({
-        title: errorTitle,
+        title: "OTP Send Failed",
         description: errorMessage,
         variant: "destructive",
       });
@@ -267,24 +231,17 @@ export default function ForgotPasswordForm() {
 
   const handleResendOtp = async () => {
     if (otpResendTimer > 0) return;
-    
     setLoading(true);
     
     try {
       setupRecaptcha();
-      
       const fullPhoneNumber = `+91${formData.phone}`;
       
       if (!window.recaptchaVerifier) {
-        throw new Error('Security verification not initialized');
+        throw new Error('Security verification not initialized.');
       }
 
-      window.confirmationResult = await signInWithPhoneNumber(
-        auth, 
-        fullPhoneNumber, 
-        window.recaptchaVerifier
-      );
-      
+      window.confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, window.recaptchaVerifier);
       startResendTimer();
       
       toast({
@@ -294,9 +251,7 @@ export default function ForgotPasswordForm() {
 
     } catch (error: any) {
       console.error("Error resending OTP:", error);
-      
       let errorMessage = 'Failed to resend OTP. Please try again.';
-      
       if (error.code === 'auth/too-many-requests') {
         errorMessage = 'Too many requests. Please wait before requesting another OTP.';
       } else if (error.message) {
@@ -315,50 +270,31 @@ export default function ForgotPasswordForm() {
 
   const handleResetPassword = async (event: React.FormEvent) => {
     event.preventDefault();
-    
-    if (!validateForm()) {
-      toast({
-        title: "Form Validation Failed",
-        description: "Please correct the errors below and try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    if (!validateForm()) return;
     setLoading(true);
 
     try {
       const confirmationResult = window.confirmationResult;
       
       if (!confirmationResult) {
-        throw new Error("OTP verification not initialized. Please request a new OTP.");
+        throw new Error("OTP verification session has expired. Please request a new OTP.");
       }
 
-      // Verify OTP - this will sign in the user temporarily
       const userCredential = await confirmationResult.confirm(formData.otp);
       const user = userCredential.user;
       
-      setPhoneVerified(true);
-      
-      // Update the password for the current user
       await updatePassword(user, formData.newPassword);
       
       toast({
         title: "Password Reset Successful!",
-        description: "Your password has been updated successfully. Redirecting to login...",
+        description: "Your password has been updated. Redirecting to login...",
       });
 
-      // Sign out the user after password reset for security
       await auth.signOut();
-
-      // Redirect to login page after successful password reset
-      setTimeout(() => {
-        router.push('/login?reset=success');
-      }, 2000);
+      router.push('/login?reset=success');
 
     } catch (error: any) {
       console.error("Password Reset Error:", error);
-      
       let errorMessage = "Failed to reset password. Please try again.";
       let errorTitle = "Password Reset Failed";
       
@@ -370,18 +306,11 @@ export default function ForgotPasswordForm() {
         errorMessage = "The OTP has expired. Please request a new one.";
       } else if (error.code === 'auth/weak-password') {
         errorTitle = "Weak Password";
-        errorMessage = "Password is too weak. Please choose a stronger password.";
+        errorMessage = "Your new password is too weak. Please choose a stronger password as per the requirements.";
       } else if (error.code === 'auth/requires-recent-login') {
         errorTitle = "Session Expired";
-        errorMessage = "For security reasons, please request a new OTP and try again.";
-        // Reset the form to allow new OTP request
+        errorMessage = "For security reasons, your session has expired. Please request a new OTP and try again.";
         setOtpSent(false);
-        setPhoneVerified(false);
-      } else if (error.code === 'auth/network-request-failed') {
-        errorTitle = "Network Error";
-        errorMessage = "Network error occurred. Please check your connection and try again.";
-      } else if (error.message) {
-        errorMessage = error.message;
       }
       
       toast({
@@ -403,13 +332,12 @@ export default function ForgotPasswordForm() {
           <CardDescription>
             {otpSent 
               ? "Enter the OTP sent to your phone and set your new password" 
-              : "Enter your phone number to receive a password reset code"
+              : "Enter your registered phone number to receive a password reset code"
             }
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form className="grid gap-4" onSubmit={otpSent ? handleResetPassword : handleSendOtp}>
-            {/* Phone Number Input */}
             <div className="grid gap-2">
               <Label htmlFor="phone">Phone Number *</Label>
               <Input 
@@ -428,7 +356,6 @@ export default function ForgotPasswordForm() {
               )}
             </div>
             
-            {/* OTP and New Password Section */}
             {otpSent && (
               <>
                 <div className="grid gap-2">
@@ -464,49 +391,35 @@ export default function ForgotPasswordForm() {
                   {formErrors.otp && (
                     <span className="text-sm text-red-500">{formErrors.otp}</span>
                   )}
-                  <span className="text-sm text-gray-600">
-                    OTP sent to +91{formData.phone}
-                  </span>
                 </div>
 
-                <div className="grid gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="newPassword">New Password *</Label>
-                    <Input 
-                      id="newPassword" 
-                      type="password" 
-                      required 
-                      onChange={handleInputChange} 
-                      value={formData.newPassword}
-                      className={formErrors.newPassword ? 'border-red-500' : ''}
-                    />
-                    {formErrors.newPassword && (
-                      <span className="text-sm text-red-500">{formErrors.newPassword}</span>
-                    )}
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="confirmPassword">Confirm New Password *</Label>
-                    <Input 
-                      id="confirmPassword" 
-                      type="password" 
-                      required 
-                      onChange={handleInputChange} 
-                      value={formData.confirmPassword}
-                      className={formErrors.confirmPassword ? 'border-red-500' : ''}
-                    />
-                    {formErrors.confirmPassword && (
-                      <span className="text-sm text-red-500">{formErrors.confirmPassword}</span>
-                    )}
-                  </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="newPassword">New Password *</Label>
+                  <Input 
+                    id="newPassword" 
+                    type="password" 
+                    required 
+                    onChange={handleInputChange} 
+                    value={formData.newPassword}
+                    className={formErrors.newPassword ? 'border-red-500' : ''}
+                  />
+                  {formErrors.newPassword && (
+                    <span className="text-sm text-red-500">{formErrors.newPassword}</span>
+                  )}
                 </div>
-                
-                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-                  <strong>Password Requirements:</strong>
-                  <ul className="mt-1 space-y-1">
-                    <li>• At least 8 characters long</li>
-                    <li>• Contains uppercase and lowercase letters</li>
-                    <li>• Contains at least one number</li>
-                  </ul>
+                <div className="grid gap-2">
+                  <Label htmlFor="confirmPassword">Confirm New Password *</Label>
+                  <Input 
+                    id="confirmPassword" 
+                    type="password" 
+                    required 
+                    onChange={handleInputChange} 
+                    value={formData.confirmPassword}
+                    className={formErrors.confirmPassword ? 'border-red-500' : ''}
+                  />
+                  {formErrors.confirmPassword && (
+                    <span className="text-sm text-red-500">{formErrors.confirmPassword}</span>
+                  )}
                 </div>
               </>
             )}

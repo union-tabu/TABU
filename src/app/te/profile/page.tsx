@@ -44,7 +44,8 @@ export default function ProfilePage() {
             });
              if (userData.dob) {
                 try {
-                    setDob(parse(userData.dob, 'yyyy-MM-dd', new Date()));
+                    const [year, month, day] = userData.dob.split('-').map(Number);
+                    setDob(new Date(year, month - 1, day));
                 } catch (e) {
                     console.warn("Invalid date format for DOB:", userData.dob)
                     setDob(undefined);
@@ -70,14 +71,14 @@ export default function ProfilePage() {
                 dob: dob ? format(dob, 'yyyy-MM-dd') : null,
             });
             toast({
-                title: "ప్రొఫైల్ నవీకరించబడింది",
-                description: "మీ సమాచారం విజయవంతంగా నవీకరించబడింది.",
+                title: "ప్రొఫైల్ నవీకరించబడింది!",
+                description: "మీ సమాచారం విజయవంతంగా సేవ్ చేయబడింది.",
             });
         } catch (error) {
             console.error("Error updating profile: ", error);
             toast({
-                title: "లోపం",
-                description: "మీ ప్రొఫైల్‌ను నవీకరించడం సాధ్యం కాలేదు. దయచేసి మళ్లీ ప్రయత్నించండి.",
+                title: "నవీకరణ విఫలమైంది",
+                description: "మీ ప్రొఫైల్‌ను సేవ్ చేయడం సాధ్యం కాలేదు. దయచేసి మీ కనెక్షన్‌ని తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.",
                 variant: "destructive",
             });
         } finally {
@@ -99,8 +100,9 @@ export default function ProfilePage() {
                            <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
                            <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
                            <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
-                           <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
                            <div className="space-y-2 md:col-span-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
+                           <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
+                           <div className="space-y-2"><Skeleton className="h-5 w-20" /><Skeleton className="h-10 w-full" /></div>
                         </div>
                     </CardContent>
                     <CardFooter>
@@ -120,28 +122,32 @@ export default function ProfilePage() {
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><UserCircle className="text-primary" /> వ్యక్తిగత సమాచారం</CardTitle>
-                    <CardDescription>మీ వ్యక్తిగత వివరాలను వీక్షించండి మరియు నిర్వహించండి.</CardDescription>
+                    <CardDescription>మీ వ్యక్తిగత వివరాలను వీక్షించండి మరియు నిర్వహించండి. ఈ సమాచారం ప్రైవేట్‌గా ఉంచబడుతుంది.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="firstName">మొదటి పేరు</Label>
-                            <Input id="firstName" value={formData.firstName} onChange={handleChange} />
+                            <Input id="firstName" value={formData.firstName} onChange={handleChange} placeholder="మీ మొదటి పేరు" />
                         </div>
                          <div className="space-y-2">
                             <Label htmlFor="lastName">ఇంటి పేరు</Label>
-                            <Input id="lastName" value={formData.lastName} onChange={handleChange} />
+                            <Input id="lastName" value={formData.lastName} onChange={handleChange} placeholder="మీ ఇంటి పేరు" />
                         </div>
                          <div className="space-y-2">
                             <Label htmlFor="phone">ఫోన్</Label>
-                            <Input id="phone" value={formData.phone} onChange={handleChange} />
+                            <Input id="phone" value={formData.phone} onChange={handleChange} placeholder="మీ 10-అంకెల ఫోన్ నంబర్" />
                         </div>
                          <div className="space-y-2">
-                            <Label htmlFor="email">ఇమెయిల్</Label>
+                            <Label htmlFor="email">ఇమెయిల్ (ఐచ్ఛికం)</Label>
                             <Input id="email" type="email" value={formData.email} onChange={handleChange} placeholder="మీరు@ఉదాహరణ.com" />
                         </div>
+                        <div className="space-y-2 md:col-span-2">
+                            <Label htmlFor="address">పూర్తి చిరునామా</Label>
+                            <Input id="address" value={formData.address} onChange={handleChange} placeholder="వీధి, నగరం, రాష్ట్రం, పిన్ కోడ్" />
+                        </div>
                         <div className="space-y-2">
-                            <Label htmlFor="dob">పుట్టిన తేది</Label>
+                            <Label htmlFor="dob">పుట్టిన తేది (ఐచ్ఛికం)</Label>
                             <Popover>
                                 <PopoverTrigger asChild>
                                   <Button
@@ -168,10 +174,6 @@ export default function ProfilePage() {
                                   />
                                 </PopoverContent>
                             </Popover>
-                        </div>
-                        <div className="space-y-2 md:col-span-2">
-                            <Label htmlFor="address">చిరునామా</Label>
-                            <Input id="address" value={formData.address} onChange={handleChange} placeholder="123 మెయిన్ సెయింట్, ఎనీటౌన్, రాష్ట్రం, 12345" />
                         </div>
                    </div>
                 </CardContent>

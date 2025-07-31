@@ -111,8 +111,8 @@ export function DashboardHeader() {
     await logout();
     router.push('/');
     toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out.",
+      title: "You have been logged out.",
+      description: "You have been securely signed out of your account.",
     });
   };
 

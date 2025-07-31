@@ -30,7 +30,7 @@ export default function VerifyFormTe() {
   useEffect(() => {
     const storedData = sessionStorage.getItem('signupFormDataTe');
     if (!storedData) {
-      toast({ title: 'లోపం', description: 'నమోదు డేటా కనుగొనబడలేదు. దయచేసి మళ్ళీ ప్రారంభించండి.', variant: 'destructive' });
+      toast({ title: 'నమోదు లోపం', description: 'నమోదు డేటా కనుగొనబడలేదు. దయచేసి మళ్ళీ ప్రారంభించండి.', variant: 'destructive' });
       router.push('/te/signup');
     } else {
       setSignupData(JSON.parse(storedData));
@@ -60,7 +60,7 @@ export default function VerifyFormTe() {
     try {
       const confirmationResult = window.confirmationResult as ConfirmationResult | undefined;
       if (!confirmationResult) {
-        throw new Error("OTP నిర్ధారణ ఫలితం కనుగొనబడలేదు. దయచేసి మళ్ళీ నమోదు చేయడానికి ప్రయత్నించండి.");
+        throw new Error("OTP నిర్ధారణ సెషన్ గడువు ముగిసింది. దయచేసి మళ్ళీ నమోదు చేయడానికి ప్రయత్నించండి.");
       }
 
       const userCredential = await confirmationResult.confirm(formData.otp);
@@ -85,7 +85,7 @@ export default function VerifyFormTe() {
       });
 
       sessionStorage.removeItem('signupFormDataTe');
-      toast({ title: 'ఖాతా విజయవంతంగా సృష్టించబడింది!', description: 'దయచేసి కొనసాగించడానికి లాగిన్ చేయండి.' });
+      toast({ title: 'ఖాతా విజయవంతంగా సృష్టించబడింది!', description: 'దయచేసి లాగిన్ పేజీకి మళ్ళిస్తున్నాము.' });
       router.push('/te/login?registered=true');
 
     } catch (error: any) {
@@ -95,6 +95,8 @@ export default function VerifyFormTe() {
         errorMessage = "మీరు నమోదు చేసిన OTP తప్పుగా ఉంది. దయచేసి తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.";
       } else if (error.code === 'auth/code-expired') {
         errorMessage = "OTP గడువు ముగిసింది. దయచేసి వెనుకకు వెళ్లి మళ్ళీ ప్రయత్నించండి.";
+      } else if (error.code === 'auth/credential-already-in-use') {
+        errorMessage = "ఈ ఖాతా ఇప్పటికే మరొక వినియోగదారునికి లింక్ చేయబడింది. దయచేసి సైన్అప్ ప్రక్రియను మళ్ళీ ప్రారంభించండి.";
       }
       toast({ title: "నమోదు విఫలమైంది", description: errorMessage, variant: "destructive" });
     } finally {

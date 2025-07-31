@@ -30,7 +30,7 @@ export default function VerifyForm() {
   useEffect(() => {
     const storedData = sessionStorage.getItem('signupFormData');
     if (!storedData) {
-      toast({ title: 'Error', description: 'Signup data not found. Please start again.', variant: 'destructive' });
+      toast({ title: 'Error', description: 'Signup data not found. Please start the registration process again.', variant: 'destructive' });
       router.push('/signup');
     } else {
       setSignupData(JSON.parse(storedData));
@@ -60,7 +60,7 @@ export default function VerifyForm() {
     try {
       const confirmationResult = window.confirmationResult as ConfirmationResult | undefined;
       if (!confirmationResult) {
-        throw new Error("OTP confirmation result not found. Please try signing up again.");
+        throw new Error("OTP confirmation session has expired. Please try signing up again.");
       }
 
       const userCredential = await confirmationResult.confirm(formData.otp);
@@ -85,16 +85,18 @@ export default function VerifyForm() {
       });
 
       sessionStorage.removeItem('signupFormData');
-      toast({ title: 'Account Created Successfully!', description: 'Please log in to continue.' });
+      toast({ title: 'Account Created Successfully!', description: 'Redirecting you to the login page.' });
       router.push('/login?registered=true');
 
     } catch (error: any) {
       console.error("Signup Error:", error);
-      let errorMessage = "An unexpected error occurred.";
+      let errorMessage = "An unexpected error occurred. Please try again.";
       if (error.code === 'auth/invalid-verification-code') {
         errorMessage = "The OTP you entered is incorrect. Please check and try again.";
       } else if (error.code === 'auth/code-expired') {
-        errorMessage = "The OTP has expired. Please go back and try again.";
+        errorMessage = "The OTP has expired. Please go back to the previous page and request a new one.";
+      } else if (error.code === 'auth/credential-already-in-use') {
+        errorMessage = "This account is already linked to another user. Please start the signup process again.";
       }
       toast({ title: "Signup Failed", description: errorMessage, variant: "destructive" });
     } finally {
