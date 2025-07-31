@@ -82,6 +82,7 @@ export default function VerifyForm() {
         city: signupData.city,
         state: signupData.state,
         pinCode: signupData.pinCode,
+        role: 'member', // Default role for new users
         createdAt: new Date(),
         subscription: { status: 'pending' },
         email: ''

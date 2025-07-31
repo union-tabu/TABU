@@ -8,6 +8,7 @@ export interface UserData {
   state: string;
   pinCode: string;
   email?: string;
+  role?: 'admin' | 'member';
   subscription?: {
     plan: 'monthly' | 'yearly';
     status: 'active' | 'inactive' | 'cancelled' | 'pending' | 'lapsed';
