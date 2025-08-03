@@ -20,14 +20,7 @@ type UserWithId = UserData & { id: string };
 
 const USERS_PER_PAGE = 25;
 
-const maskPhoneNumber = (phone: string) => {
-    if (phone.length === 10) {
-        return `******${phone.substring(6)}`;
-    }
-    return phone;
-};
-
-export default function UnionMembersPage() {
+export default function AdminUnionMembersPage() {
     const [users, setUsers] = useState<UserWithId[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -71,7 +64,7 @@ export default function UnionMembersPage() {
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        // The filtering is already happening in real-time, but you could add a button-click search if desired
+        setCurrentPage(1);
     };
     
     const renderMobileSkeleton = (key: number) => (
@@ -98,7 +91,7 @@ export default function UnionMembersPage() {
             <TableCell><Skeleton className="h-5 w-48" /></TableCell>
         </TableRow>
     );
-
+    
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold tracking-tight">Union Members</h1>
@@ -138,7 +131,7 @@ export default function UnionMembersPage() {
                                         <div className="flex justify-between items-start">
                                             <div>
                                                 <CardTitle className="text-lg">{user.fullName}</CardTitle>
-                                                <CardDescription>{maskPhoneNumber(user.phone)}</CardDescription>
+                                                <CardDescription>{user.phone}</CardDescription>
                                             </div>
                                             <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
                                                 className={`${user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} capitalize shrink-0`}>
@@ -151,7 +144,7 @@ export default function UnionMembersPage() {
                                         <p><span className="font-semibold">Joined:</span> {user.createdAt?.seconds 
                                                 ? format(new Date(user.createdAt.seconds * 1000), "MMMM yyyy") 
                                                 : 'N/A'}</p>
-                                        <p><span className="font-semibold">Location:</span> {user.city}</p>
+                                        <p><span className="font-semibold">Address:</span> {`${user.addressLine}, ${user.city}, ${user.state}`}</p>
                                     </CardContent>
                                 </Card>
                             ))
@@ -172,7 +165,7 @@ export default function UnionMembersPage() {
                                     <TableHead>Phone</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Joined</TableHead>
-                                    <TableHead>Location</TableHead>
+                                    <TableHead>Address</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -183,10 +176,10 @@ export default function UnionMembersPage() {
                                         <TableRow key={user.id}>
                                             <TableCell className="font-mono text-sm">{user.unionId || 'N/A'}</TableCell>
                                             <TableCell>{user.fullName}</TableCell>
-                                            <TableCell>{maskPhoneNumber(user.phone)}</TableCell>
+                                            <TableCell>{user.phone}</TableCell>
                                             <TableCell>
                                                 <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
-                                                    className={user.subscription?.status === 'active' ? 'bg-green-100 text-green-800 capitalize' : 'bg-red-100 text-red-800 capitalize'}>
+                                                    className={`${user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} capitalize`}>
                                                     {user.subscription?.status || 'pending'}
                                                 </Badge>
                                             </TableCell>
@@ -195,7 +188,7 @@ export default function UnionMembersPage() {
                                                     ? format(new Date(user.createdAt.seconds * 1000), "MMMM yyyy") 
                                                     : 'N/A'}
                                             </TableCell>
-                                            <TableCell>{user.city}</TableCell>
+                                            <TableCell>{`${user.addressLine}, ${user.city}, ${user.state}, ${user.pinCode}`}</TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
@@ -211,26 +204,11 @@ export default function UnionMembersPage() {
                 </CardContent>
             </Card>
             {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-2">
+                <div className="flex justify-center items-center gap-2 mt-6">
                     <Button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Prev</Button>
-                    {/* On small screens, show fewer page numbers */}
-                    <div className="hidden sm:flex items-center gap-2">
-                         {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                            <Button 
-                                key={page} 
-                                variant={currentPage === page ? 'default' : 'outline'} 
-                                onClick={() => setCurrentPage(page)}
-                                className="h-9 w-9"
-                            >
-                                {page}
-                            </Button>
-                        ))}
-                    </div>
-                    <div className="sm:hidden">
-                        <span className="text-sm text-muted-foreground px-4">
-                            Page {currentPage} of {totalPages}
-                        </span>
-                    </div>
+                    <span className="text-sm text-muted-foreground">
+                        Page {currentPage} of {totalPages}
+                    </span>
                     <Button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</Button>
                 </div>
             )}

@@ -26,7 +26,7 @@ export default function DashboardPage() {
       if (!isAuthenticated) {
         router.replace('/signin');
       } else if (userData?.role === 'admin') {
-        router.replace('/admin');
+        router.replace('/admin/dashboard');
       }
     }
   }, [isAuthenticated, loading, userData, router]);

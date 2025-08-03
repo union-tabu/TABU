@@ -27,7 +27,7 @@ export default function DashboardPageTe() {
       if (!isAuthenticated) {
         router.replace('/te/signin');
       } else if (userData?.role === 'admin') {
-        router.replace('/admin');
+        router.replace('/admin/dashboard');
       }
     }
   }, [isAuthenticated, loading, userData, router]);

@@ -22,6 +22,13 @@ type UserWithId = UserData & { id: string };
 
 const USERS_PER_PAGE = 25;
 
+const maskPhoneNumber = (phone: string) => {
+    if (phone.length === 10) {
+        return `******${phone.substring(6)}`;
+    }
+    return phone;
+};
+
 export default function UnionMembersPageTe() {
     const [users, setUsers] = useState<UserWithId[]>([]);
     const [loading, setLoading] = useState(true);
@@ -145,7 +152,7 @@ export default function UnionMembersPageTe() {
                                         <div className="flex justify-between items-start">
                                             <div>
                                                 <CardTitle className="text-lg">{user.fullName}</CardTitle>
-                                                <CardDescription>{user.phone}</CardDescription>
+                                                <CardDescription>{maskPhoneNumber(user.phone)}</CardDescription>
                                             </div>
                                             <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
                                                 className={`${user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} shrink-0`}>
@@ -158,7 +165,7 @@ export default function UnionMembersPageTe() {
                                         <p><span className="font-semibold">చేరారు:</span> {user.createdAt?.seconds 
                                                 ? format(new Date(user.createdAt.seconds * 1000), "MMMM yyyy", { locale: te }) 
                                                 : 'N/A'}</p>
-                                        <p><span className="font-semibold">చిరునామా:</span> {`${user.addressLine}, ${user.city}, ${user.state}`}</p>
+                                        <p><span className="font-semibold">చిరునామా:</span> {user.city}</p>
                                     </CardContent>
                                 </Card>
                             ))
@@ -189,8 +196,8 @@ export default function UnionMembersPageTe() {
                                     paginatedUsers.map((user) => (
                                         <TableRow key={user.id}>
                                             <TableCell className="font-mono text-sm">{user.unionId || 'N/A'}</TableCell>
-                                            <TableCell>{`${user.fullName}`}</TableCell>
-                                            <TableCell>{user.phone}</TableCell>
+                                            <TableCell>{user.fullName}</TableCell>
+                                            <TableCell>{maskPhoneNumber(user.phone)}</TableCell>
                                             <TableCell>
                                                 <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
                                                     className={user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
@@ -202,7 +209,7 @@ export default function UnionMembersPageTe() {
                                                     ? format(new Date(user.createdAt.seconds * 1000), "MMMM yyyy", { locale: te }) 
                                                     : 'N/A'}
                                             </TableCell>
-                                            <TableCell>{`${user.addressLine}, ${user.city}, ${user.state}`}</TableCell>
+                                            <TableCell>{user.city}</TableCell>
                                         </TableRow>
                                     ))
                                 ) : (

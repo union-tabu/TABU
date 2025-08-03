@@ -27,7 +27,7 @@ export default function ProtectedRouteLayout({
       } 
       // If user is an admin, they should not be on member pages, so redirect them
       else if (userData?.role === 'admin') {
-        router.replace('/admin');
+        router.replace('/admin/dashboard');
       }
     }
   }, [isAuthenticated, loading, userData, router, isTelugu]);

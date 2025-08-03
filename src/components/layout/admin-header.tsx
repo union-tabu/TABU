@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/auth-context';
 import { usePathname, useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { Menu, LogOut, User, Shield, Home } from 'lucide-react';
+import { Menu, LogOut, User, Shield, Home, Users, CreditCard } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -42,9 +42,9 @@ export function AdminHeader() {
   };
 
   const navItems = [
-    { href: '/admin', label: 'Dashboard' },
-    // { href: '/admin/users', label: 'Users' },
-    // { href: '/admin/payments', label: 'Payments' },
+    { href: '/admin/dashboard', label: 'Dashboard', icon: Home },
+    { href: '/admin/union-members', label: 'Members', icon: Users },
+    { href: '/admin/payments', label: 'Payments', icon: CreditCard },
   ];
   
   const getInitials = (name: string | undefined) => {
@@ -59,7 +59,7 @@ export function AdminHeader() {
   return (
     <header className="sticky top-0 flex h-16 items-center justify-between border-b bg-background px-4 md:px-6 z-50">
         <Link
-          href="/admin"
+          href="/admin/dashboard"
           className="flex items-center gap-2 text-lg font-semibold"
         >
           <Image src="/tabu-logo-website.png" alt="TABU Logo" width={40} height={40} className="h-10 w-auto" />
@@ -112,7 +112,7 @@ export function AdminHeader() {
                  <SheetHeader>
                     <SheetTitle>
                         <Link 
-                            href="/admin" 
+                            href="/admin/dashboard" 
                             className="flex items-center gap-2" 
                             onClick={() => setIsSheetOpen(false)}
                         >
@@ -131,9 +131,10 @@ export function AdminHeader() {
                         <Link
                             key={item.href}
                             href={item.href}
-                            className={`text-lg font-medium transition-colors hover:text-foreground ${pathname === item.href ? 'text-foreground' : 'text-muted-foreground'}`}
+                            className={`flex items-center gap-3 text-lg font-medium transition-colors hover:text-foreground ${pathname === item.href ? 'text-foreground' : 'text-muted-foreground'}`}
                             onClick={() => setIsSheetOpen(false)}
                         >
+                            <item.icon className="h-5 w-5" />
                             {item.label}
                         </Link>
                     ))}
