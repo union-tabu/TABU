@@ -23,10 +23,14 @@ export default function DashboardPageTe() {
   const [greeting, setGreeting] = useState('');
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.replace('/te/signin');
+    if (!loading) {
+      if (!isAuthenticated) {
+        router.replace('/te/signin');
+      } else if (userData?.role === 'admin') {
+        router.replace('/admin');
+      }
     }
-  }, [isAuthenticated, loading, router]);
+  }, [isAuthenticated, loading, userData, router]);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -65,7 +69,7 @@ export default function DashboardPageTe() {
   }
 
 
-  if (loading || !isAuthenticated) {
+  if (loading || !isAuthenticated || userData?.role === 'admin') {
     return (
       <div className="flex min-h-screen w-full flex-col">
         <header className="sticky top-0 flex h-16 items-center justify-between border-b bg-background px-4 md:px-6 z-50">

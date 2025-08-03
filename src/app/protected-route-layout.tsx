@@ -13,21 +13,27 @@ export default function ProtectedRouteLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isAuthenticated, loading } = useAuth();
+  const { userData, isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const isTelugu = pathname ? pathname.startsWith('/te') : false;
 
   useEffect(() => {
-    // If not loading and not authenticated, redirect to signin
-    if (!loading && !isAuthenticated) {
-      const signinPath = isTelugu ? '/te/signin' : '/signin';
-      router.replace(signinPath);
+    if (!loading) {
+      // If not authenticated, redirect to the appropriate signin page
+      if (!isAuthenticated) {
+        const signinPath = isTelugu ? '/te/signin' : '/signin';
+        router.replace(signinPath);
+      } 
+      // If user is an admin, they should not be on member pages, so redirect them
+      else if (userData?.role === 'admin') {
+        router.replace('/admin');
+      }
     }
-  }, [isAuthenticated, loading, router, isTelugu]);
+  }, [isAuthenticated, loading, userData, router, isTelugu]);
 
-  // While loading, show a skeleton UI
-  if (loading || !isAuthenticated) {
+  // While loading or if user is an admin (and about to be redirected), show a skeleton UI
+  if (loading || !isAuthenticated || userData?.role === 'admin') {
     return (
       <div className="flex min-h-screen w-full flex-col">
         {/* Skeleton Header */}
@@ -49,7 +55,7 @@ export default function ProtectedRouteLayout({
     );
   }
 
-  // If authenticated, render the actual dashboard
+  // If authenticated member, render the actual dashboard
   return (
     <div className="flex min-h-screen w-full flex-col">
       {isTelugu ? <DashboardHeaderTe /> : <DashboardHeader />}
