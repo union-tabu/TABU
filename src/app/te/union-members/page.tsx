@@ -152,7 +152,7 @@ export default function UnionMembersPageTe() {
                                         <div className="flex justify-between items-start">
                                             <div>
                                                 <CardTitle className="text-lg">{user.fullName}</CardTitle>
-                                                <CardDescription>{maskPhoneNumber(user.phone)}</CardDescription>
+                                                <CardDescription className="font-mono">{maskPhoneNumber(user.phone)}</CardDescription>
                                             </div>
                                             <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
                                                 className={`${user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} shrink-0`}>
@@ -197,7 +197,7 @@ export default function UnionMembersPageTe() {
                                         <TableRow key={user.id}>
                                             <TableCell className="font-mono text-sm">{user.unionId || 'N/A'}</TableCell>
                                             <TableCell>{user.fullName}</TableCell>
-                                            <TableCell>{maskPhoneNumber(user.phone)}</TableCell>
+                                            <TableCell className="font-mono">{maskPhoneNumber(user.phone)}</TableCell>
                                             <TableCell>
                                                 <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
                                                     className={user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
