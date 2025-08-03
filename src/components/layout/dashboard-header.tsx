@@ -30,6 +30,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import Image from 'next/image';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 
 function LanguageToggle({ inSheet = false }: { inSheet?: boolean }) {
@@ -151,11 +152,6 @@ export function DashboardHeader() {
                 {item.label}
             </Link>
         ))}
-        {userData?.role === 'admin' && (
-             <Link href="/admin" className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1">
-                <Shield size={16} /> Admin
-            </Link>
-        )}
       </nav>
       <div className="flex items-center gap-2">
         <div className="hidden md:flex items-center gap-2">
@@ -163,10 +159,11 @@ export function DashboardHeader() {
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="secondary" size="icon" className="rounded-full">
-                    <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center font-bold">
-                        {loading ? '' : getInitials(userData?.fullName)}
-                    </div>
-                    <span className="sr-only">Toggle user menu</span>
+                       <Avatar className="h-8 w-8">
+                            <AvatarImage src={userData?.photoURL} alt={userData?.fullName} />
+                            <AvatarFallback>{getInitials(userData?.fullName)}</AvatarFallback>
+                        </Avatar>
+                        <span className="sr-only">Toggle user menu</span>
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -205,8 +202,12 @@ export function DashboardHeader() {
                     </SheetTitle>
                 </SheetHeader>
                 <div className="mt-8 flex flex-col space-y-4 flex-grow">
-                    <div className="border-b pb-4">
-                        <p className="text-sm font-medium text-muted-foreground px-2">
+                    <div className="border-b pb-4 flex items-center gap-3">
+                         <Avatar className="h-10 w-10">
+                            <AvatarImage src={userData?.photoURL} alt={userData?.fullName} />
+                            <AvatarFallback>{getInitials(userData?.fullName)}</AvatarFallback>
+                        </Avatar>
+                        <p className="text-sm font-medium text-muted-foreground">
                             {loading ? 'Loading...' : userData?.fullName}
                         </p>
                     </div>
@@ -221,17 +222,6 @@ export function DashboardHeader() {
                         </Link>
                     ))}
                     <div className="pt-4 border-t space-y-2">
-                        {userData?.role === 'admin' && (
-                             <Button 
-                                variant="ghost"
-                                asChild
-                                className="w-full justify-start text-lg font-medium text-muted-foreground">
-                                <Link href="/admin" onClick={() => setIsSheetOpen(false)}>
-                                    <Shield className="mr-2 h-5 w-5" />
-                                    Admin
-                                </Link>
-                            </Button>
-                        )}
                          <Button 
                             variant="ghost"
                             asChild

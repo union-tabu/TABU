@@ -72,7 +72,7 @@ export function UnionIdCard() {
         );
     }
     
-    const { fullName, unionId, createdAt, subscription } = userData;
+    const { fullName, unionId, createdAt, subscription, photoURL } = userData;
     const joinDate = createdAt?.seconds ? format(new Date(createdAt.seconds * 1000), "MMMM yyyy") : 'N/A';
     const isActiveMember = subscription?.status === 'active';
 
@@ -98,8 +98,12 @@ export function UnionIdCard() {
                 </CardHeader>
                 <CardContent className="p-6 grid grid-cols-3 gap-6 items-center">
                     <div className="col-span-1">
-                        <div data-ai-hint="profile picture" className="w-24 h-24 sm:w-28 sm:h-28 rounded-md bg-gray-200 flex items-center justify-center">
-                            <UserCircle className="w-20 h-20 text-gray-400" />
+                        <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-md bg-gray-200 flex items-center justify-center relative overflow-hidden">
+                           {photoURL ? (
+                                <Image src={photoURL} alt="Profile" layout="fill" className="object-cover" />
+                           ) : (
+                                <UserCircle className="w-20 h-20 text-gray-400" />
+                           )}
                         </div>
                     </div>
                     <div className="col-span-2 space-y-3 relative">

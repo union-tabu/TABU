@@ -13,6 +13,8 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect, useRef } from 'react';
+import { Camera } from 'lucide-react';
+import Image from 'next/image';
 
 declare global {
   interface Window {
@@ -29,6 +31,7 @@ interface FormData {
   state: string;
   country: string;
   pinCode: string;
+  profileImage: File | null;
 }
 
 interface FormErrors {
@@ -40,6 +43,8 @@ export default function SignupForm() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
@@ -49,6 +54,7 @@ export default function SignupForm() {
     state: '',
     country: 'India',
     pinCode: '',
+    profileImage: null,
   });
 
   useEffect(() => {
@@ -67,6 +73,7 @@ export default function SignupForm() {
     if (!formData.city.trim()) errors.city = 'City is required';
     if (!formData.state.trim()) errors.state = 'State is required';
     if (!/^\d{6}$/.test(formData.pinCode)) errors.pinCode = 'PIN code must be 6 digits';
+    if (!formData.profileImage) errors.profileImage = 'Profile image is required';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -75,6 +82,23 @@ export default function SignupForm() {
     const { id, value } = e.target;
     if (formErrors[id]) setFormErrors(prev => ({ ...prev, [id]: '' }));
     setFormData(prev => ({ ...prev, [id]: value as any }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        setFormErrors(prev => ({ ...prev, profileImage: 'Image size must be less than 2MB' }));
+        return;
+      }
+      setFormErrors(prev => ({ ...prev, profileImage: '' }));
+      setFormData(prev => ({...prev, profileImage: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSendOtp = async (event: React.FormEvent) => {
@@ -101,7 +125,18 @@ export default function SignupForm() {
       const fullPhoneNumber = `+91${formData.phone}`;
       const confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, recaptchaVerifier);
       
-      sessionStorage.setItem('signupFormData', JSON.stringify(formData));
+      const { profileImage, ...serializableFormData } = formData;
+      sessionStorage.setItem('signupFormData', JSON.stringify(serializableFormData));
+      // Store image in a way that survives sessionStorage (e.g., base64 in session, or IndexedDB)
+      if (formData.profileImage) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+           sessionStorage.setItem('signupProfileImage', e.target?.result as string);
+        }
+        reader.readAsDataURL(formData.profileImage);
+      }
+
+
       window.confirmationResult = confirmationResult;
 
       toast({ title: "OTP Sent Successfully!", description: `A verification code has been sent to +91${formData.phone}.` });
@@ -137,6 +172,23 @@ export default function SignupForm() {
         </CardHeader>
         <CardContent>
           <form className="grid gap-4" onSubmit={handleSendOtp}>
+            <div className="grid gap-2 items-center justify-center text-center">
+                <Label htmlFor="profileImage">Profile Image *</Label>
+                <div 
+                    className="relative mx-auto w-28 h-28 border-2 border-dashed rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-50"
+                    onClick={() => fileInputRef.current?.click()}
+                >
+                    {imagePreview ? (
+                        <Image src={imagePreview} alt="Profile preview" layout="fill" className="rounded-full object-cover"/>
+                    ) : (
+                        <Camera className="w-8 h-8 text-gray-400"/>
+                    )}
+                </div>
+                <Input id="profileImage" type="file" accept="image/png, image/jpeg, image/jpg" ref={fileInputRef} className="hidden" onChange={handleImageChange} required/>
+                {formErrors.profileImage && <p className="text-xs text-red-500 mt-1">{formErrors.profileImage}</p>}
+                <p className="text-xs text-muted-foreground">Click to upload (Max 2MB)</p>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="fullName">Full Name *</Label>

@@ -7,6 +7,7 @@ export interface UserData {
   city: string;
   state: string;
   pinCode: string;
+  photoURL?: string;
   email?: string;
   role?: 'admin' | 'member';
   subscription?: {

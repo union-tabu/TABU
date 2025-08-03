@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/auth-context';
 import { usePathname, useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { Menu, LogOut, User, Shield, Home, Users, CreditCard } from 'lucide-react';
+import { Menu, LogOut, Home, Users, CreditCard } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/sheet"
 import React from 'react';
 import Image from 'next/image';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export function AdminHeader() {
   const { userData, loading, logout } = useAuth();
@@ -81,10 +82,11 @@ export function AdminHeader() {
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="secondary" size="icon" className="rounded-full">
-                    <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
-                        {loading ? '' : getInitials(userData?.fullName)}
-                    </div>
-                    <span className="sr-only">Toggle user menu</span>
+                        <Avatar className="h-8 w-8">
+                            <AvatarImage src={userData?.photoURL} alt={userData?.fullName} />
+                            <AvatarFallback>{getInitials(userData?.fullName)}</AvatarFallback>
+                        </Avatar>
+                        <span className="sr-only">Toggle user menu</span>
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -120,8 +122,12 @@ export function AdminHeader() {
                     </SheetTitle>
                 </SheetHeader>
                 <div className="mt-8 flex flex-col space-y-4 flex-grow">
-                    <div className="border-b pb-4">
-                        <p className="text-sm font-medium text-muted-foreground px-2">
+                    <div className="border-b pb-4 flex items-center gap-3">
+                         <Avatar className="h-10 w-10">
+                            <AvatarImage src={userData?.photoURL} alt={userData?.fullName} />
+                            <AvatarFallback>{getInitials(userData?.fullName)}</AvatarFallback>
+                        </Avatar>
+                        <p className="text-sm font-medium text-muted-foreground">
                             {loading ? 'Loading...' : userData?.fullName} (Admin)
                         </p>
                     </div>

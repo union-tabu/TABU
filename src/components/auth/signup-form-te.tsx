@@ -11,7 +11,9 @@ import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'fi
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Camera } from 'lucide-react';
+import Image from 'next/image';
 
 declare global {
   interface Window {
@@ -25,6 +27,8 @@ export default function SignupFormTe() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -34,6 +38,7 @@ export default function SignupFormTe() {
     state: '',
     country: 'భారతదేశం',
     pinCode: '',
+    profileImage: null as File | null,
   });
 
   useEffect(() => {
@@ -52,6 +57,7 @@ export default function SignupFormTe() {
     if (!formData.city.trim()) errors.city = 'నగరం అవసరం';
     if (!formData.state.trim()) errors.state = 'రాష్ట్రం అవసరం';
     if (!/^\d{6}$/.test(formData.pinCode)) errors.pinCode = 'పిన్ కోడ్ 6 అంకెలు ఉండాలి';
+    if (!formData.profileImage) errors.profileImage = 'ప్రొఫైల్ చిత్రం అవసరం';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -60,6 +66,23 @@ export default function SignupFormTe() {
     const { id, value } = e.target;
     if (formErrors[id]) setFormErrors(prev => ({ ...prev, [id]: '' }));
     setFormData(prev => ({ ...prev, [id]: value as any }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        setFormErrors(prev => ({ ...prev, profileImage: 'చిత్రం పరిమాణం 2MB కంటే తక్కువగా ఉండాలి' }));
+        return;
+      }
+      setFormErrors(prev => ({ ...prev, profileImage: '' }));
+      setFormData(prev => ({...prev, profileImage: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSendOtp = async (event: React.FormEvent) => {
@@ -86,7 +109,16 @@ export default function SignupFormTe() {
       const fullPhoneNumber = `+91${formData.phone}`;
       const confirmationResult = await signInWithPhoneNumber(auth, fullPhoneNumber, recaptchaVerifier);
       
-      sessionStorage.setItem('signupFormDataTe', JSON.stringify(formData));
+      const { profileImage, ...serializableFormData } = formData;
+      sessionStorage.setItem('signupFormDataTe', JSON.stringify(serializableFormData));
+      if (formData.profileImage) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+           sessionStorage.setItem('signupProfileImageTe', e.target?.result as string);
+        }
+        reader.readAsDataURL(formData.profileImage);
+      }
+
       window.confirmationResult = confirmationResult;
 
       toast({ title: 'OTP విజయవంతంగా పంపబడింది!', description: `ధృవీకరణ కోడ్ +91${formData.phone}కు పంపబడింది.` });
@@ -122,6 +154,22 @@ export default function SignupFormTe() {
         </CardHeader>
         <CardContent>
           <form className="grid gap-4" onSubmit={handleSendOtp}>
+            <div className="grid gap-2 items-center justify-center text-center">
+                <Label htmlFor="profileImage">ప్రొఫైల్ చిత్రం *</Label>
+                <div 
+                    className="relative mx-auto w-28 h-28 border-2 border-dashed rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-50"
+                    onClick={() => fileInputRef.current?.click()}
+                >
+                    {imagePreview ? (
+                        <Image src={imagePreview} alt="Profile preview" layout="fill" className="rounded-full object-cover"/>
+                    ) : (
+                        <Camera className="w-8 h-8 text-gray-400"/>
+                    )}
+                </div>
+                <Input id="profileImage" type="file" accept="image/png, image/jpeg, image/jpg" ref={fileInputRef} className="hidden" onChange={handleImageChange} required/>
+                {formErrors.profileImage && <p className="text-xs text-red-500 mt-1">{formErrors.profileImage}</p>}
+                <p className="text-xs text-muted-foreground">అప్‌లోడ్ చేయడానికి క్లిక్ చేయండి (గరిష్టంగా 2MB)</p>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="fullName">పూర్తి పేరు *</Label>

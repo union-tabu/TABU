@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { auth, db } from '@/lib/firebase';
+import { auth, db, storage } from '@/lib/firebase';
 import { ConfirmationResult, linkWithCredential, EmailAuthProvider, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import { ref, uploadString, getDownloadURL } from "firebase/storage";
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect } from 'react';
@@ -27,14 +28,18 @@ export default function VerifyForm() {
     confirmPassword: '',
   });
   const [signupData, setSignupData] = useState<any>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
   useEffect(() => {
     const storedData = sessionStorage.getItem('signupFormData');
-    if (!storedData) {
+    const storedImage = sessionStorage.getItem('signupProfileImage');
+
+    if (!storedData || !storedImage) {
       toast({ title: 'Error', description: 'Signup data not found. Please start the registration process again.', variant: 'destructive' });
       router.push('/signup');
     } else {
       setSignupData(JSON.parse(storedData));
+      setProfileImage(storedImage);
     }
   }, [router, toast]);
 
@@ -55,7 +60,7 @@ export default function VerifyForm() {
 
   const handleSignup = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!validateForm() || !signupData) return;
+    if (!validateForm() || !signupData || !profileImage) return;
     setLoading(true);
 
     try {
@@ -66,6 +71,11 @@ export default function VerifyForm() {
 
       const userCredential = await confirmationResult.confirm(formData.otp);
       const user = userCredential.user;
+
+      // Upload profile image
+      const storageRef = ref(storage, `profileImages/${user.uid}`);
+      const uploadTask = await uploadString(storageRef, profileImage, 'data_url');
+      const photoURL = await getDownloadURL(uploadTask.ref);
 
       // Generate a unique ID for the user
       const unionId = await generateUniqueUnionId();
@@ -82,6 +92,7 @@ export default function VerifyForm() {
         city: signupData.city,
         state: signupData.state,
         pinCode: signupData.pinCode,
+        photoURL,
         role: 'member', // Default role for new users
         createdAt: new Date(),
         subscription: { status: 'pending' },
@@ -92,6 +103,7 @@ export default function VerifyForm() {
       await signInWithEmailAndPassword(auth, email, formData.password);
 
       sessionStorage.removeItem('signupFormData');
+      sessionStorage.removeItem('signupProfileImage');
       toast({ title: 'Account Created!', description: 'Redirecting you to the dashboard...' });
       router.push('/dashboard');
 

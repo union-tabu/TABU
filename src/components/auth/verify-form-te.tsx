@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { auth, db } from '@/lib/firebase';
+import { auth, db, storage } from '@/lib/firebase';
 import { ConfirmationResult, linkWithCredential, EmailAuthProvider, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
+import { ref, uploadString, getDownloadURL } from "firebase/storage";
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect } from 'react';
@@ -27,14 +28,17 @@ export default function VerifyFormTe() {
     confirmPassword: '',
   });
   const [signupData, setSignupData] = useState<any>(null);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
   useEffect(() => {
     const storedData = sessionStorage.getItem('signupFormDataTe');
-    if (!storedData) {
+    const storedImage = sessionStorage.getItem('signupProfileImageTe');
+    if (!storedData || !storedImage) {
       toast({ title: 'నమోదు లోపం', description: 'నమోదు డేటా కనుగొనబడలేదు. దయచేసి మళ్ళీ ప్రారంభించండి.', variant: 'destructive' });
       router.push('/te/signup');
     } else {
       setSignupData(JSON.parse(storedData));
+      setProfileImage(storedImage);
     }
   }, [router, toast]);
 
@@ -55,7 +59,7 @@ export default function VerifyFormTe() {
 
   const handleSignup = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!validateForm() || !signupData) return;
+    if (!validateForm() || !signupData || !profileImage) return;
     setLoading(true);
 
     try {
@@ -66,6 +70,11 @@ export default function VerifyFormTe() {
 
       const userCredential = await confirmationResult.confirm(formData.otp);
       const user = userCredential.user;
+
+      // Upload profile image
+      const storageRef = ref(storage, `profileImages/${user.uid}`);
+      const uploadTask = await uploadString(storageRef, profileImage, 'data_url');
+      const photoURL = await getDownloadURL(uploadTask.ref);
 
       // Generate a unique ID for the user
       const unionId = await generateUniqueUnionId();
@@ -82,6 +91,7 @@ export default function VerifyFormTe() {
         city: signupData.city,
         state: signupData.state,
         pinCode: signupData.pinCode,
+        photoURL,
         role: 'member', // Default role
         createdAt: new Date(),
         subscription: { status: 'pending' },
@@ -92,6 +102,7 @@ export default function VerifyFormTe() {
       await signInWithEmailAndPassword(auth, email, formData.password);
 
       sessionStorage.removeItem('signupFormDataTe');
+      sessionStorage.removeItem('signupProfileImageTe');
       toast({ title: 'ఖాతా సృష్టించబడింది!', description: 'డాష్‌బోర్డ్‌కు మళ్ళిస్తున్నాము...' });
       router.push('/te/dashboard');
 

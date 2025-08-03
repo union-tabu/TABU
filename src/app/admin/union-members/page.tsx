@@ -15,6 +15,9 @@ import { format } from "date-fns";
 import type { UserData } from '@/types/user';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import Image from 'next/image';
+import { UserCircle } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 type UserWithId = UserData & { id: string };
 
@@ -66,6 +69,14 @@ export default function AdminUnionMembersPage() {
         e.preventDefault();
         setCurrentPage(1);
     };
+    
+    const getInitials = (name: string | undefined) => {
+        if (!name) return '';
+        const nameParts = name.split(' ');
+        const firstInitial = nameParts[0] ? nameParts[0][0] : '';
+        const lastInitial = nameParts.length > 1 ? nameParts[nameParts.length - 1][0] : '';
+        return `${firstInitial}${lastInitial}`.toUpperCase();
+    }
     
     const renderMobileSkeleton = (key: number) => (
         <Card key={key} className="mb-4">
@@ -129,9 +140,15 @@ export default function AdminUnionMembersPage() {
                                 <Card key={user.id} className="mb-4">
                                     <CardHeader>
                                         <div className="flex justify-between items-start">
-                                            <div>
-                                                <CardTitle className="text-lg">{user.fullName}</CardTitle>
-                                                <CardDescription>{user.phone}</CardDescription>
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="h-10 w-10">
+                                                    <AvatarImage src={user.photoURL} alt={user.fullName} />
+                                                    <AvatarFallback>{getInitials(user.fullName)}</AvatarFallback>
+                                                </Avatar>
+                                                <div>
+                                                    <CardTitle className="text-lg">{user.fullName}</CardTitle>
+                                                    <CardDescription>{user.phone}</CardDescription>
+                                                </div>
                                             </div>
                                             <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
                                                 className={`${user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} capitalize shrink-0`}>
@@ -175,7 +192,15 @@ export default function AdminUnionMembersPage() {
                                     paginatedUsers.map((user) => (
                                         <TableRow key={user.id}>
                                             <TableCell className="font-mono text-sm">{user.unionId || 'N/A'}</TableCell>
-                                            <TableCell>{user.fullName}</TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar className="h-9 w-9">
+                                                        <AvatarImage src={user.photoURL} alt={user.fullName} />
+                                                        <AvatarFallback>{getInitials(user.fullName)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <span>{user.fullName}</span>
+                                                </div>
+                                            </TableCell>
                                             <TableCell>{user.phone}</TableCell>
                                             <TableCell>
                                                 <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 

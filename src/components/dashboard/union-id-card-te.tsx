@@ -3,12 +3,12 @@
 
 import { useRef, useCallback } from "react";
 import { useAuth } from "@/context/auth-context";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { te } from 'date-fns/locale';
-import { BadgeCheck, User, Calendar, Shield, Download } from 'lucide-react';
+import { BadgeCheck, User, Calendar, Shield, Download, UserCircle } from 'lucide-react';
 import Image from 'next/image';
 import { toJpeg } from 'html-to-image';
 import { useToast } from "@/hooks/use-toast";
@@ -69,11 +69,12 @@ export function UnionIdCardTe() {
        return null;
     }
     
-    const joinDate = userData.createdAt?.seconds 
-        ? format(new Date(userData.createdAt.seconds * 1000), "MMMM yyyy", { locale: te })
+    const { fullName, unionId, createdAt, subscription, photoURL } = userData;
+    const joinDate = createdAt?.seconds 
+        ? format(new Date(createdAt.seconds * 1000), "MMMM yyyy", { locale: te })
         : 'N/A';
 
-    const status = userData.subscription?.status || 'pending';
+    const status = subscription?.status || 'pending';
     const translatedStatus = statusMap[status] || status;
 
     return (
@@ -92,16 +93,20 @@ export function UnionIdCardTe() {
 
                     <div className="p-5">
                         <div className="flex flex-col sm:flex-row items-center gap-5">
-                            <div data-ai-hint="profile picture" className="relative h-28 w-28 rounded-md bg-gray-200 flex items-center justify-center">
-                                <User className="h-16 w-16 text-gray-400" />
+                             <div className="w-28 h-28 rounded-md bg-gray-200 flex items-center justify-center relative overflow-hidden">
+                                {photoURL ? (
+                                    <Image src={photoURL} alt="Profile" layout="fill" className="object-cover" />
+                                ) : (
+                                    <UserCircle className="w-20 h-20 text-gray-400" />
+                                )}
                             </div>
 
                             <div className="space-y-2 text-center sm:text-left">
-                                <h2 className="text-2xl font-bold text-gray-800">{userData.fullName}</h2>
+                                <h2 className="text-2xl font-bold text-gray-800">{fullName}</h2>
                                 
                                 <div className="flex items-center gap-2 justify-center sm:justify-start">
                                     <Shield className="h-4 w-4 text-muted-foreground" />
-                                    <span className="font-mono text-sm text-muted-foreground">{userData.unionId || 'ID పెండింగ్‌లో ఉంది'}</span>
+                                    <span className="font-mono text-sm text-muted-foreground">{unionId || 'ID పెండింగ్‌లో ఉంది'}</span>
                                 </div>
                                 <div className="flex items-center gap-2 justify-center sm:justify-start">
                                     <Calendar className="h-4 w-4 text-muted-foreground" />

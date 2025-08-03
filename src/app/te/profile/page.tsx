@@ -3,21 +3,26 @@
 
 import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { UserCircle } from "lucide-react";
+import { UserCircle, Camera } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { db } from "@/lib/firebase";
+import { db, storage } from "@/lib/firebase";
 import { doc, updateDoc } from "firebase/firestore";
-import { useState, useEffect } from "react";
+import { ref, uploadString, getDownloadURL } from "firebase/storage";
+import { useState, useEffect, useRef } from "react";
 import { UnionIdCardTe } from "@/components/dashboard/union-id-card-te";
+import Image from "next/image";
 
-export default function ProfilePage() {
-    const { userData, firebaseUser, loading } = useAuth();
+export default function ProfilePageTe() {
+    const { userData, firebaseUser, loading, refreshUserData } = useAuth();
     const { toast } = useToast();
     const [isSaving, setIsSaving] = useState(false);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     
     const [formData, setFormData] = useState({
         fullName: '',
@@ -40,8 +45,25 @@ export default function ProfilePage() {
                 state: userData.state || '',
                 pinCode: userData.pinCode || '',
             });
+            setImagePreview(userData.photoURL || null);
         }
     }, [userData]);
+
+     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) { // 2MB limit
+                toast({ title: 'చిత్రం చాలా పెద్దది', description: 'దయచేసి 2MB కంటే చిన్న చిత్రాన్ని ఎంచుకోండి.', variant: 'destructive' });
+                return;
+            }
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
@@ -53,9 +75,19 @@ export default function ProfilePage() {
         setIsSaving(true);
         try {
             const userDocRef = doc(db, "users", firebaseUser.uid);
+            let photoURL = userData?.photoURL;
+
+            if (imageFile && imagePreview) {
+                const storageRef = ref(storage, `profileImages/${firebaseUser.uid}`);
+                const uploadTask = await uploadString(storageRef, imagePreview, 'data_url');
+                photoURL = await getDownloadURL(uploadTask.ref);
+            }
+
             await updateDoc(userDocRef, {
                 ...formData,
+                photoURL: photoURL
             });
+            await refreshUserData();
             toast({
                 title: "ప్రొఫైల్ నవీకరించబడింది!",
                 description: "మీ సమాచారం విజయవంతంగా సేవ్ చేయబడింది.",
@@ -69,6 +101,7 @@ export default function ProfilePage() {
             });
         } finally {
             setIsSaving(false);
+            setImageFile(null);
         }
     }
 
@@ -117,6 +150,25 @@ export default function ProfilePage() {
                     <CardDescription>మీ వ్యక్తిగత వివరాలను వీక్షించండి మరియు నిర్వహించండి. ఈ సమాచారం ప్రైవేట్‌గా ఉంచబడుతుంది.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                    <div className="grid gap-2 items-center justify-center text-center">
+                        <Label htmlFor="profileImage">ప్రొఫైల్ చిత్రం</Label>
+                        <div 
+                            className="relative mx-auto w-32 h-32 border-2 border-dashed rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-50 group"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            {imagePreview ? (
+                                <Image src={imagePreview} alt="Profile" layout="fill" className="rounded-full object-cover"/>
+                            ) : (
+                                <UserCircle className="w-16 h-16 text-gray-400" />
+                            )}
+                             <div className="absolute inset-0 bg-black bg-opacity-40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Camera className="w-8 h-8 text-white"/>
+                            </div>
+                        </div>
+                        <Input id="profileImage" type="file" accept="image/png, image/jpeg, image/jpg" ref={fileInputRef} className="hidden" onChange={handleImageChange}/>
+                        <p className="text-xs text-muted-foreground">చిత్రాన్ని మార్చడానికి క్లిక్ చేయండి (గరిష్టంగా 2MB)</p>
+                    </div>
+
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2 md:col-span-2">
                             <Label htmlFor="fullName">పూర్తి పేరు</Label>
