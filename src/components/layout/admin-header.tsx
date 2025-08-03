@@ -93,8 +93,6 @@ export function AdminHeader() {
                     <div className="text-xs text-muted-foreground font-normal">Administrator</div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild><Link href="/profile"><User className="mr-2 h-4 w-4" />Profile</Link></DropdownMenuItem>
-                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}><LogOut className="mr-2 h-4 w-4" />Logout</DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -138,17 +136,6 @@ export function AdminHeader() {
                             {item.label}
                         </Link>
                     ))}
-                    <div className="pt-4 border-t space-y-2">
-                        <Button 
-                            variant="ghost"
-                            asChild
-                            className="w-full justify-start text-lg font-medium text-muted-foreground">
-                            <Link href="/profile" onClick={() => setIsSheetOpen(false)}>
-                                <User className="mr-2 h-5 w-5" />
-                                My Profile
-                            </Link>
-                        </Button>
-                    </div>
                 </div>
                 <div className="mt-auto border-t pt-4">
                     <Button 
