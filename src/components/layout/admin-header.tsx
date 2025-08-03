@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/context/auth-context';
 import { usePathname, useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
-import { Menu, LogOut, Home, Users, CreditCard } from 'lucide-react';
+import { Menu, LogOut, Home, Users, CreditCard, User, Eye } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -83,7 +83,7 @@ export function AdminHeader() {
                 <DropdownMenuTrigger asChild>
                     <Button variant="secondary" size="icon" className="rounded-full">
                         <Avatar className="h-8 w-8">
-                            <AvatarImage src={userData?.photoURL} alt={userData?.fullName} />
+                            <AvatarImage src={userData?.photoURL} alt={userData?.fullName} className="object-cover"/>
                             <AvatarFallback>{getInitials(userData?.fullName)}</AvatarFallback>
                         </Avatar>
                         <span className="sr-only">Toggle user menu</span>
@@ -124,7 +124,7 @@ export function AdminHeader() {
                 <div className="mt-8 flex flex-col space-y-4 flex-grow">
                     <div className="border-b pb-4 flex items-center gap-3">
                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={userData?.photoURL} alt={userData?.fullName} />
+                            <AvatarImage src={userData?.photoURL} alt={userData?.fullName} className="object-cover"/>
                             <AvatarFallback>{getInitials(userData?.fullName)}</AvatarFallback>
                         </Avatar>
                         <p className="text-sm font-medium text-muted-foreground">
