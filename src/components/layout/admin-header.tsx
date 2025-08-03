@@ -78,12 +78,6 @@ export function AdminHeader() {
       </nav>
       <div className="flex items-center gap-4">
         <div className="hidden md:flex items-center gap-2">
-            <Button variant="outline" size="sm" asChild>
-                <Link href="/dashboard">
-                    <Home className="mr-2 h-4 w-4" />
-                    User View
-                </Link>
-            </Button>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="secondary" size="icon" className="rounded-full">
@@ -144,15 +138,6 @@ export function AdminHeader() {
                         </Link>
                     ))}
                     <div className="pt-4 border-t space-y-2">
-                         <Button 
-                            variant="ghost"
-                            asChild
-                            className="w-full justify-start text-lg font-medium text-muted-foreground">
-                            <Link href="/dashboard" onClick={() => setIsSheetOpen(false)}>
-                                <Home className="mr-2 h-5 w-5" />
-                                User View
-                            </Link>
-                        </Button>
                         <Button 
                             variant="ghost"
                             asChild
