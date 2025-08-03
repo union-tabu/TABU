@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, subMonths, startOfMonth } from 'date-fns';
-import { Users, IndianRupee, Activity, CalendarPlus } from 'lucide-react';
+import { Users, IndianRupee, Activity, Wallet } from 'lucide-react';
 
 type UserWithId = UserData & { id: string };
 
@@ -21,6 +21,7 @@ export default function AdminDashboardPage() {
         totalUsers: 0,
         activeSubscriptions: 0,
         monthlyRevenue: 0,
+        totalRevenue: 0,
     });
     const [revenueData, setRevenueData] = useState<any[]>([]);
     const [recentUsers, setRecentUsers] = useState<UserWithId[]>([]);
@@ -45,8 +46,11 @@ export default function AdminDashboardPage() {
                 const monthlyRevenue = allPayments
                     .filter(p => p.paymentDate && p.paymentDate.toDate() >= currentMonthStart)
                     .reduce((acc, p) => acc + p.amount, 0);
+                
+                // Calculate total revenue
+                const totalRevenue = allPayments.reduce((acc, p) => acc + p.amount, 0);
 
-                setStats({ totalUsers, activeSubscriptions, monthlyRevenue });
+                setStats({ totalUsers, activeSubscriptions, monthlyRevenue, totalRevenue });
                 
                 // Process revenue chart data
                 const monthlyRevenueData: { [key: string]: number } = {};
@@ -108,9 +112,9 @@ export default function AdminDashboardPage() {
             <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
 
             {/* Stat Cards */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 {loading ? (
-                    Array.from({length: 3}).map((_, i) => renderStatCardSkeleton(i))
+                    Array.from({length: 4}).map((_, i) => renderStatCardSkeleton(i))
                 ) : (
                     <>
                         <Card>
@@ -131,6 +135,16 @@ export default function AdminDashboardPage() {
                             <CardContent>
                                 <div className="text-2xl font-bold">{stats.activeSubscriptions}</div>
                                 <p className="text-xs text-muted-foreground">Currently active and paid members</p>
+                            </CardContent>
+                        </Card>
+                         <Card>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                                <Wallet className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">₹{stats.totalRevenue.toLocaleString('en-IN')}</div>
+                                <p className="text-xs text-muted-foreground">All-time revenue collected</p>
                             </CardContent>
                         </Card>
                         <Card>
