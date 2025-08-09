@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -9,13 +10,18 @@ export function Footer() {
   const isTelugu = pathname.startsWith('/te');
 
   const homeLink = isTelugu ? '/te' : '/';
-  const benefitsLink = isTelugu ? '/te#benefits' : '/#benefits';
   const aboutLink = isTelugu ? '/te#about' : '/#about';
+  const benefitsLink = isTelugu ? '/te#benefits' : '/#benefits';
   const faqLink = isTelugu ? '/te#faq' : '/#faq';
+  const contactLink = isTelugu ? '/te/contact' : '/contact';
+  const privacyLink = isTelugu ? '/te/privacy-policy' : '/privacy-policy';
 
-  const benefitsText = isTelugu ? 'ప్రయోజనాలు' : 'Benefits';
   const aboutText = isTelugu ? 'మా గురించి' : 'About';
+  const benefitsText = isTelugu ? 'ప్రయోజనాలు' : 'Benefits';
   const faqText = isTelugu ? 'FAQ' : 'FAQ';
+  const contactText = isTelugu ? 'సంప్రదించండి' : 'Contact';
+  const privacyText = isTelugu ? 'గోప్యతా విధానం' : 'Privacy Policy';
+  
   const copyrightText = isTelugu ? 
     '© 2025 తెలంగాణ ఆల్ బిల్డింగ్ వర్కర్స్ యూనియన్. అన్ని హక్కులూ ప్రత్యేకించుకోవడమైనది.' : 
     '© 2025 Telangana All Building Workers Union. All rights reserved.';
@@ -37,13 +43,7 @@ export function Footer() {
             </div>
             
             {/* Navigation links */}
-            <nav className="flex flex-wrap gap-6 md:justify-end">
-              <Link 
-                href={benefitsLink} 
-                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                {benefitsText}
-              </Link>
+            <nav className="flex flex-wrap gap-x-6 gap-y-4 md:justify-end">
                <Link 
                 href={aboutLink} 
                 className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
@@ -51,10 +51,28 @@ export function Footer() {
                 {aboutText}
               </Link>
               <Link 
+                href={benefitsLink} 
+                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                {benefitsText}
+              </Link>
+              <Link 
                 href={faqLink} 
                 className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
               >
                 {faqText}
+              </Link>
+              <Link 
+                href={contactLink} 
+                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                {contactText}
+              </Link>
+               <Link 
+                href={privacyLink} 
+                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                {privacyText}
               </Link>
             </nav>
             
