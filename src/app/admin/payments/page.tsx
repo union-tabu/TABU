@@ -112,14 +112,14 @@ export default function AdminPaymentsPage() {
             <h1 className="text-3xl font-bold tracking-tight">All Payments</h1>
             <Card>
                 <CardHeader>
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <CardTitle>Transaction History</CardTitle>
-                        <form onSubmit={handleSearch} className="flex gap-2">
+                        <form onSubmit={handleSearch} className="flex gap-2 w-full md:w-auto">
                              <Input 
                                 placeholder="Search Name, Phone, or Payment ID..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-64"
+                                className="flex-grow md:w-64"
                             />
                             <Button type="submit">Search</Button>
                         </form>
