@@ -60,7 +60,7 @@ export default function SignupFormTe() {
     if (!formData.state.trim()) errors.state = 'రాష్ట్రం అవసరం';
     if (!/^\d{6}$/.test(formData.pinCode)) errors.pinCode = 'పిన్ కోడ్ 6 అంకెలు ఉండాలి';
     if (!formData.profession.trim()) errors.profession = 'వృత్తి అవసరం';
-    if (formData.referredBy && !/^[6-9]\d{9}$/.test(formData.referredBy)) errors.referredBy = 'దయచేసి చెల్లుబాటు అయ్యే 10-అంకెల ఫోన్ నంబర్‌ను నమోదు చేయండి';
+    if (!/^[6-9]\d{9}$/.test(formData.referredBy)) errors.referredBy = 'దయచేసి చెల్లుబాటు అయ్యే 10-అంకెల సూచన ఫోన్ నంబర్‌ను నమోదు చేయండి';
     if (!formData.profileImage) errors.profileImage = 'ప్రొఫైల్ చిత్రం అవసరం';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -193,8 +193,8 @@ export default function SignupFormTe() {
                   {formErrors.profession && <p className="text-xs text-red-500">{formErrors.profession}</p>}
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="referredBy">సూచించిన వారు (ఐచ్ఛికం)</Label>
-                  <Input id="referredBy" type="tel" placeholder="సూచించిన వారి ఫోన్ నంబర్" onChange={handleInputChange} value={formData.referredBy} maxLength={10} className={formErrors.referredBy ? 'border-red-500' : ''}/>
+                  <Label htmlFor="referredBy">సూచించిన వారు *</Label>
+                  <Input id="referredBy" type="tel" placeholder="సూచించిన వారి ఫోన్ నంబర్" required onChange={handleInputChange} value={formData.referredBy} maxLength={10} className={formErrors.referredBy ? 'border-red-500' : ''}/>
                   {formErrors.referredBy && <p className="text-xs text-red-500">{formErrors.referredBy}</p>}
                 </div>
              </div>

@@ -77,7 +77,7 @@ export default function SignupForm() {
     if (!formData.state.trim()) errors.state = 'State is required';
     if (!/^\d{6}$/.test(formData.pinCode)) errors.pinCode = 'PIN code must be 6 digits';
     if (!formData.profession.trim()) errors.profession = 'Profession is required';
-    if (formData.referredBy && !/^[6-9]\d{9}$/.test(formData.referredBy)) errors.referredBy = 'Please enter a valid 10-digit phone number';
+    if (!/^[6-9]\d{9}$/.test(formData.referredBy)) errors.referredBy = 'Please enter a valid 10-digit referrer phone number';
     if (!formData.profileImage) errors.profileImage = 'Profile image is required';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -213,8 +213,8 @@ export default function SignupForm() {
                   {formErrors.profession && <p className="text-xs text-red-500">{formErrors.profession}</p>}
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="referredBy">Referred by (Optional)</Label>
-                  <Input id="referredBy" type="tel" placeholder="Referrer's phone number" onChange={handleInputChange} value={formData.referredBy} maxLength={10} className={formErrors.referredBy ? 'border-red-500' : ''}/>
+                  <Label htmlFor="referredBy">Referred by *</Label>
+                  <Input id="referredBy" type="tel" placeholder="Referrer's phone number" required onChange={handleInputChange} value={formData.referredBy} maxLength={10} className={formErrors.referredBy ? 'border-red-500' : ''}/>
                   {formErrors.referredBy && <p className="text-xs text-red-500">{formErrors.referredBy}</p>}
                 </div>
              </div>
