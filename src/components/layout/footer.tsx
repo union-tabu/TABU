@@ -15,12 +15,14 @@ export function Footer() {
   const faqLink = isTelugu ? '/te#faq' : '/#faq';
   const contactLink = isTelugu ? '/te/contact' : '/contact';
   const privacyLink = isTelugu ? '/te/privacy-policy' : '/privacy-policy';
+  const termsLink = isTelugu ? '/te/terms-and-conditions' : '/terms-and-conditions';
 
   const aboutText = isTelugu ? 'మా గురించి' : 'About';
   const benefitsText = isTelugu ? 'ప్రయోజనాలు' : 'Benefits';
   const faqText = isTelugu ? 'FAQ' : 'FAQ';
   const contactText = isTelugu ? 'సంప్రదించండి' : 'Contact';
   const privacyText = isTelugu ? 'గోప్యతా విధానం' : 'Privacy Policy';
+  const termsText = isTelugu ? 'నిబంధనలు & షరతులు' : 'Terms & Conditions';
   
   const copyrightText = isTelugu ? 
     '© 2025 తెలంగాణ ఆల్ బిల్డింగ్ వర్కర్స్ యూనియన్. అన్ని హక్కులూ ప్రత్యేకించుకోవడమైనది.' : 
@@ -73,6 +75,12 @@ export function Footer() {
                 className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
               >
                 {privacyText}
+              </Link>
+               <Link 
+                href={termsLink} 
+                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                {termsText}
               </Link>
             </nav>
             
