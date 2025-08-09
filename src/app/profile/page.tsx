@@ -3,7 +3,7 @@
 
 import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { UserCircle, Camera } from "lucide-react";
+import { UserCircle, Camera, Briefcase, UserPlus } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +32,8 @@ export default function ProfilePage() {
         city: '',
         state: '',
         pinCode: '',
+        profession: '',
+        referredBy: '',
     });
 
      useEffect(() => {
@@ -44,6 +46,8 @@ export default function ProfilePage() {
                 city: userData.city || '',
                 state: userData.state || '',
                 pinCode: userData.pinCode || '',
+                profession: userData.profession || '',
+                referredBy: userData.referredBy || '',
             });
             setImagePreview(userData.photoURL || null);
         }
@@ -185,6 +189,14 @@ export default function ProfilePage() {
                          <div className="space-y-2">
                             <Label htmlFor="email">Email (Optional)</Label>
                             <Input id="email" type="email" value={formData.email} onChange={handleChange} placeholder="you@example.com" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="profession">Profession</Label>
+                            <Input id="profession" value={formData.profession} onChange={handleChange} placeholder="e.g. Mason, Electrician" />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="referredBy">Referred by</Label>
+                            <Input id="referredBy" value={formData.referredBy} onChange={handleChange} placeholder="Referrer's phone (optional)" />
                         </div>
                         <div className="space-y-2 md:col-span-2">
                             <Label htmlFor="addressLine">Address</Label>

@@ -162,6 +162,7 @@ export default function UnionMembersPageTe() {
                                     </CardHeader>
                                     <CardContent className="text-sm text-muted-foreground space-y-2">
                                         <p><span className="font-semibold">ID:</span> <span className="font-mono text-xs">{user.unionId || 'N/A'}</span></p>
+                                        <p><span className="font-semibold">వృత్తి:</span> {user.profession || 'N/A'}</p>
                                         <p><span className="font-semibold">చేరారు:</span> {user.createdAt?.seconds 
                                                 ? format(new Date(user.createdAt.seconds * 1000), "MMMM yyyy", { locale: te }) 
                                                 : 'N/A'}</p>
@@ -184,6 +185,7 @@ export default function UnionMembersPageTe() {
                                     <TableHead>ID</TableHead>
                                     <TableHead>పేరు</TableHead>
                                     <TableHead>ఫోన్</TableHead>
+                                    <TableHead>వృత్తి</TableHead>
                                     <TableHead>స్థితి</TableHead>
                                     <TableHead>చేరారు</TableHead>
                                     <TableHead>చిరునామా</TableHead>
@@ -198,6 +200,7 @@ export default function UnionMembersPageTe() {
                                             <TableCell className="font-mono text-sm">{user.unionId || 'N/A'}</TableCell>
                                             <TableCell>{user.fullName}</TableCell>
                                             <TableCell className="font-mono">{maskPhoneNumber(user.phone)}</TableCell>
+                                            <TableCell>{user.profession || 'N/A'}</TableCell>
                                             <TableCell>
                                                 <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
                                                     className={user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
@@ -214,7 +217,7 @@ export default function UnionMembersPageTe() {
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center">
+                                        <TableCell colSpan={7} className="text-center">
                                             ఎంచుకున్న ఫిల్టర్ కోసం సభ్యులు కనుగొనబడలేదు.
                                         </TableCell>
                                     </TableRow>

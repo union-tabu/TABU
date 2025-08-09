@@ -158,10 +158,12 @@ export default function AdminUnionMembersPage() {
                                     </CardHeader>
                                     <CardContent className="text-sm text-muted-foreground space-y-2">
                                         <p><span className="font-semibold">ID:</span> <span className="font-mono text-xs">{user.unionId || 'N/A'}</span></p>
+                                        <p><span className="font-semibold">Profession:</span> {user.profession || 'N/A'}</p>
                                         <p><span className="font-semibold">Joined:</span> {user.createdAt?.seconds 
                                                 ? format(new Date(user.createdAt.seconds * 1000), "MMMM yyyy") 
                                                 : 'N/A'}</p>
                                         <p><span className="font-semibold">Address:</span> {`${user.addressLine}, ${user.city}, ${user.state}`}</p>
+                                        {user.referredBy && <p><span className="font-semibold">Referred by:</span> {user.referredBy}</p>}
                                     </CardContent>
                                 </Card>
                             ))
@@ -180,9 +182,10 @@ export default function AdminUnionMembersPage() {
                                     <TableHead>ID</TableHead>
                                     <TableHead>Name</TableHead>
                                     <TableHead>Phone</TableHead>
+                                    <TableHead>Profession</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Joined</TableHead>
-                                    <TableHead>Address</TableHead>
+                                    <TableHead>Referred By</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -202,6 +205,7 @@ export default function AdminUnionMembersPage() {
                                                 </div>
                                             </TableCell>
                                             <TableCell>{user.phone}</TableCell>
+                                            <TableCell>{user.profession || 'N/A'}</TableCell>
                                             <TableCell>
                                                 <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
                                                     className={`${user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} capitalize`}>
@@ -213,12 +217,12 @@ export default function AdminUnionMembersPage() {
                                                     ? format(new Date(user.createdAt.seconds * 1000), "MMMM yyyy") 
                                                     : 'N/A'}
                                             </TableCell>
-                                            <TableCell>{`${user.addressLine}, ${user.city}, ${user.state}, ${user.pinCode}`}</TableCell>
+                                            <TableCell>{user.referredBy || 'N/A'}</TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center">
+                                        <TableCell colSpan={7} className="text-center">
                                             No members found for the selected filter.
                                         </TableCell>
                                     </TableRow>

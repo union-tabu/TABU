@@ -32,6 +32,8 @@ export default function ProfilePageTe() {
         city: '',
         state: '',
         pinCode: '',
+        profession: '',
+        referredBy: '',
     });
 
      useEffect(() => {
@@ -44,6 +46,8 @@ export default function ProfilePageTe() {
                 city: userData.city || '',
                 state: userData.state || '',
                 pinCode: userData.pinCode || '',
+                profession: userData.profession || '',
+                referredBy: userData.referredBy || '',
             });
             setImagePreview(userData.photoURL || null);
         }
@@ -181,6 +185,14 @@ export default function ProfilePageTe() {
                          <div className="space-y-2">
                             <Label htmlFor="email">ఇమెయిల్ (ఐచ్ఛికం)</Label>
                             <Input id="email" type="email" value={formData.email} onChange={handleChange} placeholder="మీరు@ఉదాహరణ.com" />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="profession">వృత్తి</Label>
+                            <Input id="profession" value={formData.profession} onChange={handleChange} placeholder="ఉదా. మేస్త్రీ, ఎలక్ట్రీషియన్" />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="referredBy">సూచించిన వారు</Label>
+                            <Input id="referredBy" value={formData.referredBy} onChange={handleChange} placeholder="సూచించిన వారి ఫోన్ (ఐచ్ఛికం)" />
                         </div>
                         <div className="space-y-2 md:col-span-2">
                             <Label htmlFor="addressLine">చిరునామా</Label>

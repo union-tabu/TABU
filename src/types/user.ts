@@ -10,6 +10,8 @@ export interface UserData {
   photoURL?: string;
   email?: string;
   role?: 'admin' | 'member';
+  profession?: string;
+  referredBy?: string;
   subscription?: {
     plan: 'monthly' | 'yearly';
     status: 'active' | 'inactive' | 'cancelled' | 'pending' | 'lapsed';

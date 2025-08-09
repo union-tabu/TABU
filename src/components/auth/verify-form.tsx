@@ -92,6 +92,8 @@ export default function VerifyForm() {
         city: signupData.city,
         state: signupData.state,
         pinCode: signupData.pinCode,
+        profession: signupData.profession,
+        referredBy: signupData.referredBy || '',
         photoURL,
         role: 'member', // Default role for new users
         createdAt: new Date(),

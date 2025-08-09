@@ -38,6 +38,8 @@ export default function SignupFormTe() {
     state: '',
     country: 'భారతదేశం',
     pinCode: '',
+    profession: '',
+    referredBy: '',
     profileImage: null as File | null,
   });
 
@@ -57,6 +59,8 @@ export default function SignupFormTe() {
     if (!formData.city.trim()) errors.city = 'నగరం అవసరం';
     if (!formData.state.trim()) errors.state = 'రాష్ట్రం అవసరం';
     if (!/^\d{6}$/.test(formData.pinCode)) errors.pinCode = 'పిన్ కోడ్ 6 అంకెలు ఉండాలి';
+    if (!formData.profession.trim()) errors.profession = 'వృత్తి అవసరం';
+    if (formData.referredBy && !/^[6-9]\d{9}$/.test(formData.referredBy)) errors.referredBy = 'దయచేసి చెల్లుబాటు అయ్యే 10-అంకెల ఫోన్ నంబర్‌ను నమోదు చేయండి';
     if (!formData.profileImage) errors.profileImage = 'ప్రొఫైల్ చిత్రం అవసరం';
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -182,6 +186,18 @@ export default function SignupFormTe() {
                 {formErrors.phone && <p className="text-xs text-red-500">{formErrors.phone}</p>}
               </div>
             </div>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               <div className="grid gap-2">
+                  <Label htmlFor="profession">వృత్తి *</Label>
+                  <Input id="profession" placeholder="ఉదా. మేస్త్రీ, ఎలక్ట్రీషియన్" required onChange={handleInputChange} value={formData.profession} className={formErrors.profession ? 'border-red-500' : ''}/>
+                  {formErrors.profession && <p className="text-xs text-red-500">{formErrors.profession}</p>}
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="referredBy">సూచించిన వారు (ఐచ్ఛికం)</Label>
+                  <Input id="referredBy" type="tel" placeholder="సూచించిన వారి ఫోన్ నంబర్" onChange={handleInputChange} value={formData.referredBy} maxLength={10} className={formErrors.referredBy ? 'border-red-500' : ''}/>
+                  {formErrors.referredBy && <p className="text-xs text-red-500">{formErrors.referredBy}</p>}
+                </div>
+             </div>
             <div className="grid gap-2">
               <Label htmlFor="addressLine">చిరునామా *</Label>
               <Input id="addressLine" placeholder="11-2-333, ల్యాండ్‌మార్క్" required onChange={handleInputChange} value={formData.addressLine} className={formErrors.addressLine ? 'border-red-500' : ''} />
