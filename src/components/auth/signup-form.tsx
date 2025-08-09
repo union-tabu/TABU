@@ -1,4 +1,3 @@
-
 // src/components/auth/signup-form.tsx
 "use client";
 
@@ -9,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { auth, db, storage } from '@/lib/firebase';
 import { RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from 'firebase/auth';
-import { collection, query, where, getDocs } from 'firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect, useRef } from 'react';
