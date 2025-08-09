@@ -1,9 +1,17 @@
 
-import { Suspense } from 'react';
+"use client";
+
+import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Header } from '@/components/layout/header';
-import SigninPageClient from './signin-page-client';
+import { useAuth } from '@/context/auth-context';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+const SigninForm = dynamic(() => import('@/components/auth/login-form'), { 
+  ssr: false,
+  loading: () => <SigninSkeleton />
+});
 
 function SigninSkeleton() {
   return (
@@ -33,19 +41,23 @@ function SigninSkeleton() {
   );
 }
 
+// This is the new Client Component that holds the client-side logic
+export default function SigninPageClient({ resetSuccess }: { resetSuccess: boolean }) {
+  const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
 
-// This is now a Server Component
-export default function SigninPage({ searchParams }: { searchParams: { reset?: string } }) {
-  const resetSuccess = searchParams.reset === 'success';
+  useEffect(() => {
+    // If user is already authenticated, redirect to dashboard
+    if (!loading && isAuthenticated) {
+      router.replace('/dashboard');
+    }
+  }, [isAuthenticated, loading, router]);
 
-  return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-grow">
-        <Suspense fallback={<SigninSkeleton />}>
-          <SigninPageClient resetSuccess={resetSuccess} />
-        </Suspense>
-      </main>
-    </div>
-  );
+  // While checking auth or if user is authenticated, render a skeleton or nothing to prevent flashing.
+  if (loading || isAuthenticated) {
+    return <SigninSkeleton />;
+  }
+  
+  // Only show the signin form if the user is not authenticated and the auth state has been loaded.
+  return <SigninForm resetSuccess={resetSuccess} />;
 }
