@@ -72,7 +72,7 @@ export function WhyJoinSection() {
           {/* CTA Button */}
           <div className="text-center">
             <Button asChild size="lg">
-              <Link href="/signup">Register</Link>
+              <Link href="/en/signup">Register</Link>
             </Button>
           </div>
         </div>
