@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { Header } from '@/components/layout/header';
 
 const SigninForm = dynamic(() => import('@/components/auth/login-form'), { 
@@ -42,7 +42,7 @@ function SigninSkeleton() {
   );
 }
 
-export default function SigninPage() {
+function SigninPageContent({ searchParams }: { searchParams: { reset?: string } }) {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
@@ -70,8 +70,16 @@ export default function SigninPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
-        <SigninForm />
+        <SigninForm resetSuccess={searchParams.reset === 'success'} />
       </main>
     </div>
   );
+}
+
+export default function SigninPage({ searchParams }: { searchParams: { reset?: string } }) {
+  return (
+    <Suspense fallback={<SigninSkeleton />}>
+      <SigninPageContent searchParams={searchParams} />
+    </Suspense>
+  )
 }

@@ -1,4 +1,3 @@
-
 // src/app/login/page.tsx
 "use client";
 
@@ -7,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/context/auth-context';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { Header } from '@/components/layout/header';
 
 const LoginForm = dynamic(() => import('@/components/auth/login-form'), { 
@@ -43,7 +42,7 @@ function LoginSkeleton() {
   );
 }
 
-export default function LoginPage() {
+function LoginPageContent({ searchParams }: { searchParams: { reset?: string } }) {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
@@ -71,8 +70,16 @@ export default function LoginPage() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
-        <LoginForm />
+        <LoginForm resetSuccess={searchParams.reset === 'success'} />
       </main>
     </div>
   );
+}
+
+export default function LoginPage({ searchParams }: { searchParams: { reset?: string } }) {
+  return (
+    <Suspense fallback={<LoginSkeleton />}>
+      <LoginPageContent searchParams={searchParams} />
+    </Suspense>
+  )
 }

@@ -1,4 +1,3 @@
-
 // src/components/auth/signin-form.tsx
 "use client";
 
@@ -7,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
@@ -20,9 +19,8 @@ interface FormErrors {
   password?: string;
 }
 
-export default function SigninForm() {
+export default function SigninForm({ resetSuccess = false }: { resetSuccess?: boolean }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -34,14 +32,15 @@ export default function SigninForm() {
 
   // Check for password reset success message
   useEffect(() => {
-    if (searchParams.get('reset') === 'success') {
+    if (resetSuccess) {
       toast({
         title: "Password Reset Successful!",
         description: "You can now sign in with your new password.",
       });
+      // Use router.replace to remove the query param from the URL
       router.replace('/signin', { scroll: false });
     }
-  }, [searchParams, router, toast]);
+  }, [resetSuccess, router, toast]);
 
   // Handle signin attempt blocking
   useEffect(() => {
