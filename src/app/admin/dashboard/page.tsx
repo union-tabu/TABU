@@ -237,7 +237,8 @@ export default function AdminDashboardPage() {
                                                 <div className="text-sm text-muted-foreground">{user.phone}</div>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge className="capitalize" variant={user.subscription?.status === 'active' ? 'default' : 'secondary'}>
+                                                <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
+                                                    className={`${user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} capitalize`}>
                                                     {user.subscription?.status || 'pending'}
                                                 </Badge>
                                             </TableCell>
@@ -254,4 +255,5 @@ export default function AdminDashboardPage() {
             </div>
         </div>
     );
-}
+
+  
