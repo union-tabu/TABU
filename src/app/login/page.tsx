@@ -42,7 +42,7 @@ function LoginSkeleton() {
   );
 }
 
-function LoginPageContent({ searchParams }: { searchParams: { reset?: string } }) {
+function LoginPageClient({ resetSuccess }: { resetSuccess: boolean }) {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
 
@@ -70,16 +70,18 @@ function LoginPageContent({ searchParams }: { searchParams: { reset?: string } }
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
-        <LoginForm resetSuccess={searchParams.reset === 'success'} />
+        <LoginForm resetSuccess={resetSuccess} />
       </main>
     </div>
   );
 }
 
 export default function LoginPage({ searchParams }: { searchParams: { reset?: string } }) {
+  const resetSuccess = searchParams?.reset === 'success';
+
   return (
     <Suspense fallback={<LoginSkeleton />}>
-      <LoginPageContent searchParams={searchParams} />
+      <LoginPageClient resetSuccess={resetSuccess} />
     </Suspense>
   )
 }
