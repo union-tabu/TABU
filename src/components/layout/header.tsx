@@ -86,12 +86,12 @@ export function Header() {
 
   const navLinks = isTelugu ? [
     { href: '/te', label: 'హోమ్' },
-    { href: '/te#about', label: 'మా గురించి' },
     { href: '/te#benefits', label: 'ప్రయోజనాలు' },
+    { href: '/te#about', label: 'మా గురించి' },
   ] : [
     { href: '/', label: 'Home' },
-    { href: '/#about', label: 'About' },
     { href: '/#benefits', label: 'Benefits' },
+    { href: '/#about', label: 'About' },
   ];
   
   const signinLink = isTelugu ? '/te/signin' : '/signin';
