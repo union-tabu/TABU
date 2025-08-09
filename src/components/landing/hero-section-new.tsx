@@ -25,7 +25,7 @@ export function HeroSection() {
                 <Link href="/signup">Register</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/login">Sign In</Link>
+                <Link href="/signin">Sign In</Link>
               </Button>
             </div>
           </div>
