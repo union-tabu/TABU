@@ -28,8 +28,8 @@ export default function ContactPageTe() {
                 <CardTitle className="mt-4 font-headline">ఇమెయిల్</CardTitle>
               </CardHeader>
               <CardContent>
-                <a href="mailto:info@sanghikasamakhya.org" className="text-lg text-primary hover:underline">
-                  info@sanghikasamakhya.org
+                <a href="mailto:uniontabu@gmail.com" className="text-lg text-primary hover:underline">
+                  uniontabu@gmail.com
                 </a>
               </CardContent>
             </Card>
