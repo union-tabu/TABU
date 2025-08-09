@@ -191,7 +191,7 @@ export default function AdminUnionMembersPage() {
                                 ) : paginatedUsers.length > 0 ? (
                                     paginatedUsers.map((user) => (
                                         <TableRow key={user.id}>
-                                            <TableCell className="font-mono text-sm">{user.unionId || 'N/A'}</TableCell>
+                                            <TableCell className="text-sm">{user.unionId || 'N/A'}</TableCell>
                                             <TableCell>
                                                 <div className="flex items-center gap-3">
                                                     <Avatar className="h-9 w-9">
