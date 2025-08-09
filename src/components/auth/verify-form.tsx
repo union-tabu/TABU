@@ -85,7 +85,7 @@ export default function VerifyForm() {
       await linkWithCredential(user, credential);
       
       await setDoc(doc(db, "users", user.uid), {
-        unionId: `TABU-${unionId}`,
+        unionId: `T.A.B.U-${unionId}`,
         fullName: signupData.fullName,
         phone: signupData.phone,
         addressLine: signupData.addressLine,
