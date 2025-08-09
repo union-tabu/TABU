@@ -27,18 +27,31 @@ import {
 } from "@/components/ui/tooltip"
 import Image from 'next/image';
 
+function LanguageToggle({ onLanguageChange, inSheet = false }: { onLanguageChange: (lang: 'en' | 'te') => void, inSheet?: boolean }) {
 
-function LanguageToggle() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const lang = pathname.startsWith('/te') ? 'te' : 'en';
-
-  const handleLanguageChange = (newLang: 'en' | 'te') => {
-    if (newLang === lang) return;
-    const pathWithoutLang = pathname.startsWith(`/${lang}`) ? pathname.substring(lang.length + 1) : pathname;
-    const newPath = `/${newLang}${pathWithoutLang}`;
-    router.push(newPath);
-  };
+  if (inSheet) {
+    return (
+      <>
+        <h3 className="text-lg font-medium text-gray-700">Language</h3>
+        <Button
+          variant="ghost"
+          size="lg"
+          className="w-full justify-start text-gray-700"
+          onClick={() => onLanguageChange('en')}
+        >
+          English
+        </Button>
+        <Button
+          variant="ghost"
+          size="lg"
+          className="w-full justify-start text-gray-700"
+          onClick={() => onLanguageChange('te')}
+        >
+          తెలుగు (Telugu)
+        </Button>
+      </>
+    )
+  }
 
   return (
     <DropdownMenu>
@@ -58,10 +71,10 @@ function LanguageToggle() {
         </Tooltip>
       </TooltipProvider>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onSelect={() => handleLanguageChange('en')}>
+        <DropdownMenuItem onSelect={() => onLanguageChange('en')}>
           English
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => handleLanguageChange('te')}>
+        <DropdownMenuItem onSelect={() => onLanguageChange('te')}>
           తెలుగు (Telugu)
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -93,6 +106,22 @@ export function Header() {
   const registerText = lang === 'te' ? 'నమోదు చేసుకోండి' : 'Register';
   const dashboardText = lang === 'te' ? 'డాష్‌బోర్డ్' : 'Dashboard';
   const homeLink = `/${lang}`;
+  
+  const handleLanguageChange = (newLang: 'en' | 'te') => {
+    if (newLang === lang) {
+      setIsOpen(false);
+      return;
+    }
+    
+    // Remove the current language prefix to get the base path
+    const basePath = pathname.startsWith(`/${lang}`) ? pathname.substring(`/${lang}`.length) : pathname;
+    
+    // Construct the new path with the new language prefix
+    const newPath = `/${newLang}${basePath || '/'}`;
+    
+    router.push(newPath);
+    setIsOpen(false);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -119,7 +148,7 @@ export function Header() {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-2">
-             <LanguageToggle />
+             <LanguageToggle onLanguageChange={handleLanguageChange} />
             {isAuthenticated ? (
               <Button asChild>
                 <Link href={dashboardLink}>{dashboardText}</Link>
@@ -169,30 +198,7 @@ export function Header() {
                   </Link>
                 ))}
                  <div className="pt-6 border-t space-y-3">
-                    <h3 className="text-lg font-medium text-gray-700">Language</h3>
-                     <Button 
-                        variant="ghost" 
-                        size="lg" 
-                        className="w-full justify-start text-gray-700" 
-                        onClick={() => {
-                            const newPath = lang === 'te' ? pathname.substring(3) || '/' : pathname;
-                            router.push(newPath);
-                            setIsOpen(false);
-                        }}>
-                        English
-                    </Button>
-                     <Button 
-                        variant="ghost" 
-                        size="lg" 
-                        className="w-full justify-start text-gray-700"
-                        onClick={() => {
-                             const newPath = lang === 'en' ? `/te${pathname}` : pathname;
-                             router.push(newPath);
-                             setIsOpen(false);
-                        }}
-                        >
-                        తెలుగు (Telugu)
-                    </Button>
+                   <LanguageToggle onLanguageChange={handleLanguageChange} inSheet={true} />
                 </div>
                 <div className="pt-6 border-t space-y-3">
                   {isAuthenticated ? (
