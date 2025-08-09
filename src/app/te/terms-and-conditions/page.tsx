@@ -6,7 +6,7 @@ import { Footer } from '@/components/layout/footer';
 export default function TermsAndConditionsPageTe() {
   return (
     <div className="flex flex-col min-h-screen">
-      {/* <Header /> */}
+      <Header />
       <main className="flex-grow bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
           <div className="max-w-3xl mx-auto prose prose-lg">
@@ -70,7 +70,7 @@ export default function TermsAndConditionsPageTe() {
           </div>
         </div>
       </main>
-      {/* <Footer /> */}
+      <Footer />
     </div>
   );
 }
