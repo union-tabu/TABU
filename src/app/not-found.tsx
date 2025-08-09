@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Button } from '@/components/ui/button';
@@ -22,7 +21,7 @@ export default function NotFound() {
             Sorry, we couldn't find the page you're looking for. It might have been moved, deleted, or maybe you just mistyped the URL.
           </p>
           <Button asChild size="lg">
-            <Link href="/">Go Back Home</Link>
+            <Link href="/en">Go Back Home</Link>
           </Button>
         </div>
       </main>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -36,7 +35,7 @@ export default function VerifyForm() {
 
     if (!storedData || !storedImage) {
       toast({ title: 'Error', description: 'Signup data not found. Please start the registration process again.', variant: 'destructive' });
-      router.push('/signup');
+      router.push('/en/signup');
     } else {
       setSignupData(JSON.parse(storedData));
       setProfileImage(storedImage);
@@ -107,7 +106,7 @@ export default function VerifyForm() {
       sessionStorage.removeItem('signupFormData');
       sessionStorage.removeItem('signupProfileImage');
       toast({ title: 'Account Created!', description: 'Redirecting you to the dashboard...' });
-      router.push('/dashboard');
+      router.push('/en/dashboard');
 
     } catch (error: any) {
       console.error("Signup Error:", error);
@@ -159,7 +158,7 @@ export default function VerifyForm() {
           </form>
            <div className="mt-4 text-center text-sm">
             Entered wrong details?{' '}
-            <Link href="/signup" className="underline hover:text-primary">
+            <Link href="/en/signup" className="underline hover:text-primary">
               Go Back
             </Link>
           </div>

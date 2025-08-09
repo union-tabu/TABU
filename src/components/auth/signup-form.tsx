@@ -119,7 +119,7 @@ export default function SignupForm() {
           description: "An account with this phone number already exists. Please proceed to sign in.",
           variant: "destructive",
         });
-        router.push('/signin');
+        router.push('/en/signin');
         return;
       }
 
@@ -145,7 +145,7 @@ export default function SignupForm() {
       window.confirmationResult = confirmationResult;
 
       toast({ title: "OTP Sent Successfully!", description: `A verification code has been sent to +91${formData.phone}.` });
-      router.push('/verify');
+      router.push('/en/verify');
 
     } catch (error: any) {
       console.error("Error sending OTP:", error);
@@ -253,7 +253,7 @@ export default function SignupForm() {
           </form>
           <div className="mt-4 text-center text-sm">
             Already have an account?{' '}
-            <Link href="/signin" className="underline hover:text-primary">
+            <Link href="/en/signin" className="underline hover:text-primary">
               Sign In
             </Link>
           </div>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -102,7 +101,7 @@ export default function SignupFormTe() {
           description: 'ఈ ఫోన్ నంబర్‌తో ఖాతా ఇప్పటికే ఉంది. దయచేసి సైన్ ఇన్ చేయండి.',
           variant: 'destructive',
         });
-        router.push('/te/login');
+        router.push('/te/signin');
         return;
       }
 
@@ -233,7 +232,7 @@ export default function SignupFormTe() {
           </form>
           <div className="mt-4 text-center text-sm">
             ఇప్పటికే ఖాతా ఉందా?{' '}
-            <Link href="/te/login" className="underline hover:text-primary">
+            <Link href="/te/signin" className="underline hover:text-primary">
               సైన్ ఇన్
             </Link>
           </div>

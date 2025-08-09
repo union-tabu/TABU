@@ -38,7 +38,7 @@ export default function SigninForm({ resetSuccess = false }: { resetSuccess?: bo
         description: "You can now sign in with your new password.",
       });
       // Use router.replace to remove the query param from the URL
-      router.replace('/signin', { scroll: false });
+      router.replace('/en/signin', { scroll: false });
     }
   }, [resetSuccess, router, toast]);
 
@@ -156,7 +156,7 @@ export default function SigninForm({ resetSuccess = false }: { resetSuccess?: bo
     });
     
     setTimeout(() => {
-      router.push('/dashboard');
+      router.push('/en/dashboard');
     }, 1000);
   };
 
@@ -291,7 +291,7 @@ export default function SigninForm({ resetSuccess = false }: { resetSuccess?: bo
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password *</Label>
                 <Link 
-                  href="/forgot-password" 
+                  href="/en/forgot-password" 
                   className="text-sm underline hover:text-primary"
                   tabIndex={isBlocked ? -1 : 0}
                 >
@@ -337,7 +337,7 @@ export default function SigninForm({ resetSuccess = false }: { resetSuccess?: bo
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{' '}
             <Link 
-              href="/signup" 
+              href="/en/signup" 
               className="underline hover:text-primary"
               tabIndex={isBlocked ? -1 : 0}
             >

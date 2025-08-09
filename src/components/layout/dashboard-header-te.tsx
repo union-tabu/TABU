@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link'
@@ -37,16 +36,8 @@ function LanguageToggle({ inSheet = false }: { inSheet?: boolean }) {
   const pathname = usePathname();
 
   const handleLanguageChange = (lang: 'en' | 'te') => {
-    const isTelugu = pathname.startsWith('/te');
-    let newPath;
-
-    if (lang === 'en' && isTelugu) {
-      newPath = pathname === '/te' ? '/' : pathname.substring(3);
-    } else if (lang === 'te' && !isTelugu) {
-      newPath = pathname === '/' ? '/te' : `/te${pathname}`;
-    } else {
-      return; // Already on the correct language version
-    }
+    const currentPath = pathname.split('/').slice(2).join('/');
+    const newPath = `/${lang}/${currentPath}`;
     router.push(newPath);
   };
   

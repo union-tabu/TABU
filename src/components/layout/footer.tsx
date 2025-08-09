@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -7,24 +6,24 @@ import Image from 'next/image';
 
 export function Footer() {
   const pathname = usePathname();
-  const isTelugu = pathname.startsWith('/te');
+  const lang = pathname.startsWith('/te') ? 'te' : 'en';
 
-  const homeLink = isTelugu ? '/te' : '/';
-  const aboutLink = isTelugu ? '/te#about' : '/#about';
-  const benefitsLink = isTelugu ? '/te#benefits' : '/#benefits';
-  const faqLink = isTelugu ? '/te#faq' : '/#faq';
-  const contactLink = isTelugu ? '/te/contact' : '/contact';
-  const privacyLink = isTelugu ? '/te/privacy-policy' : '/privacy-policy';
-  const termsLink = isTelugu ? '/te/terms-and-conditions' : '/terms-and-conditions';
+  const homeLink = `/${lang}`;
+  const aboutLink = `/${lang}#about`;
+  const benefitsLink = `/${lang}#benefits`;
+  const faqLink = `/${lang}#faq`;
+  const contactLink = `/${lang}/contact`;
+  const privacyLink = `/${lang}/privacy-policy`;
+  const termsLink = `/${lang}/terms-and-conditions`;
 
-  const aboutText = isTelugu ? 'మా గురించి' : 'About';
-  const benefitsText = isTelugu ? 'ప్రయోజనాలు' : 'Benefits';
-  const faqText = isTelugu ? 'FAQ' : 'FAQ';
-  const contactText = isTelugu ? 'సంప్రదించండి' : 'Contact';
-  const privacyText = isTelugu ? 'గోప్యతా విధానం' : 'Privacy Policy';
-  const termsText = isTelugu ? 'నిబంధనలు & షరతులు' : 'Terms & Conditions';
+  const aboutText = lang === 'te' ? 'మా గురించి' : 'About';
+  const benefitsText = lang === 'te' ? 'ప్రయోజనాలు' : 'Benefits';
+  const faqText = lang === 'te' ? 'FAQ' : 'FAQ';
+  const contactText = lang === 'te' ? 'సంప్రదించండి' : 'Contact';
+  const privacyText = lang === 'te' ? 'గోప్యతా విధానం' : 'Privacy Policy';
+  const termsText = lang === 'te' ? 'నిబంధనలు & షరతులు' : 'Terms & Conditions';
   
-  const copyrightText = isTelugu ? 
+  const copyrightText = lang === 'te' ? 
     '© 2025 తెలంగాణ ఆల్ బిల్డింగ్ వర్కర్స్ యూనియన్. అన్ని హక్కులూ ప్రత్యేకించుకోవడమైనది.' : 
     '© 2025 Telangana All Building Workers Union. All rights reserved.';
   

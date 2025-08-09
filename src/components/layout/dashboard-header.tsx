@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link'
@@ -38,16 +37,8 @@ function LanguageToggle({ inSheet = false }: { inSheet?: boolean }) {
   const pathname = usePathname();
 
   const handleLanguageChange = (lang: 'en' | 'te') => {
-    const isTelugu = pathname.startsWith('/te');
-    let newPath;
-
-    if (lang === 'en' && isTelugu) {
-      newPath = pathname === '/te' ? '/' : pathname.substring(3);
-    } else if (lang === 'te' && !isTelugu) {
-      newPath = pathname === '/' ? '/te' : `/te${pathname}`;
-    } else {
-      return; // Already on the correct language version
-    }
+    const currentPath = pathname.split('/').slice(2).join('/');
+    const newPath = `/${lang}/${currentPath}`;
     router.push(newPath);
   };
   
@@ -110,7 +101,7 @@ export function DashboardHeader() {
 
   const handleLogout = async () => {
     await logout();
-    router.push('/');
+    router.push('/en');
     toast({
       title: "You have been logged out.",
       description: "You have been securely signed out of your account.",
@@ -118,10 +109,10 @@ export function DashboardHeader() {
   };
 
   const navItems = [
-    { href: '/dashboard', label: 'Dashboard' },
-    { href: '/union-members', label: 'Union Members' },
-    { href: '/payments', label: 'Payments' },
-    { href: '/subscribe', label: 'Subscribe' },
+    { href: '/en/dashboard', label: 'Dashboard' },
+    { href: '/en/union-members', label: 'Union Members' },
+    { href: '/en/payments', label: 'Payments' },
+    { href: '/en/subscribe', label: 'Subscribe' },
   ];
   
   const getInitials = (name: string | undefined) => {
@@ -136,7 +127,7 @@ export function DashboardHeader() {
   return (
     <header className="sticky top-0 flex h-16 items-center justify-between border-b bg-background px-4 md:px-6 z-50">
         <Link
-          href="/"
+          href="/en"
           className="flex items-center gap-2 text-lg font-semibold"
         >
           <Image src="/tabu-logo-website.png" alt="TABU Logo" width={40} height={40} className="h-10 w-auto" />
@@ -172,7 +163,7 @@ export function DashboardHeader() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                        <Link href="/profile">Profile</Link>
+                        <Link href="/en/profile">Profile</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
@@ -192,7 +183,7 @@ export function DashboardHeader() {
                  <SheetHeader>
                     <SheetTitle>
                         <Link 
-                            href="/dashboard" 
+                            href="/en/dashboard" 
                             className="flex items-center gap-2" 
                             onClick={() => setIsSheetOpen(false)}
                         >
@@ -226,7 +217,7 @@ export function DashboardHeader() {
                             variant="ghost"
                             asChild
                             className="w-full justify-start text-lg font-medium text-muted-foreground">
-                            <Link href="/profile" onClick={() => setIsSheetOpen(false)}>
+                            <Link href="/en/profile" onClick={() => setIsSheetOpen(false)}>
                                 <User className="mr-2 h-5 w-5" />
                                 Profile
                             </Link>

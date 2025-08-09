@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useAuth } from "@/context/auth-context";
@@ -22,7 +21,7 @@ export default function ProtectedRouteLayout({
     if (!loading) {
       // If not authenticated, redirect to the appropriate signin page
       if (!isAuthenticated) {
-        const signinPath = isTelugu ? '/te/signin' : '/signin';
+        const signinPath = isTelugu ? '/te/signin' : '/en/signin';
         router.replace(signinPath);
       } 
       // If user is an admin, they should not be on member pages, so redirect them

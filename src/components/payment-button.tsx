@@ -1,8 +1,7 @@
-
 "use client";
 
 import { useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { createRazorpayOrder, handlePaymentSuccess } from '@/lib/razorpay';
@@ -24,12 +23,13 @@ interface PaymentButtonProps {
 
 export function PaymentButton({ plan, amount, buttonText, variant = "default" }: PaymentButtonProps) {
     const router = useRouter();
-    const pathname = usePathname();
+    const params = useParams();
+    const lang = params.lang as string;
     const { toast } = useToast();
     const { firebaseUser, userData, loading: authLoading } = useAuth();
     const [paymentProcessing, setPaymentProcessing] = useState(false);
 
-    const isTelugu = pathname.startsWith('/te');
+    const isTelugu = lang === 'te';
 
     const loadRazorpayScript = () => {
         return new Promise((resolve) => {
@@ -58,7 +58,7 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
         setPaymentProcessing(true);
         
         if (!firebaseUser || !userData) {
-            router.push(`${isTelugu ? '/te' : ''}/signup?plan=${plan}`);
+            router.push(`/${lang}/signup?plan=${plan}`);
             setPaymentProcessing(false);
             return;
         }
@@ -69,7 +69,7 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
                 description: 'Please complete your profile with your name, phone, and address before making a payment.', 
                 variant: 'destructive' 
             });
-             router.push(`${isTelugu ? '/te' : ''}/profile`);
+             router.push(`/${lang}/profile`);
             setPaymentProcessing(false);
             return;
         }
@@ -126,7 +126,7 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
                         if (paymentResult.success) {
                             toast({ title: 'Payment Successful!', description: 'Your membership is now active. Welcome!' });
                             router.refresh(); // Refresh page to show updated status
-                            router.push(isTelugu ? '/te/dashboard' : '/dashboard');
+                            router.push(`/${lang}/dashboard`);
                         } else {
                             toast({ title: 'Payment Processing Failed', description: paymentResult.error, variant: 'destructive' });
                         }

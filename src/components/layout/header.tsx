@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -32,19 +31,12 @@ import Image from 'next/image';
 function LanguageToggle() {
   const router = useRouter();
   const pathname = usePathname();
-  const isTelugu = pathname.startsWith('/te');
+  const lang = pathname.startsWith('/te') ? 'te' : 'en';
 
-
-  const handleLanguageChange = (lang: 'en' | 'te') => {
-    let newPath;
-
-    if (lang === 'en' && isTelugu) {
-      newPath = pathname === '/te' ? '/' : pathname.substring(3);
-    } else if (lang === 'te' && !isTelugu) {
-      newPath = pathname === '/' ? '/te' : `/te${pathname}`;
-    } else {
-      return; // Already on the correct language version
-    }
+  const handleLanguageChange = (newLang: 'en' | 'te') => {
+    if (newLang === lang) return;
+    const pathWithoutLang = pathname.startsWith(`/${lang}`) ? pathname.substring(lang.length + 1) : pathname;
+    const newPath = `/${newLang}${pathWithoutLang}`;
     router.push(newPath);
   };
 
@@ -82,25 +74,25 @@ export function Header() {
   const { isAuthenticated } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
-  const isTelugu = pathname.startsWith('/te');
+  const lang = pathname.startsWith('/te') ? 'te' : 'en';
 
-  const navLinks = isTelugu ? [
+  const navLinks = lang === 'te' ? [
     { href: '/te', label: 'హోమ్' },
     { href: '/te#benefits', label: 'ప్రయోజనాలు' },
     { href: '/te#about', label: 'మా గురించి' },
   ] : [
-    { href: '/', label: 'Home' },
-    { href: '/#benefits', label: 'Benefits' },
-    { href: '/#about', label: 'About' },
+    { href: '/en', label: 'Home' },
+    { href: '/en#benefits', label: 'Benefits' },
+    { href: '/en#about', label: 'About' },
   ];
   
-  const signinLink = isTelugu ? '/te/signin' : '/signin';
-  const signupLink = isTelugu ? '/te/signup' : '/signup';
-  const dashboardLink = isTelugu ? '/te/dashboard' : '/dashboard';
-  const signinText = isTelugu ? 'సైన్ ఇన్' : 'Sign In';
-  const registerText = isTelugu ? 'నమోదు చేసుకోండి' : 'Register';
-  const dashboardText = isTelugu ? 'డాష్‌బోర్డ్' : 'Dashboard';
-  const homeLink = isTelugu ? '/te' : '/';
+  const signinLink = `/${lang}/signin`;
+  const signupLink = `/${lang}/signup`;
+  const dashboardLink = `/${lang}/dashboard`;
+  const signinText = lang === 'te' ? 'సైన్ ఇన్' : 'Sign In';
+  const registerText = lang === 'te' ? 'నమోదు చేసుకోండి' : 'Register';
+  const dashboardText = lang === 'te' ? 'డాష్‌బోర్డ్' : 'Dashboard';
+  const homeLink = `/${lang}`;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -183,7 +175,7 @@ export function Header() {
                         size="lg" 
                         className="w-full justify-start text-gray-700" 
                         onClick={() => {
-                            const newPath = isTelugu ? (pathname === '/te' ? '/' : pathname.substring(3)) : pathname;
+                            const newPath = lang === 'te' ? pathname.substring(3) || '/' : pathname;
                             router.push(newPath);
                             setIsOpen(false);
                         }}>
@@ -194,7 +186,7 @@ export function Header() {
                         size="lg" 
                         className="w-full justify-start text-gray-700"
                         onClick={() => {
-                             const newPath = isTelugu ? pathname : (pathname === '/' ? '/te' : `/te${pathname}`);
+                             const newPath = lang === 'en' ? `/te${pathname}` : pathname;
                              router.push(newPath);
                              setIsOpen(false);
                         }}
