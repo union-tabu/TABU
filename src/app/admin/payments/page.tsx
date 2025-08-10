@@ -14,7 +14,7 @@ import { format } from "date-fns";
 import type { Payment } from '@/types/payment';
 import type { UserData } from '@/types/user';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type PaymentWithUser = Payment & { userName: string; userPhone: string };
 
@@ -24,6 +24,7 @@ export default function AdminPaymentsPage() {
     const [payments, setPayments] = useState<PaymentWithUser[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterStatus, setFilterStatus] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
     const isMobile = useIsMobile();
 
@@ -66,13 +67,15 @@ export default function AdminPaymentsPage() {
     const filteredPayments = useMemo(() => {
         return payments.filter(payment => {
             const lowercasedSearchTerm = searchTerm.toLowerCase();
-            return (
+            const matchesSearch = (
                 payment.userName.toLowerCase().includes(lowercasedSearchTerm) ||
                 payment.userPhone.includes(lowercasedSearchTerm) ||
                 payment.razorpay_payment_id.toLowerCase().includes(lowercasedSearchTerm)
             );
+            const matchesStatus = filterStatus === 'all' || payment.status === filterStatus;
+            return matchesSearch && matchesStatus;
         });
-    }, [payments, searchTerm]);
+    }, [payments, searchTerm, filterStatus]);
 
     const totalPages = Math.ceil(filteredPayments.length / PAYMENTS_PER_PAGE);
     const paginatedPayments = filteredPayments.slice((currentPage - 1) * PAYMENTS_PER_PAGE, currentPage * PAYMENTS_PER_PAGE);
@@ -113,7 +116,13 @@ export default function AdminPaymentsPage() {
             <Card>
                 <CardHeader>
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <CardTitle>Transaction History</CardTitle>
+                        <Tabs defaultValue="all" onValueChange={(value) => { setFilterStatus(value); setCurrentPage(1); }} className="w-full md:w-auto">
+                            <TabsList>
+                                <TabsTrigger value="all">All</TabsTrigger>
+                                <TabsTrigger value="success">Success</TabsTrigger>
+                                <TabsTrigger value="failed">Failed</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
                         <form onSubmit={handleSearch} className="flex gap-2 w-full md:w-auto">
                              <Input 
                                 placeholder="Search Name, Phone, or Payment ID..."
