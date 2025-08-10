@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/context/auth-context";
-import { useParams, useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from "react";
 import { DashboardHeader } from "@/components/layout/dashboard-header";
 import { DashboardHeaderTe } from "@/components/layout/dashboard-header-te";
@@ -14,8 +14,8 @@ export default function ProtectedRouteLayout({
 }) {
   const { userData, isAuthenticated, loading } = useAuth();
   const router = useRouter();
-  const params = useParams();
-  const lang = params.lang as string;
+  const pathname = usePathname();
+  const lang = pathname.startsWith('/te') ? 'te' : 'en';
 
   useEffect(() => {
     if (!loading) {
