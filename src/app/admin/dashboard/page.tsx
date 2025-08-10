@@ -39,12 +39,19 @@ export default function AdminDashboardPage() {
                 
                 // Fetch all payments for revenue calculation
                 const paymentsSnapshot = await getDocs(collection(db, 'payments'));
-                const allPayments = paymentsSnapshot.docs.map(doc => doc.data() as Payment);
+                const allPayments = paymentsSnapshot.docs.map(doc => {
+                    const data = doc.data() as Payment;
+                    // Ensure paymentDate is a Date object
+                    if (data.paymentDate && typeof (data.paymentDate as any).toDate === 'function') {
+                        data.paymentDate = (data.paymentDate as any).toDate();
+                    }
+                    return data;
+                });
 
                 // Calculate monthly revenue
                 const currentMonthStart = startOfMonth(new Date());
                 const monthlyRevenue = allPayments
-                    .filter(p => p.paymentDate && p.paymentDate.toDate() >= currentMonthStart)
+                    .filter(p => p.paymentDate && new Date(p.paymentDate) >= currentMonthStart)
                     .reduce((acc, p) => acc + p.amount, 0);
                 
                 // Calculate total revenue
@@ -62,7 +69,7 @@ export default function AdminDashboardPage() {
 
                 allPayments.forEach(p => {
                     if (p.paymentDate) {
-                        const monthKey = format(p.paymentDate.toDate(), 'MMM yyyy');
+                        const monthKey = format(new Date(p.paymentDate), 'MMM yyyy');
                         if (monthlyRevenueData.hasOwnProperty(monthKey)) {
                             monthlyRevenueData[monthKey] += p.amount;
                         }
@@ -199,9 +206,9 @@ export default function AdminDashboardPage() {
                                               </div>
                                             </div>
                                           </div>
-                                        )
+                                        );
                                       }
-                                      return null
+                                      return null;
                                     }}
                                 />
                                 <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
@@ -256,5 +263,3 @@ export default function AdminDashboardPage() {
         </div>
     );
 }
-
-    
