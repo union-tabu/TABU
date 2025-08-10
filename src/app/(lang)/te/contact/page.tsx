@@ -2,7 +2,7 @@
 
 import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
-import { Mail, Phone, MapPin } from 'lucide-react';
+import { Mail, Phone, MapPin, FileText } from 'lucide-react';
 import Image from 'next/image';
 
 export default function ContactPageTe() {
@@ -22,7 +22,7 @@ export default function ContactPageTe() {
                 </p>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-8">
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                     <Mail className="h-6 w-6" />
@@ -59,18 +59,29 @@ export default function ContactPageTe() {
                     </p>
                   </div>
                 </div>
+
+                 <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <FileText className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold font-headline">రిజిస్ట్రేషన్ నెం.</h3>
+                    <p className="text-lg text-muted-foreground">
+                      H-115/2024
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Right side: Image */}
             <div className="flex items-center justify-center">
               <Image 
-                src="https://placehold.co/600x600.png"
+                src="/about-sec.jpg"
                 alt="మమ్మల్ని సంప్రదించండి"
                 width={600}
                 height={600}
                 className="rounded-lg shadow-lg aspect-square object-cover"
-                data-ai-hint="contact us"
               />
             </div>
             
