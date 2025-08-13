@@ -27,9 +27,9 @@ const AuthContext = createContext<AuthContextType>({
 
 // Storage keys for cross-tab synchronization
 const STORAGE_KEYS = {
-  AUTH_STATE: 'sanghika_auth_state',
-  USER_DATA: 'sanghika_user_data',
-  LOGOUT_EVENT: 'sanghika_logout_event'
+  AUTH_STATE: 'tabu_auth_state',
+  USER_DATA: 'tabu_user_data',
+  LOGOUT_EVENT: 'tabu_logout_event'
 } as const;
 
 interface AuthState {

@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect } from 'react';
 import { generateUniqueUnionId } from '@/ai/flows/union-id-flow';
 
-const FAKE_EMAIL_DOMAIN = "@sanghika.samakhya";
+const FAKE_EMAIL_DOMAIN = "@tabu";
 
 export default function VerifyForm() {
   const router = useRouter();
