@@ -35,7 +35,7 @@ function LanguageToggle({ inSheet = false }: { inSheet?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const handleLanguageChange = (lang: 'en' | 'te') => {
+  const handleLanguageChange = (lang: 'en' | 'te' | 'hi') => {
     const currentPath = pathname.split('/').slice(2).join('/');
     const newPath = `/${lang}/${currentPath}`;
     router.push(newPath);
@@ -51,12 +51,9 @@ function LanguageToggle({ inSheet = false }: { inSheet?: boolean }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onSelect={() => handleLanguageChange('en')}>
-            English
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => handleLanguageChange('te')}>
-            తెలుగు (Telugu)
-          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => handleLanguageChange('en')}>English</DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => handleLanguageChange('te')}>తెలుగు (Telugu)</DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => handleLanguageChange('hi')}>हिंदी (Hindi)</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     )
@@ -80,12 +77,9 @@ function LanguageToggle({ inSheet = false }: { inSheet?: boolean }) {
         </Tooltip>
       </TooltipProvider>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onSelect={() => handleLanguageChange('en')}>
-          English
-        </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => handleLanguageChange('te')}>
-          తెలుగు (Telugu)
-        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => handleLanguageChange('en')}>English</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => handleLanguageChange('te')}>తెలుగు (Telugu)</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => handleLanguageChange('hi')}>हिंदी (Hindi)</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -6,7 +6,7 @@ import Image from 'next/image';
 
 export function Footer() {
   const pathname = usePathname();
-  const lang = pathname.startsWith('/te') ? 'te' : 'en';
+  const lang = pathname.split('/')[1] || 'en';
 
   const homeLink = `/${lang}`;
   const aboutLink = `/${lang}#about`;
@@ -16,16 +16,17 @@ export function Footer() {
   const privacyLink = `/${lang}/privacy-policy`;
   const termsLink = `/${lang}/terms-and-conditions`;
 
-  const aboutText = lang === 'te' ? 'మా గురించి' : 'About';
-  const benefitsText = lang === 'te' ? 'ప్రయోజనాలు' : 'Benefits';
-  const faqText = lang === 'te' ? 'FAQ' : 'FAQ';
-  const contactText = lang === 'te' ? 'సంప్రదించండి' : 'Contact';
-  const privacyText = lang === 'te' ? 'గోప్యతా విధానం' : 'Privacy Policy';
-  const termsText = lang === 'te' ? 'నిబంధనలు & షరతులు' : 'Terms & Conditions';
+  const aboutText = lang === 'te' ? 'మా గురించి' : (lang === 'hi' ? 'हमारे बारे में' : 'About');
+  const benefitsText = lang === 'te' ? 'ప్రయోజనాలు' : (lang === 'hi' ? 'लाभ' : 'Benefits');
+  const faqText = lang === 'te' ? 'FAQ' : (lang === 'hi' ? 'FAQ' : 'FAQ');
+  const contactText = lang === 'te' ? 'సంప్రదించండి' : (lang === 'hi' ? 'संपर्क करें' : 'Contact');
+  const privacyText = lang === 'te' ? 'గోప్యతా విధానం' : (lang === 'hi' ? 'गोपनीयता नीति' : 'Privacy Policy');
+  const termsText = lang === 'te' ? 'నిబంధనలు & షరతులు' : (lang === 'hi' ? 'नियम और शर्तें' : 'Terms & Conditions');
   
   const copyrightText = lang === 'te' ? 
     '© 2025 తెలంగాణ ఆల్ బిల్డింగ్ వర్కర్స్ యూనియన్. అన్ని హక్కులూ ప్రత్యేకించుకోవడమైనది.' : 
-    '© 2025 Telangana All Building Workers Union. All rights reserved.';
+    (lang === 'hi' ? '© 2025 तेलंगाना ऑल बिल्डिंग वर्कर्स यूनियन। सर्वाधिकार सुरक्षित।' :
+    '© 2025 Telangana All Building Workers Union. All rights reserved.');
   
   return (
     <footer className="w-full bg-white border-t border-gray-200">

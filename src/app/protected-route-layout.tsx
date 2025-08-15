@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from "react";
 import { DashboardHeader } from "@/components/layout/dashboard-header";
 import { DashboardHeaderTe } from "@/components/layout/dashboard-header-te";
+import { DashboardHeaderHi } from "@/components/layout/dashboard-header-hi";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProtectedRouteLayout({
@@ -15,23 +16,20 @@ export default function ProtectedRouteLayout({
   const { userData, isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const isTelugu = pathname ? pathname.startsWith('/te') : false;
+  const lang = pathname.split('/')[1] || 'en';
 
   useEffect(() => {
     if (!loading) {
-      // If not authenticated, redirect to the appropriate signin page
       if (!isAuthenticated) {
-        const signinPath = isTelugu ? '/te/signin' : '/en/signin';
+        const signinPath = `/${lang}/signin`;
         router.replace(signinPath);
       } 
-      // If user is an admin, they should not be on member pages, so redirect them
       else if (userData?.role === 'admin') {
         router.replace('/admin/dashboard');
       }
     }
-  }, [isAuthenticated, loading, userData, router, isTelugu]);
+  }, [isAuthenticated, loading, userData, router, lang]);
 
-  // While loading or if user is an admin (and about to be redirected), show a skeleton UI
   if (loading || !isAuthenticated || userData?.role === 'admin') {
     return (
       <div className="flex min-h-screen w-full flex-col">
@@ -53,11 +51,18 @@ export default function ProtectedRouteLayout({
       </div>
     );
   }
+  
+  const getHeader = () => {
+    switch (lang) {
+        case 'te': return <DashboardHeaderTe />;
+        case 'hi': return <DashboardHeaderHi />;
+        default: return <DashboardHeader />;
+    }
+  };
 
-  // If authenticated member, render the actual dashboard
   return (
     <div className="flex min-h-screen w-full flex-col">
-      {isTelugu ? <DashboardHeaderTe /> : <DashboardHeader />}
+      {getHeader()}
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         {children}
       </main>

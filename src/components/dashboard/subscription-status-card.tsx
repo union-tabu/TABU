@@ -5,33 +5,19 @@ import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
-import { te } from "date-fns/locale";
+import { te, hi } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, ShieldCheck, Clock, BadgeCheck } from 'lucide-react';
 
-const planMap: { [key: string]: string } = {
-    'monthly': 'Monthly',
-    'yearly': 'Yearly'
-};
-const planMapTe: { [key: string]: string } = {
-    'monthly': 'నెలవారీ',
-    'yearly': 'వార్షిక'
-};
+const planMap: { [key: string]: string } = { 'monthly': 'Monthly', 'yearly': 'Yearly' };
+const planMapTe: { [key: string]: string } = { 'monthly': 'నెలవారీ', 'yearly': 'వార్షిక' };
+const planMapHi: { [key: string]: string } = { 'monthly': 'मासिक', 'yearly': 'वार्षिक' };
 
-const statusMap: { [key: string]: string } = {
-    'active': 'Active',
-    'inactive': 'Inactive',
-    'cancelled': 'Cancelled',
-    'pending': 'Pending'
-};
-const statusMapTe: { [key: string]: string } = {
-    'active': 'క్రియాశీలం',
-    'inactive': 'నిష్క్రియం',
-    'cancelled': 'రద్దు చేయబడింది',
-    'pending': 'పెండింగ్‌లో ఉంది'
-};
+const statusMap: { [key: string]: string } = { 'active': 'Active', 'inactive': 'Inactive', 'cancelled': 'Cancelled', 'pending': 'Pending' };
+const statusMapTe: { [key: string]: string } = { 'active': 'క్రియాశీలం', 'inactive': 'నిష్క్రియం', 'cancelled': 'రద్దు చేయబడింది', 'pending': 'పెండింగ్‌లో ఉంది' };
+const statusMapHi: { [key: string]: string } = { 'active': 'सक्रिय', 'inactive': 'निष्क्रिय', 'cancelled': 'रद्द', 'pending': 'लंबित' };
 
-export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolean }) {
+export function SubscriptionStatusCard({ isTelugu = false, isHindi = false }: { isTelugu?: boolean, isHindi?: boolean }) {
     const { userData, loading } = useAuth();
 
     if (loading) {
@@ -63,22 +49,22 @@ export function SubscriptionStatusCard({ isTelugu = false }: { isTelugu?: boolea
     }
     
     const userStatus = userData.subscription?.status || 'pending';
-
     const { plan, status, renewalDate: renewalDateData } = userData.subscription || {};
     
+    const locale = isTelugu ? te : (isHindi ? hi : undefined);
     const renewalDate = renewalDateData?.seconds
-        ? format(new Date(renewalDateData.seconds * 1000), "MMMM dd, yyyy", { locale: isTelugu ? te : undefined })
+        ? format(new Date(renewalDateData.seconds * 1000), "MMMM dd, yyyy", { locale })
         : "N/A";
     
-    const currentPlan = plan ? (isTelugu ? (planMapTe[plan] || plan) : (planMap[plan] || plan)) : (isTelugu ? 'వర్తించదు' : 'N/A');
-    const currentStatus = status ? (isTelugu ? (statusMapTe[status] || status) : (statusMap[status] || status)) : (isTelugu ? 'పెండింగ్‌లో ఉంది' : 'Pending');
+    const currentPlan = plan ? (isTelugu ? planMapTe[plan] : (isHindi ? planMapHi[plan] : planMap[plan])) || plan : (isTelugu ? 'వర్తించదు' : (isHindi ? 'लागू नहीं' : 'N/A'));
+    const currentStatus = status ? (isTelugu ? statusMapTe[status] : (isHindi ? statusMapHi[status] : statusMap[status])) || status : (isTelugu ? 'పెండింగ్‌లో ఉంది' : (isHindi ? 'लंबित' : 'Pending'));
 
-    const titleText = isTelugu ? "మీ ఖాతా వివరాలు" : "Your Account Details";
-    const descriptionText = isTelugu ? "మీ యూనియన్ ID, ప్రస్తుత ప్లాన్ మరియు స్థితిని వీక్షించండి." : "View your Union ID, current plan and status.";
-    const idLabel = isTelugu ? "యూనియన్ ID" : "Union ID";
-    const planLabel = isTelugu ? "ప్రస్తుత ప్లాన్" : "Current Plan";
-    const statusLabel = isTelugu ? "స్థితి" : "Status";
-    const renewalLabel = isTelugu ? "తదుపరి చెల్లింపు" : "Next Payment";
+    const titleText = isTelugu ? "మీ ఖాతా వివరాలు" : (isHindi ? "आपके खाते का विवरण" : "Your Account Details");
+    const descriptionText = isTelugu ? "మీ యూనియన్ ID, ప్రస్తుత ప్లాన్ మరియు స్థితిని వీక్షించండి." : (isHindi ? "अपनी यूनियन आईडी, वर्तमान योजना और स्थिति देखें।" : "View your Union ID, current plan and status.");
+    const idLabel = isTelugu ? "యూనియన్ ID" : (isHindi ? "यूनियन आईडी" : "Union ID");
+    const planLabel = isTelugu ? "ప్రస్తుత ప్లాన్" : (isHindi ? "वर्तमान योजना" : "Current Plan");
+    const statusLabel = isTelugu ? "స్థితి" : (isHindi ? "स्थिति" : "Status");
+    const renewalLabel = isTelugu ? "తదుపరి చెల్లింపు" : (isHindi ? "अगला भुगतान" : "Next Payment");
     
     const statusBadgeVariant = userStatus === 'active' ? 'default' : 'destructive';
     const statusBadgeClass = userStatus === 'active' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800';

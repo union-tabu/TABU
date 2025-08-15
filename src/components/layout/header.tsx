@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/tooltip"
 import Image from 'next/image';
 
-function LanguageToggle({ onLanguageChange, inSheet = false }: { onLanguageChange: (lang: 'en' | 'te') => void, inSheet?: boolean }) {
+function LanguageToggle({ onLanguageChange, inSheet = false }: { onLanguageChange: (lang: 'en' | 'te' | 'hi') => void, inSheet?: boolean }) {
 
   if (inSheet) {
     return (
@@ -48,6 +48,14 @@ function LanguageToggle({ onLanguageChange, inSheet = false }: { onLanguageChang
           onClick={() => onLanguageChange('te')}
         >
           తెలుగు (Telugu)
+        </Button>
+         <Button
+          variant="ghost"
+          size="lg"
+          className="w-full justify-start text-gray-700"
+          onClick={() => onLanguageChange('hi')}
+        >
+          हिंदी (Hindi)
         </Button>
       </>
     )
@@ -71,12 +79,9 @@ function LanguageToggle({ onLanguageChange, inSheet = false }: { onLanguageChang
         </Tooltip>
       </TooltipProvider>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onSelect={() => onLanguageChange('en')}>
-          English
-        </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => onLanguageChange('te')}>
-          తెలుగు (Telugu)
-        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => onLanguageChange('en')}>English</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => onLanguageChange('te')}>తెలుగు (Telugu)</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => onLanguageChange('hi')}>हिंदी (Hindi)</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -87,36 +92,49 @@ export function Header() {
   const { isAuthenticated } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
-  const lang = pathname.startsWith('/te') ? 'te' : 'en';
+  const lang = pathname.split('/')[1] || 'en';
 
-  const navLinks = lang === 'te' ? [
-    { href: '/te', label: 'హోమ్' },
-    { href: '/te#benefits', label: 'ప్రయోజనాలు' },
-    { href: '/te#about', label: 'మా గురించి' },
-  ] : [
-    { href: '/en', label: 'Home' },
-    { href: '/en#benefits', label: 'Benefits' },
-    { href: '/en#about', label: 'About' },
-  ];
+  const getNavLinks = (lang: string) => {
+    switch (lang) {
+      case 'te':
+        return [
+          { href: '/te', label: 'హోమ్' },
+          { href: '/te#benefits', label: 'ప్రయోజనాలు' },
+          { href: '/te#about', label: 'మా గురించి' },
+        ];
+      case 'hi':
+        return [
+          { href: '/hi', label: 'होम' },
+          { href: '/hi#benefits', label: 'लाभ' },
+          { href: '/hi#about', label: 'हमारे बारे में' },
+        ];
+      default:
+        return [
+          { href: '/en', label: 'Home' },
+          { href: '/en#benefits', label: 'Benefits' },
+          { href: '/en#about', label: 'About' },
+        ];
+    }
+  };
+
+  const navLinks = getNavLinks(lang);
   
   const signinLink = `/${lang}/signin`;
   const signupLink = `/${lang}/signup`;
   const dashboardLink = `/${lang}/dashboard`;
-  const signinText = lang === 'te' ? 'సైన్ ఇన్' : 'Sign In';
-  const registerText = lang === 'te' ? 'నమోదు చేసుకోండి' : 'Register';
-  const dashboardText = lang === 'te' ? 'డాష్‌బోర్డ్' : 'Dashboard';
+  
+  const signinText = lang === 'te' ? 'సైన్ ఇన్' : (lang === 'hi' ? 'साइन इन' : 'Sign In');
+  const registerText = lang === 'te' ? 'నమోదు చేసుకోండి' : (lang === 'hi' ? 'पंजीकरण करें' : 'Register');
+  const dashboardText = lang === 'te' ? 'డాష్‌బోర్డ్' : (lang === 'hi' ? 'डैशबोर्ड' : 'Dashboard');
   const homeLink = `/${lang}`;
   
-  const handleLanguageChange = (newLang: 'en' | 'te') => {
+  const handleLanguageChange = (newLang: 'en' | 'te' | 'hi') => {
     if (newLang === lang) {
       setIsOpen(false);
       return;
     }
     
-    // Remove the current language prefix to get the base path
     const basePath = pathname.startsWith(`/${lang}`) ? pathname.substring(`/${lang}`.length) : pathname;
-    
-    // Construct the new path with the new language prefix
     const newPath = `/${newLang}${basePath || '/'}`;
     
     router.push(newPath);

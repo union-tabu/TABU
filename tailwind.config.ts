@@ -12,7 +12,7 @@ export default {
     extend: {
       fontFamily: {
         body: ['Inter', 'sans-serif'],
-        headline: ['Tiro Telugu', 'Inter', 'sans-serif'],
+        headline: ['Tiro Devanagari Hindi', 'Tiro Telugu', 'Inter', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
