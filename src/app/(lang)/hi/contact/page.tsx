@@ -54,7 +54,7 @@ export default function ContactPageHi() {
                   <div>
                     <h3 className="text-xl font-semibold font-headline">पता</h3>
                     <p className="text-lg text-muted-foreground">
-                      6-10-26/B/2, शिवरामपल्ली, राजेंद्रनगर, रंगारेड्डी
+                      तेलंगाना ऑल बिल्डिंग वर्कर्स यूनियन, 6-10-26/B/2, शिवरामपल्ली, राजेंद्रनगर, रंगारेड्डी
                     </p>
                   </div>
                 </div>

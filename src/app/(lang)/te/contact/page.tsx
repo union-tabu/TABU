@@ -54,7 +54,7 @@ export default function ContactPageTe() {
                   <div>
                     <h3 className="text-xl font-semibold font-headline">చిరునామా</h3>
                     <p className="text-lg text-muted-foreground">
-                      6-10-26/B/2, శివరాంపల్లి, రాజేంద్రనగర్, రంగారెడ్డి
+                      తెలంగాణ ఆల్ బిల్డింగ్ వర్కర్స్ యూనియన్, 6-10-26/B/2, శివరాంపల్లి, రాజేంద్రనగర్, రంగారెడ్డి
                     </p>
                   </div>
                 </div>

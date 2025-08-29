@@ -54,7 +54,7 @@ export default function ContactPage() {
                   <div>
                     <h3 className="text-xl font-semibold">Address</h3>
                     <p className="text-lg text-muted-foreground">
-                      6-10-26/B/2, Shivarampally, Rajendranagar, Rangareddy
+                      Telangana All Building Workers Union, 6-10-26/B/2, Shivarampally, Rajendranagar, Rangareddy
                     </p>
                   </div>
                 </div>
