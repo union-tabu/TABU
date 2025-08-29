@@ -35,8 +35,8 @@ function SigninSkeleton() {
 
 
 // This is now a Server Component
-export default function SigninPage({ searchParams }: { searchParams: { reset?: string } }) {
-  const resetSuccess = searchParams.reset === 'success';
+export default function SigninPage({ searchParams }: { searchParams?: { reset?: string } }) {
+  const resetSuccess = searchParams?.reset === 'success';
 
   return (
     <div className="flex flex-col min-h-screen">

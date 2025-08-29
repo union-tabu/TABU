@@ -76,7 +76,7 @@ function LoginPageClient({ resetSuccess }: { resetSuccess: boolean }) {
   );
 }
 
-export default function LoginPage({ searchParams }: { searchParams: { reset?: string } }) {
+export default function LoginPage({ searchParams }: { searchParams?: { reset?: string } }) {
   const resetSuccess = searchParams?.reset === 'success';
 
   return (
