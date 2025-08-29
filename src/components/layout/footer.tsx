@@ -15,6 +15,7 @@ export function Footer() {
   const contactLink = `/${lang}/contact`;
   const privacyLink = `/${lang}/privacy-policy`;
   const termsLink = `/${lang}/terms-and-conditions`;
+  const refundLink = `/${lang}/refund-and-cancellation`;
 
   const aboutText = lang === 'te' ? 'మా గురించి' : (lang === 'hi' ? 'हमारे बारे में' : 'About');
   const benefitsText = lang === 'te' ? 'ప్రయోజనాలు' : (lang === 'hi' ? 'लाभ' : 'Benefits');
@@ -22,6 +23,7 @@ export function Footer() {
   const contactText = lang === 'te' ? 'సంప్రదించండి' : (lang === 'hi' ? 'संपर्क करें' : 'Contact');
   const privacyText = lang === 'te' ? 'గోప్యతా విధానం' : (lang === 'hi' ? 'गोपनीयता नीति' : 'Privacy Policy');
   const termsText = lang === 'te' ? 'నిబంధనలు & షరతులు' : (lang === 'hi' ? 'नियम और शर्तें' : 'Terms & Conditions');
+  const refundText = lang === 'te' ? 'వాపసు & రద్దు' : (lang === 'hi' ? 'धनवापसी और रद्दीकरण' : 'Refunds & Cancellation');
   
   const copyrightText = lang === 'te' ? 
     '© 2025 తెలంగాణ ఆల్ బిల్డింగ్ వర్కర్స్ యూనియన్. అన్ని హక్కులూ ప్రత్యేకించుకోవడమైనది.' : 
@@ -81,6 +83,12 @@ export function Footer() {
                 className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
               >
                 {termsText}
+              </Link>
+               <Link 
+                href={refundLink} 
+                className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                {refundText}
               </Link>
             </nav>
             
