@@ -1,3 +1,4 @@
+
 "use client";
 
 import { HeroSectionTe } from '@/components/landing/hero-section-new-te';
@@ -6,6 +7,7 @@ import { WhyJoinSectionTe } from '@/components/landing/why-join-section-te';
 import { FaqSectionTe } from '@/components/landing/faq-section-te';
 import { Footer } from '@/components/layout/footer';
 import { Header } from '@/components/layout/header';
+import { PricingSectionTe } from '@/components/landing/pricing-section-te';
 
 export default function HomeTe() {
   return (
@@ -14,6 +16,7 @@ export default function HomeTe() {
       <main className="flex-grow">
         <HeroSectionTe />
         <WhyJoinSectionTe />
+        <PricingSectionTe />
         <AboutUsSectionTe />
         <FaqSectionTe />
       </main>

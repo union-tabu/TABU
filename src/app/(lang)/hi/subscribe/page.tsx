@@ -1,16 +1,23 @@
+
 "use client";
 
 import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { PaymentButton } from "@/components/payment-button";
+import { Button } from "@/components/ui/button";
 import { SubscriptionStatusCard } from "@/components/dashboard/subscription-status-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { differenceInMonths, startOfMonth } from 'date-fns';
+import { useRouter } from "next/navigation";
 
 export default function SubscribePageHi() {
   const { userData, loading } = useAuth();
+  const router = useRouter();
+
+  const handlePlanSelection = (plan: 'monthly' | 'yearly') => {
+    router.push(`/hi/order-summary?plan=${plan}`);
+  };
 
   if (loading) {
      return (
@@ -88,11 +95,9 @@ export default function SubscribePageHi() {
             {isLapsed && <p className="text-sm text-muted-foreground">(₹{MONTHLY_PRICE} योजना + ₹{PENALTY_FEE} शुल्क)</p>}
           </CardContent>
           <CardFooter>
-            <PaymentButton
-              plan="monthly"
-              amount={monthlyAmount}
-              buttonText="पंजीकरण करें"
-            />
+            <Button size="lg" className="w-full" onClick={() => handlePlanSelection('monthly')}>
+              योजना चुनें
+            </Button>
           </CardFooter>
         </Card>
         
@@ -106,11 +111,9 @@ export default function SubscribePageHi() {
             {isLapsed && <p className="text-sm text-muted-foreground">(₹{YEARLY_PRICE} योजना + ₹{PENALTY_FEE} शुल्क)</p>}
           </CardContent>
           <CardFooter>
-             <PaymentButton
-              plan="yearly"
-              amount={yearlyAmount}
-              buttonText="पंजीकरण करें"
-            />
+            <Button size="lg" className="w-full" onClick={() => handlePlanSelection('yearly')}>
+              योजना चुनें
+            </Button>
           </CardFooter>
         </Card>
       </div>

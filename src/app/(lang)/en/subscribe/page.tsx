@@ -1,16 +1,24 @@
+
 "use client";
 
 import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { PaymentButton } from "@/components/payment-button";
+import { Button } from "@/components/ui/button";
 import { SubscriptionStatusCard } from "@/components/dashboard/subscription-status-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { differenceInMonths, startOfMonth } from 'date-fns';
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function SubscribePage() {
   const { userData, loading } = useAuth();
+  const router = useRouter();
+
+  const handlePlanSelection = (plan: 'monthly' | 'yearly') => {
+    router.push(`/en/order-summary?plan=${plan}`);
+  };
 
   if (loading) {
     return (
@@ -25,7 +33,6 @@ export default function SubscribePage() {
     );
   }
 
-  // If user has an active subscription, show the status card instead of payment options
   if (userData?.subscription?.status === 'active') {
     return (
         <div className="space-y-6">
@@ -47,12 +54,10 @@ export default function SubscribePage() {
 
   if (userData?.subscription?.status === 'pending') {
     const now = new Date();
-    // Determine the start date for the lapse calculation
     const gracePeriodStartDate = userData.subscription?.renewalDate
-        ? new Date(userData.subscription.renewalDate.seconds * 1000) // For expired members
-        : new Date(userData.createdAt.seconds * 1000); // For new members
+        ? new Date(userData.subscription.renewalDate.seconds * 1000)
+        : new Date(userData.createdAt.seconds * 1000);
 
-    // If it's been 2 or more calendar months since the grace period started, it's lapsed.
     if (differenceInMonths(startOfMonth(now), startOfMonth(gracePeriodStartDate)) >= 2) {
       isLapsed = true;
     }
@@ -60,7 +65,6 @@ export default function SubscribePage() {
   
   const monthlyAmount = isLapsed ? MONTHLY_PRICE + PENALTY_FEE : MONTHLY_PRICE;
   const yearlyAmount = isLapsed ? YEARLY_PRICE + PENALTY_FEE : YEARLY_PRICE;
-
 
   return (
     <div className="flex flex-col items-center justify-center w-full space-y-8">
@@ -93,11 +97,9 @@ export default function SubscribePage() {
             {isLapsed && <p className="text-sm text-muted-foreground">(₹{MONTHLY_PRICE} plan + ₹{PENALTY_FEE} fee)</p>}
           </CardContent>
           <CardFooter>
-            <PaymentButton
-              plan="monthly"
-              amount={monthlyAmount}
-              buttonText="Register"
-            />
+            <Button size="lg" className="w-full" onClick={() => handlePlanSelection('monthly')}>
+              Select Plan
+            </Button>
           </CardFooter>
         </Card>
         
@@ -111,11 +113,9 @@ export default function SubscribePage() {
              {isLapsed && <p className="text-sm text-muted-foreground">(₹{YEARLY_PRICE} plan + ₹{PENALTY_FEE} fee)</p>}
           </CardContent>
           <CardFooter>
-             <PaymentButton
-              plan="yearly"
-              amount={yearlyAmount}
-              buttonText="Register"
-            />
+             <Button size="lg" className="w-full" onClick={() => handlePlanSelection('yearly')}>
+              Select Plan
+            </Button>
           </CardFooter>
         </Card>
       </div>

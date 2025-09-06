@@ -1,3 +1,4 @@
+
 "use client";
 
 import { HeroSection } from '@/components/landing/hero-section-new';
@@ -6,6 +7,7 @@ import { WhyJoinSection } from '@/components/landing/why-join-section';
 import { FaqSection } from '@/components/landing/faq-section';
 import { Footer } from '@/components/layout/footer';
 import { Header } from '@/components/layout/header';
+import { PricingSection } from '@/components/landing/pricing-section';
 
 export default function Home() {
   return (
@@ -14,6 +16,7 @@ export default function Home() {
       <main className="flex-grow">
         <HeroSection />
         <WhyJoinSection />
+        <PricingSection />
         <AboutUsSection />
         <FaqSection />
       </main>

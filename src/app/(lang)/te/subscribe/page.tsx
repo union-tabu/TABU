@@ -1,16 +1,23 @@
+
 "use client";
 
 import { useAuth } from "@/context/auth-context";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { PaymentButton } from "@/components/payment-button";
+import { Button } from "@/components/ui/button";
 import { SubscriptionStatusCard } from "@/components/dashboard/subscription-status-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { differenceInMonths, startOfMonth } from 'date-fns';
+import { useRouter } from "next/navigation";
 
 export default function SubscribePageTe() {
   const { userData, loading } = useAuth();
+  const router = useRouter();
+
+  const handlePlanSelection = (plan: 'monthly' | 'yearly') => {
+    router.push(`/te/order-summary?plan=${plan}`);
+  };
 
   if (loading) {
      return (
@@ -46,12 +53,10 @@ export default function SubscribePageTe() {
 
   if (userData?.subscription?.status === 'pending') {
     const now = new Date();
-    // Determine the start date for the lapse calculation
     const gracePeriodStartDate = userData.subscription?.renewalDate
-        ? new Date(userData.subscription.renewalDate.seconds * 1000) // For expired members
-        : new Date(userData.createdAt.seconds * 1000); // For new members
+        ? new Date(userData.subscription.renewalDate.seconds * 1000)
+        : new Date(userData.createdAt.seconds * 1000);
 
-    // If it's been 2 or more calendar months since the grace period started, it's lapsed.
     if (differenceInMonths(startOfMonth(now), startOfMonth(gracePeriodStartDate)) >= 2) {
       isLapsed = true;
     }
@@ -90,11 +95,9 @@ export default function SubscribePageTe() {
             {isLapsed && <p className="text-sm text-muted-foreground">(₹{MONTHLY_PRICE} ప్లాన్ + ₹{PENALTY_FEE} రుసుము)</p>}
           </CardContent>
           <CardFooter>
-            <PaymentButton
-              plan="monthly"
-              amount={monthlyAmount}
-              buttonText="నమోదు చేసుకోండి"
-            />
+            <Button size="lg" className="w-full" onClick={() => handlePlanSelection('monthly')}>
+              ప్రణాళికను ఎంచుకోండి
+            </Button>
           </CardFooter>
         </Card>
         
@@ -108,11 +111,9 @@ export default function SubscribePageTe() {
             {isLapsed && <p className="text-sm text-muted-foreground">(₹{YEARLY_PRICE} ప్లాన్ + ₹{PENALTY_FEE} రుసుము)</p>}
           </CardContent>
           <CardFooter>
-             <PaymentButton
-              plan="yearly"
-              amount={yearlyAmount}
-              buttonText="నమోదు చేసుకోండి"
-            />
+             <Button size="lg" className="w-full" onClick={() => handlePlanSelection('yearly')}>
+              ప్రణాళికను ఎంచుకోండి
+            </Button>
           </CardFooter>
         </Card>
       </div>
