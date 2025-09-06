@@ -70,7 +70,7 @@ export default function AdminPaymentsPage() {
             const matchesSearch = (
                 payment.userName.toLowerCase().includes(lowercasedSearchTerm) ||
                 payment.userPhone.includes(lowercasedSearchTerm) ||
-                payment.razorpay_payment_id.toLowerCase().includes(lowercasedSearchTerm)
+                (payment.cf_order_id && payment.cf_order_id.toLowerCase().includes(lowercasedSearchTerm))
             );
             const matchesStatus = filterStatus === 'all' || payment.status === filterStatus;
             return matchesSearch && matchesStatus;
@@ -125,7 +125,7 @@ export default function AdminPaymentsPage() {
                         </Tabs>
                         <form onSubmit={handleSearch} className="flex gap-2 w-full md:w-auto">
                              <Input 
-                                placeholder="Search Name, Phone, or Payment ID..."
+                                placeholder="Search Name, Phone, or Order ID..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="flex-grow md:w-64"

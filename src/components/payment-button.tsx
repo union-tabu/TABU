@@ -1,16 +1,16 @@
+
 "use client";
 
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { createRazorpayOrder, handlePaymentSuccess } from '@/lib/razorpay';
+import { createCashfreeOrder, handlePaymentSuccess } from '@/lib/cashfree';
 import { useAuth } from '@/context/auth-context';
-import type { UserData } from '@/types/user';
 
 declare global {
   interface Window {
-    Razorpay: any;
+    cashfree: any;
   }
 }
 
@@ -31,30 +31,26 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
 
     const isTelugu = lang === 'te';
 
-    const loadRazorpayScript = () => {
+    const loadCashfreeScript = () => {
         return new Promise((resolve) => {
-            if (window.Razorpay) {
+            if (document.getElementById('cashfree-sdk')) {
                 resolve(true);
                 return;
             }
 
             const script = document.createElement('script');
-            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-            script.onload = () => {
-                resolve(true);
-            };
-            script.onerror = () => {
-                resolve(false);
-            };
+            script.id = 'cashfree-sdk';
+            script.src = process.env.NODE_ENV === 'production' 
+                ? 'https://sdk.cashfree.com/js/v3/cashfree.js' 
+                : 'https://sdk.cashfree.com/js/v3/cashfree-sandbox.js';
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
             document.body.appendChild(script);
         });
     };
     
     const handlePayment = async () => {
-        if (authLoading) {
-            return;
-        }
-
+        if (authLoading) return;
         setPaymentProcessing(true);
         
         if (!firebaseUser || !userData) {
@@ -74,7 +70,7 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             return;
         }
 
-        const scriptLoaded = await loadRazorpayScript();
+        const scriptLoaded = await loadCashfreeScript();
         if (!scriptLoaded) {
             toast({ title: 'Payment Gateway Error', description: 'Could not load the payment gateway. Please check your internet connection and try again.', variant: 'destructive' });
             setPaymentProcessing(false);
@@ -88,11 +84,12 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             user: {
                 name: userData.fullName,
                 phone: userData.phone,
+                email: userData.email || '',
             },
         };
 
         try {
-            const orderResponse = await createRazorpayOrder(orderOptions);
+            const orderResponse = await createCashfreeOrder(orderOptions);
 
             if (!orderResponse.success || !orderResponse.order) {
                 toast({ 
@@ -105,73 +102,9 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             }
 
             const { order } = orderResponse;
-            
-            const options = {
-                key: order.key,
-                amount: order.amount,
-                currency: order.currency,
-                name: "Telangana All Building Workers Union",
-                description: `Membership - ${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan`,
-                order_id: order.id,
-                handler: async (response: any) => {
-                    setPaymentProcessing(true); // Keep it processing during server-side handling
-                    try {
-                        const paymentResult = await handlePaymentSuccess({
-                            ...response,
-                            userId: firebaseUser.uid,
-                            plan,
-                            amount
-                        });
+            const cashfree = new window.cashfree.Cashfree(order.payment_session_id);
 
-                        if (paymentResult.success) {
-                            toast({ title: 'Payment Successful!', description: 'Your membership is now active. Welcome!' });
-                            router.refresh(); // Refresh page to show updated status
-                            router.push(`/${lang}/dashboard`);
-                        } else {
-                            toast({ title: 'Payment Processing Failed', description: paymentResult.error, variant: 'destructive' });
-                        }
-                    } catch (error) {
-                        toast({ title: 'Server Error', description: 'Failed to update your membership after payment. Please contact support.', variant: 'destructive' });
-                    } finally {
-                       setPaymentProcessing(false);
-                    }
-                },
-                prefill: {
-                    name: order.userName,
-                    contact: order.userPhone,
-                    email: userData.email || ''
-                },
-                notes: {
-                    address: `${userData.addressLine}, ${userData.city}, ${userData.state}, ${userData.pinCode}`,
-                },
-                theme: {
-                    color: "#000080"
-                },
-                modal: {
-                    ondismiss: () => {
-                        setPaymentProcessing(false);
-                        toast({ title: 'Payment Cancelled', description: 'The payment process was not completed.'});
-                    }
-                }
-            };
-
-            const rzp = new window.Razorpay(options);
-            
-            rzp.on('payment.failed', (response: any) => {
-                console.error("Razorpay payment failed:", response.error);
-                let description = response.error?.description || 'The payment could not be processed.';
-                if (response.error?.reason) {
-                    description += ` Reason: ${response.error.reason.replace(/_/g, ' ')}.`;
-                }
-                toast({ 
-                    title: 'Payment Failed', 
-                    description: description, 
-                    variant: 'destructive' 
-                });
-                setPaymentProcessing(false);
-            });
-
-            rzp.open();
+            cashfree.redirect();
 
         } catch (error) {
             toast({ 

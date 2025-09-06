@@ -5,5 +5,6 @@ export interface Payment {
   amount: number;
   status: 'success' | 'failed' | 'pending';
   paymentDate: Date;
-  razorpay_payment_id: string;
+  cf_payment_id: string;
+  cf_order_id: string;
 }
