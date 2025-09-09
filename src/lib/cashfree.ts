@@ -15,7 +15,7 @@ if (!process.env.CASHFREE_APP_ID || !process.env.CASHFREE_SECRET_KEY) {
 
 Cashfree.XClientId = process.env.CASHFREE_APP_ID!;
 Cashfree.XClientSecret = process.env.CASHFREE_SECRET_KEY!;
-Cashfree.XEnvironment = process.env.NODE_ENV === 'production' ? Cashfree.Environment.PRODUCTION : Cashfree.Environment.SANDBOX;
+Cashfree.XEnvironment = Cashfree.Environment.SANDBOX;
 
 
 const OrderOptionsSchema = z.object({
@@ -45,6 +45,12 @@ export async function createCashfreeOrder(options: OrderOptions) {
     const { amount, userId, plan, user } = validatedOptions.data;
 
     const orderId = `order_${userId.slice(0, 8)}_${Date.now()}`;
+    
+    // Construct the base URL safely, preferring NEXT_PUBLIC_BASE_URL but falling back to Vercel's system variable
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    const host = process.env.VERCEL_URL || process.env.NEXT_PUBLIC_BASE_URL || 'localhost:3000';
+    const baseURL = `${protocol}://${host}`;
+
 
     const request = {
         order_amount: amount,
@@ -54,10 +60,10 @@ export async function createCashfreeOrder(options: OrderOptions) {
             customer_id: userId,
             customer_phone: user.phone,
             customer_name: user.name,
-            customer_email: user.email || `${user.phone}@tabu.com`, // Use dummy email if not present
+            customer_email: user.email || `${user.phone}@tabu.local`, // Use dummy email if not present
         },
         order_meta: {
-            return_url: `${process.env.NEXT_PUBLIC_BASE_URL}/{order_id}`,
+            return_url: `${baseURL}/{order_id}`,
         },
         order_note: `TABU Membership - ${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan`,
     };
