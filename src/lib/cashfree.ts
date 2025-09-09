@@ -43,7 +43,6 @@ export async function createCashfreeOrder(options: OrderOptions) {
     const randomPart = crypto.randomBytes(6).toString('hex');
     const orderId = `order_${userId.slice(0, 8)}_${Date.now()}_${randomPart}`;
     
-    // Determine the base URL. Fallback to VERCEL_URL if NEXT_PUBLIC_BASE_URL is not set.
     const vercelUrl = process.env.VERCEL_URL;
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (vercelUrl ? `https://${vercelUrl}` : 'http://localhost:9002');
     const returnUrl = `${baseUrl}/en/payments/status?order_id={order_id}`;
@@ -110,20 +109,17 @@ export async function verifyPaymentAndUpdate(order_id: string) {
         
         const paymentDoc = querySnapshot.docs[0];
         if (paymentDoc.data().status === 'success') {
-            // Already processed
             return { success: true, status: 'ALREADY_PROCESSED', message: 'Payment already verified.' };
         }
         
         const batch = writeBatch(db);
         
-        // 1. Update the payment document
         batch.update(paymentDoc.ref, {
             status: 'success',
             cf_payment_id: paymentInfo.cf_payment_id || null,
             paymentDate: serverTimestamp(),
         });
         
-        // 2. Update the user's subscription
         const userId = paymentDoc.data().userId;
         const plan = paymentDoc.data().plan;
         const userDocRef = doc(db, "users", userId);
