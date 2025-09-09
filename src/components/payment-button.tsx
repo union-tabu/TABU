@@ -41,7 +41,8 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
 
             const script = document.createElement('script');
             script.id = 'cashfree-sdk';
-            script.src = 'https://sdk.cashfree.com/js/v3/cashfree-sandbox.js';
+            // Use the correct production URL for the Cashfree SDK
+            script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
             script.onload = () => {
                 console.log("Cashfree SDK script loaded successfully.");
                 resolve(true);
@@ -118,7 +119,7 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             }
 
             const { order } = orderResponse;
-            const cashfree = new window.cashfree.Cashfree(order.payment_session_id);
+            const cashfree = new window.cashfree(order.payment_session_id);
 
             cashfree.redirect();
 
