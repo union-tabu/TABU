@@ -120,9 +120,7 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             const { order } = orderResponse;
             const cashfree = new window.Cashfree(order.payment_session_id);
 
-            cashfree.doPayment({
-                "checkoutType": "REDIRECT",
-            });
+            cashfree.redirect();
 
         } catch (error: any) {
             console.error("Error during createCashfreeOrder call:", error);
