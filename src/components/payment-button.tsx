@@ -41,7 +41,6 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
 
             const script = document.createElement('script');
             script.id = 'cashfree-sdk';
-            // Use the correct production URL for the Cashfree SDK
             script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
             script.onload = () => {
                 console.log("Cashfree SDK script loaded successfully.");
@@ -121,7 +120,9 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             const { order } = orderResponse;
             const cashfree = new window.Cashfree(order.payment_session_id);
 
-            cashfree.redirect();
+            cashfree.doPayment({
+                "checkoutType": "REDIRECT",
+            });
 
         } catch (error: any) {
             console.error("Error during createCashfreeOrder call:", error);
