@@ -100,7 +100,9 @@ export async function createCashfreeOrder(options: OrderOptions) {
         }
         
         const paymentSessionId = order.data.payment_session_id;
-        const paymentLink = `https://payments.cashfree.com/pg/orders/sessions/${paymentSessionId}`;
+
+        const cashfreeBaseUrl = isProduction ? 'https://payments.cashfree.com/pg' : 'https://sandbox.cashfree.com/pg';
+        const paymentLink = `${cashfreeBaseUrl}/orders/sessions/${paymentSessionId}`;
         
         const paymentData = {
             userId,
