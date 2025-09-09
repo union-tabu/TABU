@@ -41,7 +41,6 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
 
             const script = document.createElement('script');
             script.id = 'cashfree-sdk';
-             // Always use sandbox for now as per instructions
             script.src = 'https://sdk.cashfree.com/js/v3/cashfree-sandbox.js';
             script.onload = () => resolve(true);
             script.onerror = () => resolve(false);
@@ -50,7 +49,9 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
     };
     
     const handlePayment = async () => {
+        console.log("Payment process started...");
         if (authLoading || !firebaseUser || !userData) {
+            console.error("User data not loaded or user not authenticated.");
             toast({
                 title: 'Please wait',
                 description: 'User data is still loading. Please try again in a moment.',
@@ -60,6 +61,9 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
         }
         
         setPaymentProcessing(true);
+
+        console.log("User Data:", userData);
+        console.log("Firebase User:", firebaseUser);
 
         if (!userData.fullName || !userData.phone || !userData.addressLine || !userData.city) {
             toast({ 
@@ -90,8 +94,12 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             },
         };
 
+        console.log("Creating Cashfree order with options:", orderOptions);
+
         try {
             const orderResponse = await createCashfreeOrder(orderOptions);
+            
+            console.log("Received response from createCashfreeOrder:", orderResponse);
 
             if (!orderResponse.success || !orderResponse.order) {
                 toast({ 
@@ -109,6 +117,7 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             cashfree.redirect();
 
         } catch (error) {
+            console.error("Error during createCashfreeOrder call:", error);
             toast({ 
                 title: 'Payment Error', 
                 description: 'An unexpected error occurred while setting up the payment. Please try again.', 
