@@ -49,10 +49,11 @@ export async function createCashfreeOrder(options: OrderOptions) {
     const randomPart = crypto.randomBytes(6).toString('hex');
     const orderId = `order_${userId.slice(0, 8)}_${Date.now()}_${randomPart}`;
     
-    // Construct the base URL safely, preferring NEXT_PUBLIC_BASE_URL but falling back to Vercel's system variable
+    // Construct the base URL safely
     const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-    const host = process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL || 'localhost:3000';
-    const baseURL = `${protocol}://${host}`;
+    const host = process.env.NEXT_PUBLIC_BASE_URL || `localhost:3000`; // Vercel provides NEXT_PUBLIC_VERCEL_URL
+    const baseURL = `${protocol}://${host.replace(/^https|http:\/\//, '')}`;
+
 
     const request = {
         order_amount: amount,
