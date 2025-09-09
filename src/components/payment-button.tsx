@@ -8,12 +8,6 @@ import { useToast } from '@/hooks/use-toast';
 import { createCashfreeOrder } from '@/lib/cashfree';
 import { useAuth } from '@/context/auth-context';
 
-declare global {
-  interface Window {
-    Cashfree: any;
-  }
-}
-
 interface PaymentButtonProps {
     plan: 'monthly' | 'yearly';
     amount: number;
@@ -31,36 +25,12 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
 
     const isTelugu = lang === 'te';
     const isHindi = lang === 'hi';
-
-    const loadCashfreeScript = (): Promise<boolean> => {
-        return new Promise((resolve) => {
-            if (document.getElementById('cashfree-sdk')) {
-                resolve(true);
-                return;
-            }
-
-            const script = document.createElement('script');
-            script.id = 'cashfree-sdk';
-            script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
-            script.onload = () => {
-                console.log("Cashfree SDK script loaded successfully.");
-                resolve(true);
-            };
-            script.onerror = () => {
-                console.error("Failed to load Cashfree SDK script.");
-                resolve(false);
-            };
-            document.body.appendChild(script);
-        });
-    };
     
     const handlePayment = async () => {
-        console.log("Payment process started...");
         if (authLoading || !firebaseUser || !userData) {
-            console.error("User data not loaded or user not authenticated.");
             toast({
-                title: 'Please wait',
-                description: 'User data is still loading. Please try again in a moment.',
+                title: isHindi ? 'कृपया प्रतीक्षा करें' : isTelugu ? 'దయచేసి వేచి ఉండండి' : 'Please wait',
+                description: isHindi ? 'उपयोगकर्ता डेटा अभी भी लोड हो रहा है। कृपया कुछ क्षण बाद पुनः प्रयास करें।' : isTelugu ? 'వినియోగదారు డేటా ఇప్పటికీ లోడ్ అవుతోంది. దయచేసి కొంత సమయం తర్వాత మళ్లీ ప్రయత్నించండి.' : 'User data is still loading. Please try again in a moment.',
                 variant: 'destructive'
             });
             return;
@@ -68,27 +38,17 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
         
         setPaymentProcessing(true);
 
-        console.log("User Data:", userData);
-        console.log("Firebase User:", firebaseUser);
-
-        if (!userData.fullName || !userData.phone || !userData.addressLine || !userData.city) {
+        if (!userData.fullName || !userData.phone) {
             toast({ 
-                title: 'Profile Incomplete', 
-                description: 'Please complete your profile with your name, phone, and address before making a payment.', 
+                title: isHindi ? 'प्रोफ़ाइल अपूर्ण' : isTelugu ? 'ప్రొఫైల్ అసంపూర్తిగా ఉంది' : 'Profile Incomplete', 
+                description: isHindi ? 'भुगतान करने से पहले कृपया अपना प्रोफ़ाइल पूरा करें।' : isTelugu ? 'చెల్లింపు చేయడానికి ముందు దయచేసి మీ ప్రొఫైల్‌ను పూర్తి చేయండి.' : 'Please complete your profile before making a payment.', 
                 variant: 'destructive' 
             });
             router.push(`/${lang}/profile`);
             setPaymentProcessing(false);
             return;
         }
-
-        const scriptLoaded = await loadCashfreeScript();
-        if (!scriptLoaded) {
-            toast({ title: 'Payment Gateway Error', description: 'Could not load the payment gateway. Please check your internet connection and try again.', variant: 'destructive' });
-            setPaymentProcessing(false);
-            return;
-        }
-
+        
         const orderOptions = {
             amount,
             plan,
@@ -100,37 +60,26 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             },
         };
 
-        console.log("Creating Cashfree order with options:", orderOptions);
-
         try {
             const orderResponse = await createCashfreeOrder(orderOptions);
-            
-            console.log("Received response from createCashfreeOrder:", orderResponse);
 
-            if (!orderResponse.success || !orderResponse.order) {
+            if (!orderResponse.success || !orderResponse.payment_link) {
                 toast({ 
-                    title: 'Payment Error', 
-                    description: orderResponse.error || 'Could not create a payment order. Please try again.', 
+                    title: isHindi ? 'भुगतान त्रुटि' : isTelugu ? 'చెల్లింపు లోపం' : 'Payment Error', 
+                    description: orderResponse.error || (isHindi ? 'भुगतान ऑर्डर बनाने में विफल। कृपया पुनः प्रयास करें।' : isTelugu ? 'చెల్లింపు ఆర్డర్‌ను సృష్టించడం విఫలమైంది. దయచేసి మళ్ళీ ప్రయత్నించండి.' : 'Could not create a payment order. Please try again.'), 
                     variant: 'destructive' 
                 });
                 setPaymentProcessing(false);
                 return;
             }
-
-            const { order } = orderResponse;
-            const cashfree = new window.Cashfree(order.payment_session_id);
             
-            const checkoutOptions = {
-                mode: "redirect",
-            };
-
-            cashfree.pay(checkoutOptions);
+            // Redirect user to the payment page
+            router.push(orderResponse.payment_link);
 
         } catch (error: any) {
-            console.error("Error during createCashfreeOrder call:", error);
             toast({ 
-                title: 'Payment Error', 
-                description: error.message || 'An unexpected error occurred while setting up the payment. Please try again.', 
+                title: isHindi ? 'भुगतान त्रुटि' : isTelugu ? 'చెల్లింపు లోపం' : 'Payment Error', 
+                description: error.message || (isHindi ? 'भुगतान सेट अप करते समय एक अप्रत्याशित त्रुटि हुई।' : isTelugu ? 'చెల్లింపును సెటప్ చేస్తున్నప్పుడు ఊహించని లోపం సంభవించింది.' : 'An unexpected error occurred while setting up the payment.'), 
                 variant: 'destructive' 
             });
             setPaymentProcessing(false);

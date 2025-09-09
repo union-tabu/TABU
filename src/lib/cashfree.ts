@@ -4,7 +4,7 @@
 import { Cashfree } from 'cashfree-pg';
 import { z } from 'zod';
 import { db } from '@/lib/firebase';
-import { doc, updateDoc, addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { doc, updateDoc, addDoc, collection, serverTimestamp, query, where, getDocs, writeBatch, limit } from "firebase/firestore";
 import { startOfMonth, addMonths, addYears } from 'date-fns';
 import crypto from 'crypto';
 
@@ -15,8 +15,7 @@ if (!process.env.CASHFREE_APP_ID || !process.env.CASHFREE_SECRET_KEY) {
 
 Cashfree.XClientId = process.env.CASHFREE_APP_ID!;
 Cashfree.XClientSecret = process.env.CASHFREE_SECRET_KEY!;
-Cashfree.XEnvironment = Cashfree.Environment.SANDBOX;
-
+Cashfree.XEnvironment = Cashfree.Environment.SANDBOX; // Use SANDBOX for testing, PRODUCTION for live
 
 const OrderOptionsSchema = z.object({
   amount: z.number().positive().min(1),
@@ -32,32 +31,22 @@ const OrderOptionsSchema = z.object({
 type OrderOptions = z.infer<typeof OrderOptionsSchema>;
 
 export async function createCashfreeOrder(options: OrderOptions) {
-    console.log("Server Function: createCashfreeOrder triggered.");
-    console.log("Received options:", options);
-    
     const validatedOptions = OrderOptionsSchema.safeParse(options);
 
     if (!validatedOptions.success) {
         const errorMessages = validatedOptions.error.errors.map(err => `Invalid ${err.path.join('.')}: ${err.message}`);
         console.error("Server validation failed:", errorMessages);
-        return { 
-            success: false, 
-            error: `Validation failed: ${errorMessages.join(', ')}`,
-        };
+        return { success: false, error: `Validation failed: ${errorMessages.join(', ')}` };
     }
 
     const { amount, userId, plan, user } = validatedOptions.data;
-
-    // Use crypto for a more unique order ID
     const randomPart = crypto.randomBytes(6).toString('hex');
     const orderId = `order_${userId.slice(0, 8)}_${Date.now()}_${randomPart}`;
     
-    // Construct the base URL safely
-    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-    const host = process.env.NEXT_PUBLIC_BASE_URL || `localhost:9002`;
-    const baseURL = `${protocol}://${host.replace(/^https|http:\/\//, '')}`;
-    
-    console.log("Constructed Base URL for return_url:", baseURL);
+    // Determine the base URL. Fallback to VERCEL_URL if NEXT_PUBLIC_BASE_URL is not set.
+    const vercelUrl = process.env.VERCEL_URL;
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (vercelUrl ? `https://${vercelUrl}` : 'http://localhost:9002');
+    const returnUrl = `${baseUrl}/en/payments/status?order_id={order_id}`;
 
     const request = {
         order_amount: amount,
@@ -67,115 +56,98 @@ export async function createCashfreeOrder(options: OrderOptions) {
             customer_id: userId,
             customer_phone: user.phone,
             customer_name: user.name,
-            customer_email: user.email || `${user.phone}@tabu.local`, // Use dummy email if not present
+            customer_email: user.email || `${user.phone}@tabu.local`,
         },
         order_meta: {
-            return_url: `${baseURL}/en/payments/status?order_id={order_id}`,
+            return_url: returnUrl,
         },
         order_note: `TABU Membership - ${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan`,
     };
 
-    console.log("Request payload for Cashfree:", request);
-
     try {
         const order = await Cashfree.PGCreateOrder("2023-08-01", request);
-        
-        console.log("Cashfree API Response:", order.data);
 
         if (!order.data || !order.data.payment_session_id) {
-            console.error("Cashfree API response error:", order);
+            console.error("Cashfree API response error:", order.data);
             return { success: false, error: "Failed to get payment session from Cashfree." };
         }
         
-        // Create a pending payment record in Firestore
         await addDoc(collection(db, "payments"), {
             userId,
             plan,
-            amount: amount,
+            amount,
             status: 'pending',
             paymentDate: serverTimestamp(),
             cf_order_id: order.data.order_id,
         });
 
-        console.log("Pending payment record created in Firestore for order ID:", order.data.order_id);
-
         return {
             success: true,
-            order: {
-                payment_session_id: order.data.payment_session_id,
-                order_id: order.data.order_id,
-            }
+            payment_link: order.data.payment_link
         };
     } catch (error: any) {
         console.error('Cashfree order creation error:', error);
-        const errorMessage = error.response?.data?.message || error.message || 'Unknown error creating payment order.';
-        // Extract a more specific error if available
-        if (errorMessage.includes('order_meta.return_url')) {
-            console.error("Return URL error detail:", errorMessage);
-            return { success: false, error: "Invalid return URL format. Please contact support." };
-        }
-        return { success: false, error: errorMessage };
+        return { success: false, error: error.response?.data?.message || error.message || 'Unknown error creating payment order.' };
     }
 }
 
-
-const PaymentSuccessSchema = z.object({
-    order_id: z.string(),
-    userId: z.string(),
-    plan: z.enum(['monthly', 'yearly']),
-    amount: z.number()
-});
-
-type PaymentSuccessData = z.infer<typeof PaymentSuccessSchema>;
-
-export async function handlePaymentSuccess(data: PaymentSuccessData) {
-    const validatedData = PaymentSuccessSchema.safeParse(data);
-    if (!validatedData.success) {
-        console.error('Payment success validation failed:', validatedData.error);
-        return { success: false, error: 'Invalid payment data received from the client.' };
-    }
-
-    const { userId, plan, amount, order_id } = validatedData.data;
-
+export async function verifyPaymentAndUpdate(order_id: string) {
     try {
         const orderDetails = await Cashfree.PGGetOrderById("2023-08-01", order_id);
-        const payment = orderDetails.data;
+        const paymentInfo = orderDetails.data;
 
-        if (payment.order_status !== 'PAID') {
-            return { success: false, error: 'Payment not confirmed by gateway.' };
+        if (paymentInfo.order_status !== 'PAID') {
+            return { success: false, status: paymentInfo.order_status, message: 'Payment not confirmed by gateway.' };
         }
 
-        const paymentRef = await addDoc(collection(db, "payments"), {
-            userId,
-            plan,
-            amount: payment.order_amount,
+        const paymentsRef = collection(db, "payments");
+        const q = query(paymentsRef, where("cf_order_id", "==", order_id), limit(1));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            return { success: false, status: 'NOT_FOUND', message: 'Payment record not found in our database.' };
+        }
+        
+        const paymentDoc = querySnapshot.docs[0];
+        if (paymentDoc.data().status === 'success') {
+            // Already processed
+            return { success: true, status: 'ALREADY_PROCESSED', message: 'Payment already verified.' };
+        }
+        
+        const batch = writeBatch(db);
+        
+        // 1. Update the payment document
+        batch.update(paymentDoc.ref, {
             status: 'success',
+            cf_payment_id: paymentInfo.cf_payment_id || null,
             paymentDate: serverTimestamp(),
-            cf_payment_id: payment.cf_payment_id,
-            cf_order_id: payment.order_id,
         });
         
+        // 2. Update the user's subscription
+        const userId = paymentDoc.data().userId;
+        const plan = paymentDoc.data().plan;
         const userDocRef = doc(db, "users", userId);
+        
         const now = new Date();
         const firstDayOfCurrentMonth = startOfMonth(now);
         const renewalDate = plan === 'monthly' 
             ? addMonths(firstDayOfCurrentMonth, 1) 
             : addYears(firstDayOfCurrentMonth, 1);
-        
-        await updateDoc(userDocRef, {
-            subscription: {
-                plan,
-                status: 'active',
-                renewalDate,
-                lastPaymentId: paymentRef.id,
-                updatedAt: serverTimestamp()
-            }
+            
+        batch.update(userDocRef, {
+            "subscription.status": 'active',
+            "subscription.plan": plan,
+            "subscription.renewalDate": renewalDate,
+            "subscription.lastPaymentId": paymentDoc.id,
+            "subscription.updatedAt": serverTimestamp()
         });
         
-        return { success: true, message: 'Payment successful and recorded.' };
+        await batch.commit();
+
+        return { success: true, status: 'PAID', message: 'Payment successful and recorded.' };
 
     } catch (error: any) {
-        console.error("Error handling payment success:", error);
-        return { success: false, error: `Failed to update database: ${error.message}` };
+        console.error("Error verifying payment:", error);
+        return { success: false, status: 'ERROR', message: `Failed to verify payment: ${error.message}` };
     }
 }
