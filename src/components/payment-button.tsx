@@ -32,7 +32,7 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
     const isTelugu = lang === 'te';
     const isHindi = lang === 'hi';
 
-    const loadCashfreeScript = () => {
+    const loadCashfreeScript = (): Promise<boolean> => {
         return new Promise((resolve) => {
             if (document.getElementById('cashfree-sdk')) {
                 resolve(true);
@@ -42,8 +42,14 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             const script = document.createElement('script');
             script.id = 'cashfree-sdk';
             script.src = 'https://sdk.cashfree.com/js/v3/cashfree-sandbox.js';
-            script.onload = () => resolve(true);
-            script.onerror = () => resolve(false);
+            script.onload = () => {
+                console.log("Cashfree SDK script loaded successfully.");
+                resolve(true);
+            };
+            script.onerror = () => {
+                console.error("Failed to load Cashfree SDK script.");
+                resolve(false);
+            };
             document.body.appendChild(script);
         });
     };
@@ -117,7 +123,7 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             cashfree.redirect();
 
         } catch (error) {
-            console.error("Error during createCashfreeOrder call:", error);
+            console.error("Error during handlePayment process:", error);
             toast({ 
                 title: 'Payment Error', 
                 description: 'An unexpected error occurred while setting up the payment. Please try again.', 
