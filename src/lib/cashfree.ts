@@ -10,14 +10,19 @@ import crypto from 'crypto';
 
 // Initialize Cashfree with proper error handling
 if (!process.env.CASHFREE_APP_ID || !process.env.CASHFREE_SECRET_KEY) {
-    throw new Error("Cashfree credentials are not set in environment variables.");
+    throw new Error("Cashfree credentials (CASHFREE_APP_ID, CASHFREE_SECRET_KEY) are not set in environment variables.");
 }
 
 Cashfree.XClientId = process.env.CASHFREE_APP_ID!;
 Cashfree.XClientSecret = process.env.CASHFREE_SECRET_KEY!;
-Cashfree.XEnvironment = process.env.NODE_ENV === 'production' 
+
+const isProduction = process.env.CASHFREE_ENVIRONMENT === 'production';
+Cashfree.XEnvironment = isProduction 
     ? Cashfree.Environment.PRODUCTION 
     : Cashfree.Environment.SANDBOX;
+
+console.log(`Cashfree SDK initialized in ${isProduction ? 'PRODUCTION' : 'SANDBOX'} mode.`);
+
 
 const OrderOptionsSchema = z.object({
   amount: z.number().positive().min(1),
@@ -58,26 +63,11 @@ export async function createCashfreeOrder(options: OrderOptions) {
             };
         }
 
-        const orderId = `TABU_${userId}_${Date.now()}`;
-        
-        const existingOrderQuery = query(
-            collection(db, "payments"), 
-            where("cf_order_id", "==", orderId),
-            limit(1)
-        );
-        const existingOrderSnapshot = await getDocs(existingOrderQuery);
-        if (!existingOrderSnapshot.empty) {
-            return { 
-                success: false, 
-                error: "Order ID conflict. Please try again." 
-            };
-        }
+        const orderId = `TABU_${userId.substring(0, 8)}_${Date.now()}`;
         
         const lang = 'en'; // Assuming english for now, can be passed in options if needed
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
         const returnUrl = `${baseUrl}/${lang}/payments/status?order_id={order_id}`;
-
-        const expiryTime = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
         const request = {
             order_amount: amount,
@@ -96,14 +86,13 @@ export async function createCashfreeOrder(options: OrderOptions) {
             order_tags: {
                 plan: plan,
                 userId: userId
-            },
-            order_expiry_time: expiryTime
+            }
         };
 
         const order = await Cashfree.PGCreateOrder("2023-08-01", request);
 
         if (!order.data || !order.data.payment_session_id) {
-            console.error("Cashfree API response error (missing data or payment_session_id):", order);
+            console.error("Cashfree API response error (missing data or payment_session_id):", order.data);
             return { 
                 success: false, 
                 error: "Failed to create payment order. Response from gateway was incomplete." 
@@ -111,8 +100,6 @@ export async function createCashfreeOrder(options: OrderOptions) {
         }
         
         const paymentSessionId = order.data.payment_session_id;
-        
-        // Construct the redirect URL using the payment_session_id
         const paymentLink = `https://payments.cashfree.com/pg/orders/sessions/${paymentSessionId}`;
         
         const paymentData = {
@@ -136,7 +123,6 @@ export async function createCashfreeOrder(options: OrderOptions) {
         return {
             success: true,
             payment_link: paymentLink,
-            order_id: order.data.order_id,
         };
 
     } catch (error: any) {
@@ -144,19 +130,18 @@ export async function createCashfreeOrder(options: OrderOptions) {
         
         if (error.response?.data) {
             const cfError = error.response.data;
-            console.error('Cashfree API Error:', cfError);
+            console.error('Cashfree API Error Details:', cfError);
             
-            if (cfError.type === 'invalid_request_error') {
+            if (cfError.type === 'authentication_error') {
+                 return { 
+                    success: false, 
+                    error: 'Payment service configuration error. Please check your API keys.' 
+                };
+            }
+             if (cfError.type === 'invalid_request_error') {
                 return { 
                     success: false, 
                     error: `Invalid request: ${cfError.message || 'Please check your payment details.'}` 
-                };
-            }
-            
-            if (cfError.type === 'authentication_error') {
-                return { 
-                    success: false, 
-                    error: 'Payment service configuration error. Please contact support.' 
                 };
             }
         }
@@ -185,7 +170,7 @@ export async function verifyPaymentAndUpdate(order_id: string) {
         try {
             orderDetails = await Cashfree.PGGetOrderById("2023-08-01", order_id);
         } catch (cfError: any) {
-            console.error("Cashfree API error:", cfError);
+            console.error("Cashfree API error while verifying:", cfError);
             
             if (cfError.response?.status === 404) {
                 return { 
