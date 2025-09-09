@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { createCashfreeOrder, handlePaymentSuccess } from '@/lib/cashfree';
+import { createCashfreeOrder } from '@/lib/cashfree';
 import { useAuth } from '@/context/auth-context';
 
 declare global {
@@ -18,18 +18,19 @@ interface PaymentButtonProps {
     plan: 'monthly' | 'yearly';
     amount: number;
     buttonText: string;
-    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link" | "accent";
+    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
 }
 
 export function PaymentButton({ plan, amount, buttonText, variant = "default" }: PaymentButtonProps) {
     const router = useRouter();
     const params = useParams();
-    const lang = params.lang as string;
+    const lang = params.lang as string || 'en';
     const { toast } = useToast();
     const { firebaseUser, userData, loading: authLoading } = useAuth();
     const [paymentProcessing, setPaymentProcessing] = useState(false);
 
     const isTelugu = lang === 'te';
+    const isHindi = lang === 'hi';
 
     const loadCashfreeScript = () => {
         return new Promise((resolve) => {
@@ -40,9 +41,8 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
 
             const script = document.createElement('script');
             script.id = 'cashfree-sdk';
-            script.src = process.env.NODE_ENV === 'production' 
-                ? 'https://sdk.cashfree.com/js/v3/cashfree.js' 
-                : 'https://sdk.cashfree.com/js/v3/cashfree-sandbox.js';
+             // Always use sandbox for now as per instructions
+            script.src = 'https://sdk.cashfree.com/js/v3/cashfree-sandbox.js';
             script.onload = () => resolve(true);
             script.onerror = () => resolve(false);
             document.body.appendChild(script);
@@ -50,14 +50,16 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
     };
     
     const handlePayment = async () => {
-        if (authLoading) return;
-        setPaymentProcessing(true);
-        
-        if (!firebaseUser || !userData) {
-            router.push(`/${lang}/signup?plan=${plan}`);
-            setPaymentProcessing(false);
+        if (authLoading || !firebaseUser || !userData) {
+            toast({
+                title: 'Please wait',
+                description: 'User data is still loading. Please try again in a moment.',
+                variant: 'destructive'
+            });
             return;
         }
+        
+        setPaymentProcessing(true);
 
         if (!userData.fullName || !userData.phone || !userData.addressLine || !userData.city) {
             toast({ 
@@ -65,7 +67,7 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
                 description: 'Please complete your profile with your name, phone, and address before making a payment.', 
                 variant: 'destructive' 
             });
-             router.push(`/${lang}/profile`);
+            router.push(`/${lang}/profile`);
             setPaymentProcessing(false);
             return;
         }
@@ -116,21 +118,26 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
         }
     };
 
-    const buttonClass = variant === 'accent'
-        ? "w-full bg-accent text-accent-foreground hover:bg-accent/90"
-        : "w-full bg-primary text-primary-foreground hover:bg-primary/90";
+    let buttonLabel = buttonText;
+    let processingLabel = 'Processing...';
+
+    if (isHindi) {
+        processingLabel = 'प्रोसेस हो रहा है...';
+    } else if (isTelugu) {
+        processingLabel = 'ప్రాసెస్ చేస్తోంది...';
+    }
 
     if (authLoading) {
-         return (
-            <Button size="lg" className={buttonClass} disabled>
-                Loading...
+        return (
+            <Button size="lg" className="w-full" disabled>
+                {isHindi ? 'लोड हो रहा है...' : isTelugu ? 'లోడ్ అవుతోంది...' : 'Loading...'}
             </Button>
         );
     }
-
+    
     return (
-        <Button size="lg" className={buttonClass} onClick={handlePayment} disabled={paymentProcessing}>
-            {paymentProcessing ? (isTelugu ? 'ప్రాసెస్ చేస్తోంది...' : 'Processing...') : (firebaseUser ? buttonText : (isTelugu ? 'చెల్లించడానికి సైన్ అప్ చేయండి' : 'Sign up to Pay'))}
+        <Button size="lg" className="w-full" onClick={handlePayment} disabled={paymentProcessing || authLoading}>
+            {paymentProcessing ? processingLabel : buttonLabel}
         </Button>
     );
 }

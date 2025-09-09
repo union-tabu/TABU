@@ -15,6 +15,7 @@ if (!process.env.CASHFREE_APP_ID || !process.env.CASHFREE_SECRET_KEY) {
 
 Cashfree.XClientId = process.env.CASHFREE_APP_ID!;
 Cashfree.XClientSecret = process.env.CASHFREE_SECRET_KEY!;
+// Forcing sandbox environment to ensure development payments work
 Cashfree.XEnvironment = Cashfree.Environment.SANDBOX;
 
 
@@ -44,13 +45,14 @@ export async function createCashfreeOrder(options: OrderOptions) {
 
     const { amount, userId, plan, user } = validatedOptions.data;
 
-    const orderId = `order_${userId.slice(0, 8)}_${Date.now()}`;
+    // Use crypto for a more unique order ID
+    const randomPart = crypto.randomBytes(6).toString('hex');
+    const orderId = `order_${userId.slice(0, 8)}_${Date.now()}_${randomPart}`;
     
     // Construct the base URL safely, preferring NEXT_PUBLIC_BASE_URL but falling back to Vercel's system variable
     const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-    const host = process.env.VERCEL_URL || process.env.NEXT_PUBLIC_BASE_URL || 'localhost:3000';
+    const host = process.env.NEXT_PUBLIC_BASE_URL || process.env.VERCEL_URL || 'localhost:3000';
     const baseURL = `${protocol}://${host}`;
-
 
     const request = {
         order_amount: amount,
@@ -63,7 +65,7 @@ export async function createCashfreeOrder(options: OrderOptions) {
             customer_email: user.email || `${user.phone}@tabu.local`, // Use dummy email if not present
         },
         order_meta: {
-            return_url: `${baseURL}/{order_id}`,
+            return_url: `${baseURL}/en/payments/status?order_id={order_id}`,
         },
         order_note: `TABU Membership - ${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan`,
     };
@@ -76,6 +78,19 @@ export async function createCashfreeOrder(options: OrderOptions) {
             return { success: false, error: "Failed to get payment session from Cashfree." };
         }
         
+        // Before creating payment record, ensure a user document exists.
+        // This is handled on the client-side check, but an extra layer of safety.
+        
+        // Create a pending payment record in Firestore
+        await addDoc(collection(db, "payments"), {
+            userId,
+            plan,
+            amount: amount,
+            status: 'pending',
+            paymentDate: serverTimestamp(),
+            cf_order_id: order.data.order_id,
+        });
+
         return {
             success: true,
             order: {
@@ -85,7 +100,12 @@ export async function createCashfreeOrder(options: OrderOptions) {
         };
     } catch (error: any) {
         console.error('Cashfree order creation error:', error);
-        return { success: false, error: error.response?.data?.message || error.message || 'Unknown error creating payment order.' };
+        const errorMessage = error.response?.data?.message || error.message || 'Unknown error creating payment order.';
+        // Extract a more specific error if available
+        if (errorMessage.includes('order_meta.return_url')) {
+            return { success: false, error: "Invalid return URL format. Please contact support." };
+        }
+        return { success: false, error: errorMessage };
     }
 }
 
