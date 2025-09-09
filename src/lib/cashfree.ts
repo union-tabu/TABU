@@ -58,9 +58,7 @@ export async function createCashfreeOrder(options: OrderOptions) {
             };
         }
 
-        const timestamp = Date.now();
-        const randomPart = crypto.randomBytes(4).toString('hex');
-        const orderId = `order_${userId.slice(0, 8)}_${timestamp}_${randomPart}`;
+        const orderId = `TABU_${userId}_${Date.now()}`;
         
         const existingOrderQuery = query(
             collection(db, "payments"), 
@@ -85,9 +83,9 @@ export async function createCashfreeOrder(options: OrderOptions) {
             order_currency: "INR",
             order_id: orderId,
             customer_details: {
-                customer_id: userId.slice(0, 50),
+                customer_id: userId,
                 customer_phone: user.phone,
-                customer_name: user.name.slice(0, 100),
+                customer_name: user.name,
                 customer_email: user.email || `${user.phone}@tabu.local`,
             },
             order_meta: {
@@ -106,15 +104,15 @@ export async function createCashfreeOrder(options: OrderOptions) {
             console.error("Cashfree API response error:", order);
             return { 
                 success: false, 
-                error: "Failed to create payment order. Please try again." 
+                error: "Failed to create payment order. Response from gateway was empty." 
             };
         }
-
-        if (!order.data.payment_session_id) {
-            console.error("Missing payment_session_id:", order.data);
-            return { 
+        
+        if (!order.data.payment_link) {
+            console.error("Cashfree API response missing payment_link:", order.data);
+             return { 
                 success: false, 
-                error: "Invalid payment session. Please try again." 
+                error: "Failed to get payment link from gateway. Please try again." 
             };
         }
         
