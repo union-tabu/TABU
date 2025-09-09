@@ -46,7 +46,7 @@ export function PricingSection() {
                 <p className="text-muted-foreground">per year</p>
               </CardContent>
               <CardFooter>
-                 <Button asChild size="lg" className="w-full" variant="outline">
+                 <Button asChild size="lg" className="w-full hover:bg-primary hover:text-primary-foreground" variant="outline">
                     <Link href="/en/subscribe">Choose Annual</Link>
                 </Button>
               </CardFooter>

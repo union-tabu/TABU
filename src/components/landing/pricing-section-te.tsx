@@ -46,7 +46,7 @@ export function PricingSectionTe() {
                 <p className="text-muted-foreground">సంవత్సరానికి</p>
               </CardContent>
               <CardFooter>
-                 <Button asChild size="lg" className="w-full" variant="outline">
+                 <Button asChild size="lg" className="w-full hover:bg-primary hover:text-primary-foreground" variant="outline">
                     <Link href="/te/subscribe">వార్షిక ఎంచుకోండి</Link>
                 </Button>
               </CardFooter>

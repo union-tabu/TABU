@@ -46,7 +46,7 @@ export function PricingSectionHi() {
                 <p className="text-muted-foreground">प्रति वर्ष</p>
               </CardContent>
               <CardFooter>
-                 <Button asChild size="lg" className="w-full" variant="outline">
+                 <Button asChild size="lg" className="w-full hover:bg-primary hover:text-primary-foreground" variant="outline">
                     <Link href="/hi/subscribe">वार्षिक चुनें</Link>
                 </Button>
               </CardFooter>
