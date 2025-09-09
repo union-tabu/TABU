@@ -77,7 +77,6 @@ export async function createCashfreeOrder(options: OrderOptions) {
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
         const returnUrl = `${baseUrl}/${lang}/payments/status?order_id={order_id}`;
 
-        // Set expiry time to 60 minutes from now
         const expiryTime = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
         const request = {
@@ -91,8 +90,7 @@ export async function createCashfreeOrder(options: OrderOptions) {
                 customer_email: user.email || `${user.phone}@tabu.local`,
             },
             order_meta: {
-                // Return URL should NOT be here for redirect flow
-                // payment_methods: "cc,dc,nb,upi,paypal,app,cardlessemi,paylater"
+                return_url: returnUrl,
             },
             order_note: `TABU Membership - ${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan`,
             order_tags: {
@@ -104,26 +102,18 @@ export async function createCashfreeOrder(options: OrderOptions) {
 
         const order = await Cashfree.PGCreateOrder("2023-08-01", request);
 
-        if (!order.data) {
-            console.error("Cashfree API response error:", order);
+        if (!order.data || !order.data.payment_session_id) {
+            console.error("Cashfree API response error (missing data or payment_session_id):", order);
             return { 
                 success: false, 
-                error: "Failed to create payment order. Response from gateway was empty." 
+                error: "Failed to create payment order. Response from gateway was incomplete." 
             };
         }
         
-        // This is the correct way for redirect flow.
-        // We will manually construct the redirect URL as it's not directly in the response.
-        const paymentLink = `${order.data.payments.url}?cf_id=${order.data.cf_order_id}`;
-
-
-        if (!paymentLink) {
-            console.error("Cashfree API response missing payment_link details:", order.data);
-             return { 
-                success: false, 
-                error: "Failed to get payment link from gateway. Please try again." 
-            };
-        }
+        const paymentSessionId = order.data.payment_session_id;
+        
+        // Construct the redirect URL using the payment_session_id
+        const paymentLink = `https://payments.cashfree.com/pg/orders/sessions/${paymentSessionId}`;
         
         const paymentData = {
             userId,
@@ -177,6 +167,7 @@ export async function createCashfreeOrder(options: OrderOptions) {
         };
     }
 }
+
 
 export async function verifyPaymentAndUpdate(order_id: string) {
     try {
