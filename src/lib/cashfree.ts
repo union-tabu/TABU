@@ -1,3 +1,4 @@
+
 'use server';
 
 import { Cashfree } from 'cashfree-pg';
@@ -14,7 +15,6 @@ if (!process.env.CASHFREE_APP_ID || !process.env.CASHFREE_SECRET_KEY) {
 
 Cashfree.XClientId = process.env.CASHFREE_APP_ID!;
 Cashfree.XClientSecret = process.env.CASHFREE_SECRET_KEY!;
-// Use environment variable to control sandbox/production
 Cashfree.XEnvironment = process.env.NODE_ENV === 'production' 
     ? Cashfree.Environment.PRODUCTION 
     : Cashfree.Environment.SANDBOX;
@@ -49,7 +49,6 @@ export async function createCashfreeOrder(options: OrderOptions) {
 
         const { amount, userId, plan, user } = validatedOptions.data;
         
-        // Check if user exists
         const userDocRef = doc(db, "users", userId);
         const userDoc = await getDoc(userDocRef);
         if (!userDoc.exists()) {
@@ -59,12 +58,10 @@ export async function createCashfreeOrder(options: OrderOptions) {
             };
         }
 
-        // Generate unique order ID
         const timestamp = Date.now();
         const randomPart = crypto.randomBytes(4).toString('hex');
         const orderId = `order_${userId.slice(0, 8)}_${timestamp}_${randomPart}`;
         
-        // Check for duplicate order ID (very unlikely but good practice)
         const existingOrderQuery = query(
             collection(db, "payments"), 
             where("cf_order_id", "==", orderId),
@@ -78,21 +75,19 @@ export async function createCashfreeOrder(options: OrderOptions) {
             };
         }
         
-        // Build return URL
-        const vercelUrl = process.env.VERCEL_URL;
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
-            (vercelUrl ? `https://${vercelUrl}` : 'http://localhost:3000');
-        const returnUrl = `${baseUrl}/en/payments/status?order_id={order_id}`;
+        const lang = 'en'; // Assuming english for now, can be passed in options if needed
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+        const returnUrl = `${baseUrl}/${lang}/payments/status?order_id={order_id}`;
 
-        // Prepare Cashfree order request
+
         const request = {
             order_amount: amount,
             order_currency: "INR",
             order_id: orderId,
             customer_details: {
-                customer_id: userId.slice(0, 50), // Cashfree has limits
+                customer_id: userId.slice(0, 50),
                 customer_phone: user.phone,
-                customer_name: user.name.slice(0, 100), // Ensure length limit
+                customer_name: user.name.slice(0, 100),
                 customer_email: user.email || `${user.phone}@tabu.local`,
             },
             order_meta: {
@@ -105,9 +100,6 @@ export async function createCashfreeOrder(options: OrderOptions) {
             }
         };
 
-        console.log("Creating Cashfree order:", { orderId, amount, plan, userId });
-
-        // Create order with Cashfree
         const order = await Cashfree.PGCreateOrder("2023-08-01", request);
 
         if (!order.data) {
@@ -126,16 +118,15 @@ export async function createCashfreeOrder(options: OrderOptions) {
             };
         }
         
-        // Store payment record in database
         const paymentData = {
             userId,
             plan,
             amount,
             status: 'pending',
             createdAt: serverTimestamp(),
-            paymentDate: null, // Will be set when payment is successful
+            paymentDate: null,
             cf_order_id: order.data.order_id,
-            cf_payment_id: null, // Will be set when payment is verified
+            cf_payment_id: null,
             order_meta: {
                 customer_name: user.name,
                 customer_phone: user.phone,
@@ -145,19 +136,15 @@ export async function createCashfreeOrder(options: OrderOptions) {
 
         await addDoc(collection(db, "payments"), paymentData);
 
-        console.log("Payment order created successfully:", order.data.order_id);
-
         return {
             success: true,
             payment_link: order.data.payment_link,
             order_id: order.data.order_id,
-            payment_session_id: order.data.payment_session_id
         };
 
     } catch (error: any) {
         console.error('Cashfree order creation error:', error);
         
-        // Handle specific Cashfree errors
         if (error.response?.data) {
             const cfError = error.response.data;
             console.error('Cashfree API Error:', cfError);
@@ -196,7 +183,6 @@ export async function verifyPaymentAndUpdate(order_id: string) {
 
         console.log("Verifying payment for order:", order_id);
 
-        // Get order details from Cashfree
         let orderDetails;
         try {
             orderDetails = await Cashfree.PGGetOrderById("2023-08-01", order_id);
@@ -224,7 +210,6 @@ export async function verifyPaymentAndUpdate(order_id: string) {
             order_status: paymentInfo.order_status 
         });
 
-        // Find payment record in database
         const paymentsRef = collection(db, "payments");
         const q = query(paymentsRef, where("cf_order_id", "==", order_id), limit(1));
         const querySnapshot = await getDocs(q);
@@ -241,7 +226,6 @@ export async function verifyPaymentAndUpdate(order_id: string) {
         const paymentDoc = querySnapshot.docs[0];
         const paymentData = paymentDoc.data();
         
-        // Check if already processed
         if (paymentData.status === 'success') {
             console.log("Payment already processed:", order_id);
             return { 
@@ -251,12 +235,9 @@ export async function verifyPaymentAndUpdate(order_id: string) {
             };
         }
 
-        // Handle different payment statuses
         if (paymentInfo.order_status === 'PAID') {
-            // Payment successful - update records
             const batch = writeBatch(db);
             
-            // Update payment record
             batch.update(paymentDoc.ref, {
                 status: 'success',
                 cf_payment_id: paymentInfo.cf_payment_id || null,
@@ -269,12 +250,10 @@ export async function verifyPaymentAndUpdate(order_id: string) {
                 updatedAt: serverTimestamp(),
             });
             
-            // Update user subscription
             const userId = paymentData.userId;
             const plan = paymentData.plan;
             const userDocRef = doc(db, "users", userId);
             
-            // Verify user still exists
             const userDoc = await getDoc(userDocRef);
             if (!userDoc.exists()) {
                 return { 
@@ -310,7 +289,6 @@ export async function verifyPaymentAndUpdate(order_id: string) {
             };
 
         } else if (paymentInfo.order_status === 'ACTIVE') {
-            // Payment still pending
             return { 
                 success: false, 
                 status: 'PENDING', 
@@ -318,7 +296,6 @@ export async function verifyPaymentAndUpdate(order_id: string) {
             };
 
         } else if (['FAILED', 'CANCELLED', 'TERMINATED'].includes(paymentInfo.order_status)) {
-            // Payment failed - update status
             await updateDoc(paymentDoc.ref, {
                 status: 'failed',
                 gateway_response: {
@@ -339,7 +316,6 @@ export async function verifyPaymentAndUpdate(order_id: string) {
             };
 
         } else {
-            // Unknown status
             console.warn("Unknown payment status:", paymentInfo.order_status);
             return { 
                 success: false, 
@@ -357,153 +333,3 @@ export async function verifyPaymentAndUpdate(order_id: string) {
         };
     }
 }
-
-
-// 'use server';
-
-// import { Cashfree } from 'cashfree-pg';
-// import { z } from 'zod';
-// import { db } from '@/lib/firebase';
-// import { doc, updateDoc, addDoc, collection, serverTimestamp, query, where, getDocs, writeBatch, limit } from "firebase/firestore";
-// import { startOfMonth, addMonths, addYears } from 'date-fns';
-// import crypto from 'crypto';
-
-// // Initialize Cashfree
-// if (!process.env.CASHFREE_APP_ID || !process.env.CASHFREE_SECRET_KEY) {
-//     console.error("Cashfree credentials are not set in environment variables.");
-// }
-
-// Cashfree.XClientId = process.env.CASHFREE_APP_ID!;
-// Cashfree.XClientSecret = process.env.CASHFREE_SECRET_KEY!;
-// Cashfree.XEnvironment = Cashfree.Environment.SANDBOX; // Use SANDBOX for testing, PRODUCTION for live
-
-// const OrderOptionsSchema = z.object({
-//   amount: z.number().positive().min(1),
-//   userId: z.string().min(1),
-//   plan: z.enum(['monthly', 'yearly']),
-//   user: z.object({
-//     name: z.string().min(1).max(100),
-//     phone: z.string().regex(/^[6-9]\d{9}$/, "Invalid Indian phone number"),
-//     email: z.string().email().optional().or(z.literal('')),
-//   })
-// });
-
-// type OrderOptions = z.infer<typeof OrderOptionsSchema>;
-
-// export async function createCashfreeOrder(options: OrderOptions) {
-//     const validatedOptions = OrderOptionsSchema.safeParse(options);
-
-//     if (!validatedOptions.success) {
-//         const errorMessages = validatedOptions.error.errors.map(err => `Invalid ${err.path.join('.')}: ${err.message}`);
-//         console.error("Server validation failed:", errorMessages);
-//         return { success: false, error: `Validation failed: ${errorMessages.join(', ')}` };
-//     }
-
-//     const { amount, userId, plan, user } = validatedOptions.data;
-//     const randomPart = crypto.randomBytes(6).toString('hex');
-//     const orderId = `order_${userId.slice(0, 8)}_${Date.now()}_${randomPart}`;
-    
-//     const vercelUrl = process.env.VERCEL_URL;
-//     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (vercelUrl ? `https://${vercelUrl}` : 'http://localhost:9002');
-//     const returnUrl = `${baseUrl}/en/payments/status?order_id={order_id}`;
-
-//     const request = {
-//         order_amount: amount,
-//         order_currency: "INR",
-//         order_id: orderId,
-//         customer_details: {
-//             customer_id: userId,
-//             customer_phone: user.phone,
-//             customer_name: user.name,
-//             customer_email: user.email || `${user.phone}@tabu.local`,
-//         },
-//         order_meta: {
-//             return_url: returnUrl,
-//         },
-//         order_note: `TABU Membership - ${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan`,
-//     };
-
-//     try {
-//         const order = await Cashfree.PGCreateOrder("2023-08-01", request);
-
-//         if (!order.data || !order.data.payment_session_id) {
-//             console.error("Cashfree API response error:", order.data);
-//             return { success: false, error: "Failed to get payment session from Cashfree." };
-//         }
-        
-//         await addDoc(collection(db, "payments"), {
-//             userId,
-//             plan,
-//             amount,
-//             status: 'pending',
-//             paymentDate: serverTimestamp(),
-//             cf_order_id: order.data.order_id,
-//         });
-
-//         return {
-//             success: true,
-//             payment_link: order.data.payment_link
-//         };
-//     } catch (error: any) {
-//         console.error('Cashfree order creation error:', error);
-//         return { success: false, error: error.response?.data?.message || error.message || 'Unknown error creating payment order.' };
-//     }
-// }
-
-// export async function verifyPaymentAndUpdate(order_id: string) {
-//     try {
-//         const orderDetails = await Cashfree.PGGetOrderById("2023-08-01", order_id);
-//         const paymentInfo = orderDetails.data;
-
-//         if (paymentInfo.order_status !== 'PAID') {
-//             return { success: false, status: paymentInfo.order_status, message: 'Payment not confirmed by gateway.' };
-//         }
-
-//         const paymentsRef = collection(db, "payments");
-//         const q = query(paymentsRef, where("cf_order_id", "==", order_id), limit(1));
-//         const querySnapshot = await getDocs(q);
-
-//         if (querySnapshot.empty) {
-//             return { success: false, status: 'NOT_FOUND', message: 'Payment record not found in our database.' };
-//         }
-        
-//         const paymentDoc = querySnapshot.docs[0];
-//         if (paymentDoc.data().status === 'success') {
-//             return { success: true, status: 'ALREADY_PROCESSED', message: 'Payment already verified.' };
-//         }
-        
-//         const batch = writeBatch(db);
-        
-//         batch.update(paymentDoc.ref, {
-//             status: 'success',
-//             cf_payment_id: paymentInfo.cf_payment_id || null,
-//             paymentDate: serverTimestamp(),
-//         });
-        
-//         const userId = paymentDoc.data().userId;
-//         const plan = paymentDoc.data().plan;
-//         const userDocRef = doc(db, "users", userId);
-        
-//         const now = new Date();
-//         const firstDayOfCurrentMonth = startOfMonth(now);
-//         const renewalDate = plan === 'monthly' 
-//             ? addMonths(firstDayOfCurrentMonth, 1) 
-//             : addYears(firstDayOfCurrentMonth, 1);
-            
-//         batch.update(userDocRef, {
-//             "subscription.status": 'active',
-//             "subscription.plan": plan,
-//             "subscription.renewalDate": renewalDate,
-//             "subscription.lastPaymentId": paymentDoc.id,
-//             "subscription.updatedAt": serverTimestamp()
-//         });
-        
-//         await batch.commit();
-
-//         return { success: true, status: 'PAID', message: 'Payment successful and recorded.' };
-
-//     } catch (error: any) {
-//         console.error("Error verifying payment:", error);
-//         return { success: false, status: 'ERROR', message: `Failed to verify payment: ${error.message}` };
-//     }
-// }
