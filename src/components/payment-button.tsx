@@ -10,7 +10,7 @@ import { useAuth } from '@/context/auth-context';
 
 declare global {
   interface Window {
-    cashfree: any;
+    Cashfree: any;
   }
 }
 
@@ -119,15 +119,15 @@ export function PaymentButton({ plan, amount, buttonText, variant = "default" }:
             }
 
             const { order } = orderResponse;
-            const cashfree = new window.cashfree(order.payment_session_id);
+            const cashfree = new window.Cashfree(order.payment_session_id);
 
             cashfree.redirect();
 
-        } catch (error) {
-            console.error("Error during handlePayment process:", error);
+        } catch (error: any) {
+            console.error("Error during createCashfreeOrder call:", error);
             toast({ 
                 title: 'Payment Error', 
-                description: 'An unexpected error occurred while setting up the payment. Please try again.', 
+                description: error.message || 'An unexpected error occurred while setting up the payment. Please try again.', 
                 variant: 'destructive' 
             });
             setPaymentProcessing(false);
