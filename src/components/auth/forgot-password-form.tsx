@@ -26,7 +26,7 @@ declare global {
   }
 }
 
-const FAKE_EMAIL_DOMAIN = "@tabu";
+const FAKE_EMAIL_DOMAIN = "@tabu.local";
 
 interface FormData {
   phone: string;

@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect } from 'react';
 import { generateUniqueUnionId } from '@/ai/flows/union-id-flow';
 
-const FAKE_EMAIL_DOMAIN = "@tabu";
+const FAKE_EMAIL_DOMAIN = "@tabu.local";
 
 export default function VerifyForm() {
   const router = useRouter();
@@ -115,8 +115,10 @@ export default function VerifyForm() {
         errorMessage = "The OTP you entered is incorrect. Please check and try again.";
       } else if (error.code === 'auth/code-expired') {
         errorMessage = "The OTP has expired. Please go back to the previous page and request a new one.";
-      } else if (error.code === 'auth/credential-already-in-use') {
+      } else if (error.code === 'auth/credential-already-in-use' || error.code === 'auth/email-already-in-use') {
         errorMessage = "This account is already linked to another user. Please start the signup process again.";
+      } else if (error.code === 'auth/invalid-email') {
+          errorMessage = "The phone number used resulted in an invalid internal email format. Please try signing up again.";
       }
       toast({ title: "Signup Failed", description: errorMessage, variant: "destructive" });
     } finally {

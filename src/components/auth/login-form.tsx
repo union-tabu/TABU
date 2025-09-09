@@ -12,7 +12,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect } from 'react';
 
-const FAKE_EMAIL_DOMAIN = "@tabu";
+const FAKE_EMAIL_DOMAIN = "@tabu.local";
 
 interface FormErrors {
   phone?: string;

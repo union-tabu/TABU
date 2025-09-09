@@ -24,8 +24,6 @@ declare global {
   }
 }
 
-const FAKE_EMAIL_DOMAIN = "@tabu";
-
 export default function ForgotPasswordFormTe() {
   const router = useRouter();
   const { toast } = useToast();

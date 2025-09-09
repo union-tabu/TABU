@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect } from 'react';
 import { generateUniqueUnionId } from '@/ai/flows/union-id-flow';
 
-const FAKE_EMAIL_DOMAIN = "@tabu";
+const FAKE_EMAIL_DOMAIN = "@tabu.local";
 
 export default function VerifyFormTe() {
   const router = useRouter();
@@ -114,8 +114,10 @@ export default function VerifyFormTe() {
         errorMessage = "మీరు నమోదు చేసిన OTP తప్పుగా ఉంది. దయచేసి తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.";
       } else if (error.code === 'auth/code-expired') {
         errorMessage = "OTP గడువు ముగిసింది. దయచేసి వెనుకకు వెళ్లి మళ్ళీ ప్రయత్నించండి.";
-      } else if (error.code === 'auth/credential-already-in-use') {
+      } else if (error.code === 'auth/credential-already-in-use' || error.code === 'auth/email-already-in-use') {
         errorMessage = "ఈ ఖాతా ఇప్పటికే మరొక వినియోగదారునికి లింక్ చేయబడింది. దయచేసి సైన్అప్ ప్రక్రియను మళ్ళీ ప్రారంభించండి.";
+      } else if (error.code === 'auth/invalid-email') {
+          errorMessage = "ఉపయోగించిన ఫోన్ నంబర్ చెల్లని అంతర్గత ఇమెయిల్ ఫార్మాట్‌కు దారితీసింది. దయచేసి మళ్ళీ సైన్ అప్ చేయడానికి ప్రయత్నించండి.";
       }
       toast({ title: "నమోదు విఫలమైంది", description: errorMessage, variant: "destructive" });
     } finally {

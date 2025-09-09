@@ -11,7 +11,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import React, { useEffect } from 'react';
 
-const FAKE_EMAIL_DOMAIN = "@tabu";
+const FAKE_EMAIL_DOMAIN = "@tabu.local";
 
 export default function SigninFormHi() {
     const router = useRouter();

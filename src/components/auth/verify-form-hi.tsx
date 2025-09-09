@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import React, { useState, useEffect } from 'react';
 import { generateUniqueUnionId } from '@/ai/flows/union-id-flow';
 
-const FAKE_EMAIL_DOMAIN = "@tabu";
+const FAKE_EMAIL_DOMAIN = "@tabu.local";
 
 export default function VerifyFormHi() {
   const router = useRouter();
@@ -114,8 +114,10 @@ export default function VerifyFormHi() {
         errorMessage = "आपके द्वारा दर्ज किया गया OTP गलत है। कृपया जांचें और पुनः प्रयास करें।";
       } else if (error.code === 'auth/code-expired') {
         errorMessage = "OTP समाप्त हो गया है। कृपया वापस जाकर पुनः प्रयास करें।";
-      } else if (error.code === 'auth/credential-already-in-use') {
+      } else if (error.code === 'auth/credential-already-in-use' || error.code === 'auth/email-already-in-use') {
         errorMessage = "यह खाता पहले से ही किसी अन्य उपयोगकर्ता से जुड़ा हुआ है। कृपया साइनअप प्रक्रिया पुनः प्रारंभ करें।";
+      } else if (error.code === 'auth/invalid-email') {
+          errorMessage = "उपयोग किए गए फ़ोन नंबर के परिणामस्वरूप एक अमान्य आंतरिक ईमेल प्रारूप हुआ। कृपया पुनः साइन अप करने का प्रयास करें।";
       }
       toast({ title: "पंजीकरण विफल", description: errorMessage, variant: "destructive" });
     } finally {
