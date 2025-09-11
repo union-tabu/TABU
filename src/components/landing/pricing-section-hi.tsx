@@ -39,7 +39,7 @@ export function PricingSectionHi() {
             <Card className="flex flex-col shadow-lg">
               <CardHeader>
                 <CardTitle>वार्षिक योजना</CardTitle>
-                <CardDescription>पूरे वर्ष के लिए अग्रिम भुगतान करके बचत करें।</CardDescription>
+                <CardDescription>सुविधा के लिए पूरे वर्ष के लिए अग्रिम भुगतान करें।</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
                 <p className="text-4xl font-bold">₹1200</p>

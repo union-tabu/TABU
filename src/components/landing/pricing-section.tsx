@@ -39,7 +39,7 @@ export function PricingSection() {
             <Card className="flex flex-col shadow-lg">
               <CardHeader>
                 <CardTitle>Annual Plan</CardTitle>
-                <CardDescription>Save by paying for a full year upfront.</CardDescription>
+                <CardDescription>Pay for a full year upfront for convenience.</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
                 <p className="text-4xl font-bold">₹1200</p>

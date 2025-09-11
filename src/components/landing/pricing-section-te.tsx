@@ -39,7 +39,7 @@ export function PricingSectionTe() {
             <Card className="flex flex-col shadow-lg">
               <CardHeader>
                 <CardTitle>వార్షిక ప్రణాళిక</CardTitle>
-                <CardDescription>పూర్తి సంవత్సరానికి ముందుగానే చెల్లించి ఆదా చేసుకోండి.</CardDescription>
+                <CardDescription>సౌలభ్యం కోసం పూర్తి సంవత్సరానికి ముందుగానే చెల్లించండి.</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
                 <p className="text-4xl font-bold">₹1200</p>

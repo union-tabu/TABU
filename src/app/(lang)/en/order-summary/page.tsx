@@ -92,7 +92,7 @@ function OrderSummaryContent() {
         } finally {
             setLoading(false);
         }
-    }, [planParam, authLoading, userData, router, PENALTY_FEE, MONTHLY_PRICE, YEARLY_PRICE]);
+    }, [planParam, authLoading, userData, router]);
 
     // Loading skeleton
     if (loading || authLoading) {
@@ -193,12 +193,6 @@ function OrderSummaryContent() {
                         <span>₹{amount.toLocaleString('en-IN')}</span>
                     </div>
                     
-                    {plan === 'yearly' && (
-                        <div className="text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950/20 p-3 rounded-lg border border-green-200 dark:border-green-800">
-                            <CheckCircle className="inline-block w-4 h-4 mr-1" />
-                            You're saving ₹{(MONTHLY_PRICE * 12 - YEARLY_PRICE).toLocaleString('en-IN')} by choosing the yearly plan!
-                        </div>
-                    )}
                 </CardContent>
                 
                 <CardFooter className="flex-col gap-4">
