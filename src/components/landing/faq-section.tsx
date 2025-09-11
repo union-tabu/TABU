@@ -32,7 +32,7 @@ const faqs = [
 
 export function FaqSection() {
   return (
-    <section id="faq" className="w-full bg-gray-50">
+    <section id="faq" className="w-full bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-16 sm:py-20 lg:py-24">
           <div className="max-w-3xl mx-auto">
@@ -49,7 +49,7 @@ export function FaqSection() {
                 <AccordionItem 
                   value={`item-${index+1}`} 
                   key={index}
-                  className="bg-white rounded-lg shadow-sm px-6"
+                  className="bg-white rounded-lg border px-6"
                 >
                   <AccordionTrigger className="text-left text-lg font-semibold text-gray-800 hover:text-gray-900 py-4 hover:no-underline">
                     {faq.question}
