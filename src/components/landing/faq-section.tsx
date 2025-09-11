@@ -6,6 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import Link from "next/link";
 
 const faqs = [
     {
@@ -13,16 +14,12 @@ const faqs = [
         answer: "Any worker involved in building and construction work in Telangana is eligible to join the union, including daily wage laborers, masons, carpenters, plumbers, electricians, and more."
     },
     {
-        question: "What documents do I need to register?",
-        answer: "You will typically need a government-issued photo ID (like an Aadhaar card), proof of address, and details about your work. The specific requirements will be outlined during the signup process."
-    },
-    {
         question: "What happens if I don't pay for 2 months?",
         answer: "Your membership might become inactive if dues are not paid. However, we have processes to help you reactivate your membership. Please contact our support team for assistance."
     },
     {
         question: "What benefits do I get as a member?",
-        answer: "Members get access to financial support in case of accidents, legal help for wage disputes, an official union ID for recognition, and become part of a supportive community of fellow workers."
+        answer: "Members get access to financial support in case of accidents, legal help for wage disputes, an official union ID for recognition, and become part of a supportive community of fellow workers. For more details, please see our "
     },
     {
         question: "How do I renew my membership?",
@@ -56,6 +53,9 @@ export function FaqSection() {
                   </AccordionTrigger>
                   <AccordionContent className="text-base text-gray-600 leading-relaxed pb-4">
                     {faq.answer}
+                    {faq.question === "What benefits do I get as a member?" && (
+                        <Link href="/en/terms-and-conditions" className="text-primary hover:underline">Terms and Conditions.</Link>
+                    )}
                   </AccordionContent>
                 </AccordionItem>
               ))}
