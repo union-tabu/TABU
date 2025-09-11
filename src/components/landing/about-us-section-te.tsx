@@ -7,7 +7,7 @@ import Image from 'next/image';
 
 export function AboutUsSectionTe() {
   return (
-    <section id="about" className="w-full bg-white">
+    <section id="about" className="w-full bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="py-16 sm:py-20 lg:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 xl:gap-20 items-start">
