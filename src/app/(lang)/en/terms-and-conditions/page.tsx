@@ -13,53 +13,53 @@ export default function TermsAndConditionsPage() {
            <Card className="max-w-4xl mx-auto shadow-lg">
              <CardHeader>
                 <h1 className="text-4xl font-bold text-gray-900">Terms and Conditions</h1>
-                <p className="text-sm text-muted-foreground">Last updated: August 4, 2024</p>
+                <p className="text-sm text-muted-foreground">Last updated: August 5, 2024</p>
              </CardHeader>
-             <CardContent className="space-y-6 text-lg text-gray-700">
+             <CardContent className="space-y-8 text-lg text-gray-700">
                 <p>
-                Welcome to the Telangana All Building Workers Union (TABU). By accessing our website and using our services, you agree to comply with and be bound by the following terms and conditions. Please review them carefully.
+                Welcome to the Telangana All Building Workers Union (TABU). By becoming a member, you agree to comply with and be bound by the following terms and conditions. This union has been established to protect the rights of construction workers.
                 </p>
 
                 <div className="space-y-2">
-                    <h2 className="text-2xl font-semibold text-primary mb-3">1. Membership</h2>
-                    <p><strong>Eligibility:</strong> Membership is open to any individual working in the building and construction sector within Telangana.</p>
-                    <p><strong>Registration:</strong> To become a member, you must complete the registration process, provide accurate information, and pay the applicable membership fees.</p>
-                    <p><strong>Dues:</strong> Members are required to pay subscription fees (monthly or annually) to maintain an active status. Failure to pay dues may result in the suspension or termination of your membership and associated benefits.</p>
-                </div>
-
-                <div className="space-y-2">
-                    <h2 className="text-2xl font-semibold text-primary mb-3">2. Use of Services</h2>
-                    <p>You agree to use our services only for lawful purposes. You are responsible for all activities that occur under your account. You agree not to use the service to:</p>
+                    <h2 className="text-2xl font-semibold text-primary mb-3">1. Union Objectives</h2>
                     <ul className="list-disc pl-6 space-y-2">
-                        <li>Harass, abuse, or harm another person.</li>
-                        <li>Provide false or misleading information.</li>
-                        <li>Engage in any activity that disrupts or interferes with our services.</li>
+                        <li>To negotiate with builders, contractors, and companies for better wages and worker benefits.</li>
+                        <li>To intervene and fight for a worker's rights if they are not paid properly or face issues with wages.</li>
+                        <li>To provide support in case of accidents, medical needs, or other sudden problems faced by workers and their families.</li>
+                        <li>To ensure collective bargaining power, so that no worker is underpaid or exploited.</li>
                     </ul>
                 </div>
 
                 <div className="space-y-2">
-                    <h2 className="text-2xl font-semibold text-primary mb-3">3. Termination</h2>
-                    <p>We reserve the right to suspend or terminate your membership at our discretion if you violate these terms or engage in conduct that is harmful to the union or its members. You may terminate your membership at any time by contacting us.</p>
+                    <h2 className="text-2xl font-semibold text-primary mb-3">2. Membership and Dues</h2>
+                    <p><strong>Eligibility:</strong> Membership is open to any individual working in the building and construction sector within Telangana.</p>
+                    <p><strong>Dues:</strong> Every worker must pay their monthly or annual membership fees to maintain an active status and continue receiving benefits. Failure to pay dues may result in the suspension of your membership.</p>
                 </div>
                 
                 <div className="space-y-2">
-                    <h2 className="text-2xl font-semibold text-primary mb-3">4. Disclaimer of Warranties</h2>
-                    <p>Our services are provided "as is" and "as available" without any warranties of any kind, either express or implied. We do not warrant that the services will be uninterrupted or error-free.</p>
+                    <h2 className="text-2xl font-semibold text-primary mb-3">3. Member Responsibilities</h2>
+                     <p>Workers must not approach contractors or builders individually for wage negotiations. Instead, they should work through the union to ensure fair wages and equal treatment for all members.</p>
+                </div>
+                
+                <div className="space-y-2">
+                    <h2 className="text-2xl font-semibold text-primary mb-3">4. Union Wage Recommendations</h2>
+                    <p>The union will continue to fight for fair wages for all building workers. As per union standards, the recommended monthly wages are:</p>
+                     <ul className="list-disc pl-6 space-y-2">
+                        <li><strong>Mason:</strong> ₹12,000 per month</li>
+                        <li><strong>Midiyam (Skilled Worker):</strong> ₹10,000 per month</li>
+                        <li><strong>Helper:</strong> ₹8,000 per month</li>
+                        <li><strong>New Worker:</strong> ₹7,000 per month</li>
+                    </ul>
                 </div>
 
                 <div className="space-y-2">
-                    <h2 className="text-2xl font-semibold text-primary mb-3">5. Limitation of Liability</h2>
-                    <p>The Telangana All Building Workers Union, its directors, and its representatives will not be liable for any indirect, incidental, special, or consequential damages arising out of or in connection with your use of our services.</p>
+                    <h2 className="text-2xl font-semibold text-primary mb-3">5. Termination</h2>
+                    <p>We reserve the right to suspend or terminate your membership if you violate these terms or engage in conduct that is harmful to the union's objectives. You may cancel your membership at any time by contacting us.</p>
                 </div>
-                
+
                 <div className="space-y-2">
                     <h2 className="text-2xl font-semibold text-primary mb-3">6. Changes to Terms</h2>
-                    <p>We reserve the right to modify these terms at any time. We will notify you of any changes by posting the new terms on this page. Your continued use of the service after any such changes constitutes your acceptance of the new terms.</p>
-                </div>
-
-                <div className="space-y-2">
-                    <h2 className="text-2xl font-semibold text-primary mb-3">7. Governing Law</h2>
-                    <p>These terms shall be governed by and construed in accordance with the laws of Telangana, India, without regard to its conflict of law provisions.</p>
+                    <p>We reserve the right to modify these terms at any time. We will notify you of any changes by posting the new terms on this page.</p>
                 </div>
 
                 <div className="space-y-2">
