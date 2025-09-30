@@ -48,7 +48,7 @@ export async function createCashfreeOrder(options: OrderOptions) {
         const lang = 'en';
         
         let baseUrl;
-        if (process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'production') {
+         if (process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'production') {
             baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `https://${process.env.VERCEL_URL}`;
             if (!baseUrl.startsWith('https://')) {
                 baseUrl = `https://${baseUrl.replace(/^https?:\/\//, '')}`;
@@ -86,6 +86,7 @@ export async function createCashfreeOrder(options: OrderOptions) {
                 'x-api-version': '2023-08-01',
                 'x-client-id': process.env.CASHFREE_APP_ID!,
                 'x-client-secret': process.env.CASHFREE_SECRET_KEY!,
+                'x-app-name': 'Telangana All Building Workers Union',
             },
             body: JSON.stringify(requestBody),
         });
