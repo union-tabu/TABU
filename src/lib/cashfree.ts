@@ -43,16 +43,11 @@ export async function createCashfreeOrder(options: OrderOptions) {
         
         const lang = 'en';
         
-        let baseUrl;
-         if (process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'production') {
-            baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `https://${process.env.VERCEL_URL}`;
-            if (!baseUrl.startsWith('https://')) {
-                baseUrl = `https://${baseUrl.replace(/^https?:\/\//, '')}`;
-            }
-        } else {
-            baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+        let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+        if (process.env.NODE_ENV === 'production') {
+            baseUrl = `https://${process.env.VERCEL_URL || 'tabu.vercel.app'}`;
         }
-
+        
         const returnUrl = `${baseUrl}/${lang}/payments/status?order_id={order_id}`;
 
         const requestBody = {
