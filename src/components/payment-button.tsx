@@ -114,13 +114,17 @@ export function PaymentButton({
 
             const checkoutOptions = {
                 paymentSessionId: orderResponse.payment_session_id,
-                redirectTarget: "_self"
+                redirectTarget: "_modal"
             };
             
             cashfree.checkout(checkoutOptions).then((result: any) => {
-                if(result.error){
+                if (result.error) {
                     console.log("User has closed the popup or there is some payment error, Check for Payment Status", result.error);
-                     router.push(`/${lang}/payments/status?order_id=${orderResponse.order_id}`);
+                    router.push(`/${lang}/payments/status?order_id=${orderResponse.order_id}`);
+                }
+                if (result.paymentDetails) {
+                    console.log("Payment has been completed, Check for Payment Status");
+                    router.push(`/${lang}/payments/status?order_id=${orderResponse.order_id}`);
                 }
             });
             

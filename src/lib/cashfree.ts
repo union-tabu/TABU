@@ -1,3 +1,4 @@
+
 'use server';
 
 import { z } from 'zod';
@@ -48,13 +49,11 @@ export async function createCashfreeOrder(options: OrderOptions) {
         
         let baseUrl;
         if (process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'production') {
-            // For production, always use HTTPS
             baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `https://${process.env.VERCEL_URL}`;
             if (!baseUrl.startsWith('https://')) {
                 baseUrl = `https://${baseUrl.replace(/^https?:\/\//, '')}`;
             }
         } else {
-            // For local development/sandbox
             baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
         }
 
