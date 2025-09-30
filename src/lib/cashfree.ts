@@ -11,15 +11,12 @@ if (!process.env.CASHFREE_APP_ID || !process.env.CASHFREE_SECRET_KEY) {
     throw new Error("Cashfree credentials (CASHFREE_APP_ID, CASHFREE_SECRET_KEY) are not set in environment variables.");
 }
 
-Cashfree.XClientId = process.env.CASHFREE_APP_ID!;
-Cashfree.XClientSecret = process.env.CASHFREE_SECRET_KEY!;
 const isProduction = process.env.CASHFREE_ENVIRONMENT === 'production';
-Cashfree.XEnvironment = isProduction 
-    ? Cashfree.Environment.PRODUCTION 
-    : Cashfree.Environment.SANDBOX;
-
-console.log(`Cashfree SDK initialized in ${isProduction ? 'PRODUCTION' : 'SANDBOX'} mode.`);
-
+const cashfree = new Cashfree({
+    mode: isProduction ? 'production' : 'sandbox',
+    api_key: process.env.CASHFREE_APP_ID,
+    api_secret: process.env.CASHFREE_SECRET_KEY,
+});
 
 const OrderOptionsSchema = z.object({
   amount: z.number().positive().min(1),
@@ -86,7 +83,7 @@ export async function createCashfreeOrder(options: OrderOptions) {
             }
         };
 
-        const order = await Cashfree.PGCreateOrder("2023-08-01", request);
+        const order = await cashfree.PGCreateOrder("2023-08-01", request);
 
         if (!order.data || !order.data.payment_session_id) {
             console.error("Cashfree API response error (missing data or payment_session_id):", order.data);
@@ -165,7 +162,7 @@ export async function verifyPaymentAndUpdate(order_id: string) {
 
         let orderDetails;
         try {
-            orderDetails = await Cashfree.PGGetOrderById("2023-08-01", order_id);
+            orderDetails = await cashfree.PGGetOrderById("2023-08-01", order_id);
         } catch (cfError: any) {
             console.error("Cashfree API error while verifying:", cfError);
             
