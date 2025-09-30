@@ -75,8 +75,8 @@ export async function createCashfreeOrder(options: OrderOptions) {
             headers: {
                 'Content-Type': 'application/json',
                 'x-api-version': '2023-08-01',
-                'x-client-id': process.env.CASHFREE_APP_ID!,
-                'x-client-secret': process.env.CASHFREE_SECRET_KEY!,
+                'x-client-id': process.env.NEXT_PUBLIC_CASHFREE_APP_ID!,
+                'x-client-secret': process.env.NEXT_PUBLIC_CASHFREE_SECRET_KEY!,
                 'x-app-name': 'Telangana All Building Workers Union',
             },
             body: JSON.stringify(requestBody),
@@ -131,8 +131,8 @@ export async function verifyPaymentAndUpdate(order_id: string) {
             method: 'GET',
             headers: {
                 'x-api-version': '2023-08-01',
-                'x-client-id': process.env.CASHFREE_APP_ID!,
-                'x-client-secret': process.env.CASHFREE_SECRET_KEY!,
+                'x-client-id': process.env.NEXT_PUBLIC_CASHFREE_APP_ID!,
+                'x-client-secret': process.env.NEXT_PUBLIC_CASHFREE_SECRET_KEY!,
             },
         });
 
