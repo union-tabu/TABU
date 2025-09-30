@@ -37,14 +37,26 @@ export function PaymentButton({
     const isHindi = lang === 'hi';
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            if (typeof window !== 'undefined' && (window as any).Cashfree) {
-                setIsCashfreeReady(true);
-                clearInterval(interval);
-            }
-        }, 100);
-        return () => clearInterval(interval);
-    }, []);
+        const script = document.createElement('script');
+        script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
+        script.onload = () => {
+            console.log('Cashfree SDK loaded.');
+            setIsCashfreeReady(true);
+        };
+        script.onerror = () => {
+            console.error('Failed to load Cashfree SDK.');
+            toast({
+                title: "Payment Gateway Error",
+                description: "Could not load payment gateway. Please check your connection and try again.",
+                variant: 'destructive'
+            });
+        };
+        document.body.appendChild(script);
+
+        return () => {
+            document.body.removeChild(script);
+        }
+    }, [toast]);
 
     const handlePayment = useCallback(async () => {
         if (paymentProcessing) return;
@@ -101,30 +113,36 @@ export function PaymentButton({
                 return;
             }
 
-            const cashfree = new Cashfree(orderResponse.payment_session_id);
-
+            const isProduction = process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'production';
+            const cashfree = new Cashfree({
+                mode: isProduction ? "production" : "sandbox"
+            });
+            
             cashfree.checkout({
-                style: {
-                    theme: "light",
-                    backgroundColor: "#FFFFFF",
-                    color: "#11385B",
-                    fontFamily: "Lato",
-                    fontSize: "14px",
-                    errorColor: "#ff0000",
-                },
+                paymentSessionId: orderResponse.payment_session_id,
+                returnUrl: `/${lang}/payments/status?order_id=${orderResponse.order_id}`,
                 onSuccess: (data: any) => {
-                    // Redirect to your status page on success
                      if (data && data.order && data.order.orderId) {
                         router.push(`/${lang}/payments/status?order_id=${data.order.orderId}`);
                     }
                 },
                 onFailure: (data: any) => {
-                    // Redirect to your status page on failure
                      if (data && data.order && data.order.orderId) {
                         router.push(`/${lang}/payments/status?order_id=${data.order.orderId}`);
                     }
-                }
+                },
+                onPrimary: (data: any) => {
+                  console.log('primary', data);
+                },
+                onSecondary: (data: any) => {
+                  console.log('secondary', data);
+                },
+                onExit: (data: any) => {
+                  console.log('exit', data);
+                },
             });
+
+            setPaymentProcessing(false);
             
         } catch (error: any) {
             console.error('Payment initiation error:', error);

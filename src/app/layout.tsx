@@ -34,7 +34,6 @@ export default function RootLayout({
           <Toaster />
           <HotToaster />
         </AuthProvider>
-        <Script src="https://sdk.cashfree.com/js/v3/cashfree.js" strategy="lazyOnload" />
       </body>
     </html>
   );
