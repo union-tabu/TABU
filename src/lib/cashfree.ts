@@ -7,11 +7,7 @@ import { doc, updateDoc, addDoc, collection, serverTimestamp, query, where, getD
 import { startOfMonth, addMonths, addYears } from 'date-fns';
 import fetch from 'node-fetch';
 
-const IS_PROD = process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'production';
-
-const CASHFREE_API_URL = IS_PROD
-  ? 'https://api.cashfree.com/pg' 
-  : 'https://sandbox.cashfree.com/pg';
+const CASHFREE_API_URL = 'https://api.cashfree.com/pg';
 
 const OrderOptionsSchema = z.object({
   amount: z.number().positive().min(1),

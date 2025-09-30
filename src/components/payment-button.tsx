@@ -38,12 +38,11 @@ export function PaymentButton({
     useEffect(() => {
         const initializeSDK = async () => {
             try {
-                const isProduction = process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'production';
                 const sdk = await load({
-                    mode: isProduction ? "production" : "sandbox"
+                    mode: "production" // Force production mode
                 });
                 setCashfree(sdk);
-                console.log('Cashfree SDK initialized.');
+                console.log('Cashfree SDK initialized in production mode.');
             } catch (error) {
                 console.error("Cashfree SDK initialization error:", error);
                 toast({
