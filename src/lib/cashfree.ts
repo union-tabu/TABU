@@ -42,8 +42,20 @@ export async function createCashfreeOrder(options: OrderOptions) {
 
         const orderId = `TABU_${userId.substring(0, 8)}_${Date.now()}`;
         
-        const lang = 'en'; 
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:9002');
+        const lang = 'en';
+        
+        let baseUrl;
+        if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production') {
+            baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `https://${process.env.VERCEL_URL}`;
+        } else {
+            baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+        }
+        
+        // Ensure HTTPS for production return_url
+        if ((process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production') && baseUrl && !baseUrl.startsWith('https')) {
+             baseUrl = `https://${baseUrl.replace(/^https?:\/\//, '')}`;
+        }
+
         const returnUrl = `${baseUrl}/${lang}/payments/status?order_id={order_id}`;
 
         const requestBody = {
@@ -125,7 +137,7 @@ export async function verifyPaymentAndUpdate(order_id: string) {
         const response = await fetch(`${CASHFREE_API_URL}/orders/${order_id}/payments`, {
             method: 'GET',
             headers: {
-                'x-api-version': '2023-08-01',
+                'x-api-version': '2023-8-01',
                 'x-client-id': process.env.CASHFREE_APP_ID!,
                 'x-client-secret': process.env.CASHFREE_SECRET_KEY!,
             },
