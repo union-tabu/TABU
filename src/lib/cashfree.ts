@@ -137,7 +137,7 @@ export async function createCashfreeOrder(options: OrderOptions) {
             if (cfError.type === 'authentication_error') {
                  return { 
                     success: false, 
-                    error: 'Payment service configuration error. Please check your API keys.' 
+                    error: 'Payment service configuration error. Please contact support.' 
                 };
             }
              if (cfError.type === 'invalid_request_error') {
