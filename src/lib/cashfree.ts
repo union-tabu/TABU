@@ -1,23 +1,21 @@
 
 'use server';
 
-import { Cashfree } from 'cashfree-pg';
 import { z } from 'zod';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc, addDoc, collection, serverTimestamp, query, where, getDocs, writeBatch, limit, getDoc } from "firebase/firestore";
 import { startOfMonth, addMonths, addYears } from 'date-fns';
+import fetch from 'node-fetch';
 
 if (!process.env.CASHFREE_APP_ID || !process.env.CASHFREE_SECRET_KEY) {
     throw new Error("Cashfree credentials (CASHFREE_APP_ID, CASHFREE_SECRET_KEY) are not set in environment variables.");
 }
 
 const isProduction = process.env.CASHFREE_ENVIRONMENT === 'production';
-const cashfree = new Cashfree({
-    mode: isProduction ? 'production' : 'sandbox',
-    api_key: process.env.CASHFREE_APP_ID,
-    api_secret: process.env.CASHFREE_SECRET_KEY,
-});
-
+const CASHFREE_API_URL = isProduction 
+    ? 'https://api.cashfree.com/pg' 
+    : 'https://sandbox.cashfree.com/pg';
+    
 const OrderOptionsSchema = z.object({
   amount: z.number().positive().min(1),
   userId: z.string().min(1),
@@ -63,7 +61,7 @@ export async function createCashfreeOrder(options: OrderOptions) {
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:9002');
         const returnUrl = `${baseUrl}/${lang}/payments/status?order_id={order_id}`;
 
-        const request = {
+        const requestBody = {
             order_amount: amount,
             order_currency: "INR",
             order_id: orderId,
@@ -83,17 +81,29 @@ export async function createCashfreeOrder(options: OrderOptions) {
             }
         };
 
-        const order = await cashfree.PGCreateOrder("2023-08-01", request);
+        const response = await fetch(`${CASHFREE_API_URL}/orders`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-version': '2023-08-01',
+                'x-client-id': process.env.CASHFREE_APP_ID!,
+                'x-client-secret': process.env.CASHFREE_SECRET_KEY!,
+            },
+            body: JSON.stringify(requestBody),
+        });
 
-        if (!order.data || !order.data.payment_session_id) {
-            console.error("Cashfree API response error (missing data or payment_session_id):", order.data);
+        const orderData = await response.json() as any;
+
+        if (!response.ok || !orderData.payment_session_id) {
+            console.error("Cashfree API response error:", orderData);
+            const errorMessage = orderData.message || 'Failed to create payment order. Response from gateway was invalid.';
             return { 
                 success: false, 
-                error: "Failed to create payment order. Response from gateway was incomplete." 
+                error: errorMessage
             };
         }
         
-        const paymentSessionId = order.data.payment_session_id;
+        const paymentSessionId = orderData.payment_session_id;
 
         const paymentData = {
             userId,
@@ -102,7 +112,7 @@ export async function createCashfreeOrder(options: OrderOptions) {
             status: 'pending',
             createdAt: serverTimestamp(),
             paymentDate: null,
-            cf_order_id: order.data.order_id,
+            cf_order_id: orderData.order_id,
             cf_payment_id: null,
             order_meta: {
                 customer_name: user.name,
@@ -116,30 +126,11 @@ export async function createCashfreeOrder(options: OrderOptions) {
         return {
             success: true,
             payment_session_id: paymentSessionId,
-            order_id: order.data.order_id,
+            order_id: orderData.order_id,
         };
 
     } catch (error: any) {
         console.error('Cashfree order creation error:', error);
-        
-        if (error.response?.data) {
-            const cfError = error.response.data;
-            console.error('Cashfree API Error Details:', cfError);
-            
-            if (cfError.type === 'authentication_error') {
-                 return { 
-                    success: false, 
-                    error: 'Payment service configuration error. Please contact support.' 
-                };
-            }
-             if (cfError.type === 'invalid_request_error') {
-                return { 
-                    success: false, 
-                    error: `Invalid request: ${cfError.message || 'Please check your payment details.'}` 
-                };
-            }
-        }
-        
         return { 
             success: false, 
             error: error.message || 'An unexpected error occurred while creating payment order.' 
@@ -160,28 +151,35 @@ export async function verifyPaymentAndUpdate(order_id: string) {
 
         console.log("Verifying payment for order:", order_id);
 
-        let orderDetails;
-        try {
-            orderDetails = await cashfree.PGGetOrderById("2023-08-01", order_id);
-        } catch (cfError: any) {
-            console.error("Cashfree API error while verifying:", cfError);
-            
-            if (cfError.response?.status === 404) {
-                return { 
+        const response = await fetch(`${CASHFREE_API_URL}/orders/${order_id}`, {
+             method: 'GET',
+             headers: {
+                'Content-Type': 'application/json',
+                'x-api-version': '2023-08-01',
+                'x-client-id': process.env.CASHFREE_APP_ID!,
+                'x-client-secret': process.env.CASHFREE_SECRET_KEY!,
+            },
+        });
+
+        const orderDetails = await response.json() as any;
+
+        if (!response.ok) {
+            console.error("Cashfree API error while verifying:", orderDetails);
+            if (response.status === 404) {
+                 return { 
                     success: false, 
                     status: 'ORDER_NOT_FOUND', 
                     message: 'Order not found with payment gateway.' 
                 };
             }
-            
-            return { 
+             return { 
                 success: false, 
                 status: 'GATEWAY_ERROR', 
                 message: 'Unable to verify payment with gateway. Please try again.' 
             };
         }
 
-        const paymentInfo = orderDetails.data;
+        const paymentInfo = orderDetails;
         console.log("Payment info from Cashfree:", { 
             order_id: paymentInfo.order_id, 
             order_status: paymentInfo.order_status 

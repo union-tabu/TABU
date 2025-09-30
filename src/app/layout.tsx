@@ -4,7 +4,6 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { AuthProvider } from '@/context/auth-context';
 import { Toaster as HotToaster } from 'react-hot-toast';
-import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'TABU',

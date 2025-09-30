@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { createCashfreeOrder } from '@/lib/cashfree';
 import { useAuth } from '@/context/auth-context';
+import { load } from '@cashfreepayments/cashfree-js';
 
-declare const Cashfree: any;
+let cashfree: any;
 
 interface PaymentButtonProps {
     plan: 'monthly' | 'yearly';
@@ -37,25 +38,25 @@ export function PaymentButton({
     const isHindi = lang === 'hi';
 
     useEffect(() => {
-        const script = document.createElement('script');
-        script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
-        script.onload = () => {
-            console.log('Cashfree SDK loaded.');
-            setIsCashfreeReady(true);
+        const initializeSDK = async () => {
+            try {
+                const isProduction = process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'production';
+                cashfree = await load({
+                    mode: isProduction ? "production" : "sandbox"
+                });
+                setIsCashfreeReady(true);
+                console.log('Cashfree SDK initialized.');
+            } catch (error) {
+                console.error("Cashfree SDK initialization error:", error);
+                toast({
+                    title: "Payment Gateway Error",
+                    description: "Could not initialize the payment gateway. Please refresh the page.",
+                    variant: 'destructive'
+                });
+            }
         };
-        script.onerror = () => {
-            console.error('Failed to load Cashfree SDK.');
-            toast({
-                title: "Payment Gateway Error",
-                description: "Could not load payment gateway. Please check your connection and try again.",
-                variant: 'destructive'
-            });
-        };
-        document.body.appendChild(script);
 
-        return () => {
-            document.body.removeChild(script);
-        }
+        initializeSDK();
     }, [toast]);
 
     const handlePayment = useCallback(async () => {
@@ -63,8 +64,8 @@ export function PaymentButton({
 
         if (!isCashfreeReady) {
             toast({
-                title: "Payment Gateway Loading",
-                description: "The payment gateway is still loading, please wait a moment.",
+                title: "Payment Gateway Not Ready",
+                description: "The payment gateway is still initializing. Please wait a moment.",
                 variant: 'destructive'
             });
             return;
@@ -113,36 +114,18 @@ export function PaymentButton({
                 return;
             }
 
-            const isProduction = process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'production';
-            const cashfree = new Cashfree({
-                mode: isProduction ? "production" : "sandbox"
-            });
-            
-            cashfree.checkout({
+            const checkoutOptions = {
                 paymentSessionId: orderResponse.payment_session_id,
-                returnUrl: `/${lang}/payments/status?order_id=${orderResponse.order_id}`,
-                onSuccess: (data: any) => {
-                     if (data && data.order && data.order.orderId) {
-                        router.push(`/${lang}/payments/status?order_id=${data.order.orderId}`);
-                    }
-                },
-                onFailure: (data: any) => {
-                     if (data && data.order && data.order.orderId) {
-                        router.push(`/${lang}/payments/status?order_id=${data.order.orderId}`);
-                    }
-                },
-                onPrimary: (data: any) => {
-                  console.log('primary', data);
-                },
-                onSecondary: (data: any) => {
-                  console.log('secondary', data);
-                },
-                onExit: (data: any) => {
-                  console.log('exit', data);
-                },
+                redirectTarget: "_self" // Use _self to handle redirects on the same page
+            };
+            
+            cashfree.checkout(checkoutOptions).then((result: any) => {
+                if(result.error){
+                    console.log("User has closed the popup or there is some payment error, Check for Payment Status", result.error);
+                     router.push(`/${lang}/payments/status?order_id=${orderResponse.order_id}`);
+                }
+                // The redirect to status page is handled by Cashfree using the return_url.
             });
-
-            setPaymentProcessing(false);
             
         } catch (error: any) {
             console.error('Payment initiation error:', error);
@@ -151,6 +134,7 @@ export function PaymentButton({
                 description: error.message || 'Could not launch the payment gateway.',
                 variant: 'destructive'
             });
+        } finally {
             setPaymentProcessing(false);
         }
     }, [
@@ -174,17 +158,14 @@ export function PaymentButton({
     const isDisabled = authLoading || paymentProcessing || !isCashfreeReady;
 
     return (
-        <>
-            <div id="payment-form"></div>
-            <Button
-                size="lg"
-                className={`w-full ${className}`}
-                variant={variant}
-                onClick={handlePayment}
-                disabled={isDisabled}
-            >
-                {getButtonText()}
-            </Button>
-        </>
+        <Button
+            size="lg"
+            className={`w-full ${className}`}
+            variant={variant}
+            onClick={handlePayment}
+            disabled={isDisabled}
+        >
+            {getButtonText()}
+        </Button>
     );
 }
