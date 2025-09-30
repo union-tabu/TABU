@@ -41,7 +41,7 @@ export default function PaymentsPageTe() {
                     const q = query(
                         collection(db, "payments"), 
                         where("userId", "==", firebaseUser.uid),
-                        orderBy("paymentDate", "desc")
+                        orderBy("createdAt", "desc")
                     );
                     const querySnapshot = await getDocs(q);
                     const paymentsData = querySnapshot.docs.map(doc => {
@@ -49,7 +49,8 @@ export default function PaymentsPageTe() {
                         return {
                             id: doc.id,
                             ...data,
-                            paymentDate: data.paymentDate?.toDate()
+                            paymentDate: data.paymentDate?.toDate(),
+                            createdAt: data.createdAt?.toDate()
                         } as Payment;
                     });
                     setPayments(paymentsData);
@@ -136,7 +137,7 @@ export default function PaymentsPageTe() {
                                              <p className="text-muted-foreground">
                                                 {payment.paymentDate 
                                                     ? format(payment.paymentDate, "MMMM dd, yyyy", { locale: te }) 
-                                                    : 'N/A'}
+                                                    : format(payment.createdAt, "MMMM dd, yyyy", { locale: te })}
                                             </p>
                                             <Badge variant={payment.status === 'success' ? 'default' : 'destructive'}
                                                    className={payment.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
@@ -174,7 +175,7 @@ export default function PaymentsPageTe() {
                                             <TableCell>
                                                 {payment.paymentDate 
                                                     ? format(payment.paymentDate, "MMMM dd, yyyy", { locale: te }) 
-                                                    : 'N/A'}
+                                                    : format(payment.createdAt, "MMMM dd, yyyy", { locale: te })}
                                             </TableCell>
                                             <TableCell>₹{payment.amount}</TableCell>
                                             <TableCell>
