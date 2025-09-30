@@ -38,8 +38,7 @@ export default function PaymentsPageHi() {
                 try {
                     const q = query(
                         collection(db, "payments"), 
-                        where("userId", "==", firebaseUser.uid),
-                        orderBy("createdAt", "desc")
+                        where("userId", "==", firebaseUser.uid)
                     );
                     const querySnapshot = await getDocs(q);
                     const paymentsData = querySnapshot.docs.map(doc => {
@@ -51,7 +50,9 @@ export default function PaymentsPageHi() {
                             createdAt: data.createdAt?.toDate()
                         } as Payment;
                     });
-                    setPayments(paymentsData);
+                     // Sort payments by creation date on the client side
+                    const sortedPayments = paymentsData.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+                    setPayments(sortedPayments);
                 } catch (error) {
                     console.error("Error fetching payments:", error);
                 } finally {
