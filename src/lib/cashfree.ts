@@ -66,7 +66,7 @@ export async function createCashfreeOrder(options: OrderOptions) {
         const orderId = `TABU_${userId.substring(0, 8)}_${Date.now()}`;
         
         const lang = 'en'; // Assuming english for now, can be passed in options if needed
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:9002');
         const returnUrl = `${baseUrl}/${lang}/payments/status?order_id={order_id}`;
 
         const request = {
