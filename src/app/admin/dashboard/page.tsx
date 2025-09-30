@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, orderBy, limit, where } from 'firebase/firestore';
 import type { UserData } from '@/types/user';
@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, subMonths, startOfMonth } from 'date-fns';
 import { Users, IndianRupee, Activity, Wallet } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 type UserWithId = UserData & { id: string };
 
@@ -37,8 +38,9 @@ export default function AdminDashboardPage() {
                 const totalUsers = usersSnapshot.size;
                 const activeSubscriptions = allUsers.filter(u => u.subscription?.status === 'active').length;
                 
-                // Fetch all payments for revenue calculation
-                const paymentsSnapshot = await getDocs(collection(db, 'payments'));
+                // Fetch all successful payments for revenue calculation
+                const paymentsQuery = query(collection(db, 'payments'), where('status', '==', 'success'));
+                const paymentsSnapshot = await getDocs(paymentsQuery);
                 const allPayments = paymentsSnapshot.docs.map(doc => {
                     const data = doc.data() as Payment;
                     // Ensure paymentDate is a Date object
@@ -48,13 +50,13 @@ export default function AdminDashboardPage() {
                     return data;
                 });
 
-                // Calculate monthly revenue
+                // Calculate monthly revenue from successful payments
                 const currentMonthStart = startOfMonth(new Date());
                 const monthlyRevenue = allPayments
                     .filter(p => p.paymentDate && new Date(p.paymentDate) >= currentMonthStart)
                     .reduce((acc, p) => acc + p.amount, 0);
                 
-                // Calculate total revenue
+                // Calculate total revenue from successful payments
                 const totalRevenue = allPayments.reduce((acc, p) => acc + p.amount, 0);
 
                 setStats({ totalUsers, activeSubscriptions, monthlyRevenue, totalRevenue });
@@ -100,6 +102,14 @@ export default function AdminDashboardPage() {
 
         fetchData();
     }, []);
+
+    const getInitials = (name: string | undefined) => {
+        if (!name) return '';
+        const nameParts = name.split(' ');
+        const firstInitial = nameParts[0] ? nameParts[0][0] : '';
+        const lastInitial = nameParts.length > 1 ? nameParts[nameParts.length - 1][0] : '';
+        return `${firstInitial}${lastInitial}`.toUpperCase();
+    }
 
     const renderStatCardSkeleton = (key: number) => (
         <Card key={key}>
@@ -151,7 +161,7 @@ export default function AdminDashboardPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold">₹{stats.totalRevenue.toLocaleString('en-IN')}</div>
-                                <p className="text-xs text-muted-foreground">All-time revenue collected</p>
+                                <p className="text-xs text-muted-foreground">From successful payments</p>
                             </CardContent>
                         </Card>
                         <Card>
@@ -172,7 +182,7 @@ export default function AdminDashboardPage() {
                 <Card className="lg:col-span-4">
                     <CardHeader>
                         <CardTitle>Revenue Overview</CardTitle>
-                        <CardDescription>Last 12 months</CardDescription>
+                        <CardDescription>Last 12 months from successful payments</CardDescription>
                     </CardHeader>
                     <CardContent className="pl-2">
                        {loading ? <Skeleton className="w-full h-[350px]" /> : (
@@ -225,7 +235,7 @@ export default function AdminDashboardPage() {
                     <CardContent>
                          {loading ? (
                              <div className="space-y-4">
-                                {Array.from({length: 5}).map((_,i) => <Skeleton key={i} className="h-10 w-full" />)}
+                                {Array.from({length: 5}).map((_,i) => <Skeleton key={i} className="h-12 w-full" />)}
                              </div>
                          ) : (
                              <Table>
@@ -233,15 +243,23 @@ export default function AdminDashboardPage() {
                                     <TableRow>
                                         <TableHead>Member</TableHead>
                                         <TableHead>Status</TableHead>
-                                        <TableHead>Date</TableHead>
+                                        <TableHead>Joined</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {recentUsers.map(user => (
                                         <TableRow key={user.id}>
                                             <TableCell>
-                                                <div className="font-medium">{user.fullName}</div>
-                                                <div className="text-sm text-muted-foreground">{user.phone}</div>
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar className="h-9 w-9">
+                                                        <AvatarImage src={user.photoURL} alt={user.fullName} />
+                                                        <AvatarFallback>{getInitials(user.fullName)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <div>
+                                                        <div className="font-medium">{user.fullName}</div>
+                                                        <div className="text-sm text-muted-foreground">{user.profession || user.phone}</div>
+                                                    </div>
+                                                </div>
                                             </TableCell>
                                             <TableCell>
                                                 <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
@@ -249,7 +267,7 @@ export default function AdminDashboardPage() {
                                                     {user.subscription?.status || 'pending'}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell>
+                                            <TableCell className="text-sm text-muted-foreground">
                                                 {user.createdAt?.seconds ? format(user.createdAt.seconds * 1000, 'dd MMM, yyyy') : 'N/A'}
                                             </TableCell>
                                         </TableRow>
