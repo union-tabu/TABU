@@ -9,8 +9,6 @@ import { createCashfreeOrder } from '@/lib/cashfree';
 import { useAuth } from '@/context/auth-context';
 import { load } from '@cashfreepayments/cashfree-js';
 
-let cashfree: any;
-
 interface PaymentButtonProps {
     plan: 'monthly' | 'yearly';
     amount: number;
@@ -32,7 +30,7 @@ export function PaymentButton({
     const { toast } = useToast();
     const { firebaseUser, userData, loading: authLoading } = useAuth();
     const [paymentProcessing, setPaymentProcessing] = useState(false);
-    const [isCashfreeReady, setIsCashfreeReady] = useState(false);
+    const [cashfree, setCashfree] = useState<any>(null);
 
     const isTelugu = lang === 'te';
     const isHindi = lang === 'hi';
@@ -41,10 +39,10 @@ export function PaymentButton({
         const initializeSDK = async () => {
             try {
                 const isProduction = process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'production';
-                cashfree = await load({
+                const sdk = await load({
                     mode: isProduction ? "production" : "sandbox"
                 });
-                setIsCashfreeReady(true);
+                setCashfree(sdk);
                 console.log('Cashfree SDK initialized.');
             } catch (error) {
                 console.error("Cashfree SDK initialization error:", error);
@@ -62,7 +60,7 @@ export function PaymentButton({
     const handlePayment = useCallback(async () => {
         if (paymentProcessing) return;
 
-        if (!isCashfreeReady) {
+        if (!cashfree) {
             toast({
                 title: "Payment Gateway Not Ready",
                 description: "The payment gateway is still initializing. Please wait a moment.",
@@ -116,7 +114,7 @@ export function PaymentButton({
 
             const checkoutOptions = {
                 paymentSessionId: orderResponse.payment_session_id,
-                redirectTarget: "_self" // Use _self to handle redirects on the same page
+                redirectTarget: "_self"
             };
             
             cashfree.checkout(checkoutOptions).then((result: any) => {
@@ -124,7 +122,6 @@ export function PaymentButton({
                     console.log("User has closed the popup or there is some payment error, Check for Payment Status", result.error);
                      router.push(`/${lang}/payments/status?order_id=${orderResponse.order_id}`);
                 }
-                // The redirect to status page is handled by Cashfree using the return_url.
             });
             
         } catch (error: any) {
@@ -138,7 +135,7 @@ export function PaymentButton({
             setPaymentProcessing(false);
         }
     }, [
-        paymentProcessing, isCashfreeReady, authLoading, firebaseUser, userData,
+        paymentProcessing, cashfree, authLoading, firebaseUser, userData,
         amount, plan, router, toast, lang
     ]);
     
@@ -149,13 +146,13 @@ export function PaymentButton({
         if (paymentProcessing) {
             return isHindi ? 'प्रतीक्षा करें...' : isTelugu ? 'వేచి ఉండండి...' : 'Please wait...';
         }
-        if (!isCashfreeReady) {
+        if (!cashfree) {
             return isHindi ? 'गेटवे लोड हो रहा है...' : isTelugu ? 'గేట్‌వే లోడ్ అవుతోంది...' : 'Loading Gateway...';
         }
         return buttonText;
     };
 
-    const isDisabled = authLoading || paymentProcessing || !isCashfreeReady;
+    const isDisabled = authLoading || paymentProcessing || !cashfree;
 
     return (
         <Button
