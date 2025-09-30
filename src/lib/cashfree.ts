@@ -6,16 +6,13 @@ import { z } from 'zod';
 import { db } from '@/lib/firebase';
 import { doc, updateDoc, addDoc, collection, serverTimestamp, query, where, getDocs, writeBatch, limit, getDoc } from "firebase/firestore";
 import { startOfMonth, addMonths, addYears } from 'date-fns';
-import crypto from 'crypto';
 
-// Initialize Cashfree with proper error handling
 if (!process.env.CASHFREE_APP_ID || !process.env.CASHFREE_SECRET_KEY) {
     throw new Error("Cashfree credentials (CASHFREE_APP_ID, CASHFREE_SECRET_KEY) are not set in environment variables.");
 }
 
 Cashfree.XClientId = process.env.CASHFREE_APP_ID!;
 Cashfree.XClientSecret = process.env.CASHFREE_SECRET_KEY!;
-
 const isProduction = process.env.CASHFREE_ENVIRONMENT === 'production';
 Cashfree.XEnvironment = isProduction 
     ? Cashfree.Environment.PRODUCTION 
@@ -65,7 +62,7 @@ export async function createCashfreeOrder(options: OrderOptions) {
 
         const orderId = `TABU_${userId.substring(0, 8)}_${Date.now()}`;
         
-        const lang = 'en'; // Assuming english for now, can be passed in options if needed
+        const lang = 'en'; // The return URL can be language-agnostic
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:9002');
         const returnUrl = `${baseUrl}/${lang}/payments/status?order_id={order_id}`;
 
@@ -101,9 +98,6 @@ export async function createCashfreeOrder(options: OrderOptions) {
         
         const paymentSessionId = order.data.payment_session_id;
 
-        const cashfreeBaseUrl = isProduction ? 'https://payments.cashfree.com/pg' : 'https://sandbox.cashfree.com/pg';
-        const paymentLink = `${cashfreeBaseUrl}/orders/sessions/${paymentSessionId}`;
-        
         const paymentData = {
             userId,
             plan,
@@ -124,7 +118,8 @@ export async function createCashfreeOrder(options: OrderOptions) {
 
         return {
             success: true,
-            payment_link: paymentLink,
+            payment_session_id: paymentSessionId,
+            order_id: order.data.order_id,
         };
 
     } catch (error: any) {
