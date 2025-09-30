@@ -102,19 +102,8 @@ export function PaymentButton({
             }
 
             const cashfree = new Cashfree(orderResponse.payment_session_id);
-            
-            const dropinConfig = {
-                components: [
-                    "order-details",
-                    "card",
-                    "upi",
-                    "netbanking",
-                ],
-                onFinalize: () => {
-                    // This function is called when the payment is completed, regardless of status.
-                    // The redirection will be handled by Cashfree based on the return_url.
-                    setPaymentProcessing(false);
-                },
+
+            cashfree.checkout({
                 style: {
                     theme: "light",
                     backgroundColor: "#FFFFFF",
@@ -122,11 +111,20 @@ export function PaymentButton({
                     fontFamily: "Lato",
                     fontSize: "14px",
                     errorColor: "#ff0000",
-                    theme: "light",
+                },
+                onSuccess: (data: any) => {
+                    // Redirect to your status page on success
+                     if (data && data.order && data.order.orderId) {
+                        router.push(`/${lang}/payments/status?order_id=${data.order.orderId}`);
+                    }
+                },
+                onFailure: (data: any) => {
+                    // Redirect to your status page on failure
+                     if (data && data.order && data.order.orderId) {
+                        router.push(`/${lang}/payments/status?order_id=${data.order.orderId}`);
+                    }
                 }
-            };
-            
-            cashfree.drop(document.getElementById("payment-form"), dropinConfig);
+            });
             
         } catch (error: any) {
             console.error('Payment initiation error:', error);
