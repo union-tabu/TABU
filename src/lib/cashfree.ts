@@ -47,7 +47,7 @@ export async function createCashfreeOrder(options: OrderOptions) {
         const lang = 'en';
         
         let baseUrl;
-        if (IS_PROD) {
+        if (process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'production') {
             // For production, always use HTTPS
             baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `https://${process.env.VERCEL_URL}`;
             if (!baseUrl.startsWith('https://')) {
