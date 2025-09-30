@@ -6,7 +6,9 @@ import { doc, updateDoc, addDoc, collection, serverTimestamp, query, where, getD
 import { startOfMonth, addMonths, addYears } from 'date-fns';
 import fetch from 'node-fetch';
 
-const CASHFREE_API_URL = process.env.CASHFREE_ENVIRONMENT === 'production' 
+const IS_PROD = process.env.NEXT_PUBLIC_CASHFREE_ENVIRONMENT === 'production';
+
+const CASHFREE_API_URL = IS_PROD
   ? 'https://api.cashfree.com/pg' 
   : 'https://sandbox.cashfree.com/pg';
 
@@ -45,15 +47,15 @@ export async function createCashfreeOrder(options: OrderOptions) {
         const lang = 'en';
         
         let baseUrl;
-        if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production') {
+        if (IS_PROD) {
+            // For production, always use HTTPS
             baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `https://${process.env.VERCEL_URL}`;
+            if (!baseUrl.startsWith('https://')) {
+                baseUrl = `https://${baseUrl.replace(/^https?:\/\//, '')}`;
+            }
         } else {
+            // For local development/sandbox
             baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
-        }
-        
-        // Ensure HTTPS for production return_url
-        if ((process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production') && baseUrl && !baseUrl.startsWith('https')) {
-             baseUrl = `https://${baseUrl.replace(/^https?:\/\//, '')}`;
         }
 
         const returnUrl = `${baseUrl}/${lang}/payments/status?order_id={order_id}`;
@@ -137,7 +139,7 @@ export async function verifyPaymentAndUpdate(order_id: string) {
         const response = await fetch(`${CASHFREE_API_URL}/orders/${order_id}/payments`, {
             method: 'GET',
             headers: {
-                'x-api-version': '2023-8-01',
+                'x-api-version': '2023-08-01',
                 'x-client-id': process.env.CASHFREE_APP_ID!,
                 'x-client-secret': process.env.CASHFREE_SECRET_KEY!,
             },
