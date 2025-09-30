@@ -43,10 +43,10 @@ export async function createCashfreeOrder(options: OrderOptions) {
         
         const lang = 'en';
         
-        let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
-        if (process.env.NODE_ENV === 'production') {
-            baseUrl = `https://${process.env.VERCEL_URL || 'tabu.vercel.app'}`;
-        }
+        const isProduction = !!process.env.VERCEL_URL;
+        const baseUrl = isProduction 
+            ? `https://${process.env.VERCEL_URL}` 
+            : 'http://localhost:9002';
         
         const returnUrl = `${baseUrl}/${lang}/payments/status?order_id={order_id}`;
 
@@ -77,7 +77,6 @@ export async function createCashfreeOrder(options: OrderOptions) {
                 'x-api-version': '2023-08-01',
                 'x-client-id': process.env.CASHFREE_APP_ID!,
                 'x-client-secret': process.env.CASHFREE_SECRET_KEY!,
-                'x-app-name': 'Telangana All Building Workers Union',
             },
             body: JSON.stringify(requestBody),
         });
