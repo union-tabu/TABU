@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -40,23 +39,21 @@ export function CashfreeMonthlyButton() {
           }
         `}
       </style>
-      <Link href="https://payments.cashfree.com/forms/monthly-plan" passHref legacyBehavior>
-        <a target="_parent" className="cf-link">
-          <div className="button-container">
-            <div>
-              <img src="https://cashfree-checkoutcartimages-prod.cashfree.com/tabu-logo-websitea98afucsrumg_prod.png" alt="logo" className="logo-container" />
+      <Link href="https://payments.cashfree.com/forms/monthly-plan" target="_parent" className="cf-link">
+        <div className="button-container">
+          <div>
+            <img src="https://cashfree-checkoutcartimages-prod.cashfree.com/tabu-logo-websitea98afucsrumg_prod.png" alt="logo" className="logo-container" />
+          </div>
+          <div className="text-container">
+            <div style={{ fontFamily: 'Arial', color: '#000000', marginBottom: '5px', fontSize: '14px' }}>
+              Choose Monthly
             </div>
-            <div className="text-container">
-              <div style={{ fontFamily: 'Arial', color: '#000000', marginBottom: '5px', fontSize: '14px' }}>
-                Choose Monthly
-              </div>
-              <div style={{ fontFamily: 'Arial', color: '#000000', fontSize: '10px' }}>
-                <span>Powered By Cashfree</span>
-                <img src="https://cashfreelogo.cashfree.com/cashfreepayments/logosvgs/Group_4355.svg" alt="logo" className="seconday-logo-container" />
-              </div>
+            <div style={{ fontFamily: 'Arial', color: '#000000', fontSize: '10px' }}>
+              <span>Powered By Cashfree</span>
+              <img src="https://cashfreelogo.cashfree.com/cashfreepayments/logosvgs/Group_4355.svg" alt="logo" className="seconday-logo-container" />
             </div>
           </div>
-        </a>
+        </div>
       </Link>
     </>
   );
