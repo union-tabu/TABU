@@ -11,6 +11,7 @@ import { ArrowLeft, CheckCircle, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { PaymentButton } from "@/components/payment-button";
 import { differenceInMonths, startOfMonth } from 'date-fns';
+import { CashfreeMonthlyButton } from "@/components/cashfree-monthly-button";
 
 type PlanType = 'monthly' | 'yearly';
 
@@ -190,12 +191,16 @@ function OrderSummaryContent() {
                 </CardContent>
                 
                 <CardFooter className="flex-col gap-4">
-                    <PaymentButton
-                        plan={plan}
-                        amount={amount}
-                        buttonText="Proceed to Payment"
-                        className="font-semibold"
-                    />
+                    {plan === 'monthly' ? (
+                        <CashfreeMonthlyButton />
+                    ) : (
+                        <PaymentButton
+                            plan={plan}
+                            amount={amount}
+                            buttonText="Proceed to Payment"
+                            className="font-semibold"
+                        />
+                    )}
                     
                     <Button variant="ghost" asChild className="text-sm text-muted-foreground">
                         <Link href="/en/subscribe">

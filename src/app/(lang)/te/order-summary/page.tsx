@@ -11,6 +11,7 @@ import { ArrowLeft, CheckCircle, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { PaymentButton } from "@/components/payment-button";
 import { differenceInMonths, startOfMonth } from 'date-fns';
+import { CashfreeMonthlyButton } from "@/components/cashfree-monthly-button";
 
 type PlanType = 'monthly' | 'yearly';
 
@@ -138,11 +139,15 @@ function OrderSummaryContentTe() {
                     </div>
                 </CardContent>
                 <CardFooter className="flex-col gap-4">
-                     <PaymentButton
-                        plan={plan}
-                        amount={amount}
-                        buttonText="చెల్లింపుకు కొనసాగండి"
-                     />
+                    {plan === 'monthly' ? (
+                        <CashfreeMonthlyButton />
+                    ) : (
+                         <PaymentButton
+                            plan={plan}
+                            amount={amount}
+                            buttonText="చెల్లింపుకు కొనసాగండి"
+                         />
+                    )}
                     <Button variant="ghost" asChild className="text-sm text-muted-foreground">
                         <Link href="/te/subscribe">
                             <ArrowLeft className="mr-2 h-4 w-4" />
