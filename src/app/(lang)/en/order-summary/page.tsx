@@ -12,6 +12,7 @@ import Link from "next/link";
 import { PaymentButton } from "@/components/payment-button";
 import { differenceInMonths, startOfMonth } from 'date-fns';
 import { CashfreeMonthlyButton } from "@/components/cashfree-monthly-button";
+import { CashfreeAnnualButton } from "@/components/cashfree-annual-button";
 
 type PlanType = 'monthly' | 'yearly';
 
@@ -194,12 +195,7 @@ function OrderSummaryContent() {
                     {plan === 'monthly' ? (
                         <CashfreeMonthlyButton />
                     ) : (
-                        <PaymentButton
-                            plan={plan}
-                            amount={amount}
-                            buttonText="Proceed to Payment"
-                            className="font-semibold"
-                        />
+                        <CashfreeAnnualButton />
                     )}
                     
                     <Button variant="ghost" asChild className="text-sm text-muted-foreground">
