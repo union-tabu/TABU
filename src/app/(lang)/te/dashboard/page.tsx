@@ -2,11 +2,11 @@
 "use client";
 
 import { useAuth } from "@/context/auth-context";
-import { SubscriptionStatusCard } from "@/components/dashboard/subscription-status-card";
 import { DashboardHeaderTe } from "@/components/layout/dashboard-header-te";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { UnionIdCardTe } from "@/components/dashboard/union-id-card-te";
 
 export default function DashboardPageTe() {
   const { userData, isAuthenticated, loading } = useAuth();
@@ -68,7 +68,9 @@ export default function DashboardPageTe() {
             )}
           </div>
           
-          <SubscriptionStatusCard isTelugu={true} />
+          <div className="max-w-md mx-auto">
+            <UnionIdCardTe />
+          </div>
 
         </div>
       </main>

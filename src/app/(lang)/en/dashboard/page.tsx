@@ -2,11 +2,11 @@
 "use client";
 
 import { useAuth } from "@/context/auth-context";
-import { SubscriptionStatusCard } from "@/components/dashboard/subscription-status-card";
 import { DashboardHeader } from "@/components/layout/dashboard-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { UnionIdCard } from "@/components/dashboard/union-id-card";
 
 export default function DashboardPage() {
   const { userData, isAuthenticated, loading } = useAuth();
@@ -68,7 +68,9 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <SubscriptionStatusCard />
+          <div className="max-w-md mx-auto">
+            <UnionIdCard />
+          </div>
 
         </div>
       </main>

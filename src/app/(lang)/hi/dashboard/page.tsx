@@ -2,11 +2,11 @@
 "use client";
 
 import { useAuth } from "@/context/auth-context";
-import { SubscriptionStatusCard } from "@/components/dashboard/subscription-status-card";
 import { DashboardHeaderHi } from "@/components/layout/dashboard-header-hi";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { UnionIdCardHi } from "@/components/dashboard/union-id-card-hi";
 
 export default function DashboardPageHi() {
   const { userData, isAuthenticated, loading } = useAuth();
@@ -68,7 +68,9 @@ export default function DashboardPageHi() {
             )}
           </div>
           
-          <SubscriptionStatusCard isHindi={true} />
+          <div className="max-w-md mx-auto">
+            <UnionIdCardHi />
+          </div>
 
         </div>
       </main>
