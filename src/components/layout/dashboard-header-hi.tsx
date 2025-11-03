@@ -106,7 +106,6 @@ export function DashboardHeaderHi() {
     { href: '/hi/dashboard', label: 'डैशबोर्ड' },
     { href: '/hi/union-members', label: 'यूनियन सदस्य' },
     { href: '/hi/payments', label: 'भुगतान' },
-    { href: '/hi/subscribe', label: 'सदस्यता' },
   ];
   
   const getInitials = (name: string | undefined) => {

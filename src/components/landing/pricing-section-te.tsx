@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,7 +30,7 @@ export function PricingSectionTe() {
               </CardContent>
               <CardFooter>
                  <Button asChild size="lg" className="w-full">
-                    <Link href="/te/subscribe">నెలవారీ ఎంచుకోండి</Link>
+                    <Link href="/te/payments">నెలవారీ ఎంచుకోండి</Link>
                 </Button>
               </CardFooter>
             </Card>
@@ -47,7 +46,7 @@ export function PricingSectionTe() {
               </CardContent>
               <CardFooter>
                  <Button asChild size="lg" className="w-full hover:bg-primary hover:text-primary-foreground" variant="outline">
-                    <Link href="/te/subscribe">వార్షిక ఎంచుకోండి</Link>
+                    <Link href="/te/payments">వార్షిక ఎంచుకోండి</Link>
                 </Button>
               </CardFooter>
             </Card>

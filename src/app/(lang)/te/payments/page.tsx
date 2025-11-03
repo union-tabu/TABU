@@ -31,6 +31,7 @@ const statusMap: { [key in PaymentStatus]: { text: string; className: string } }
   failed: { text: "చెల్లించబడలేదు", className: "bg-red-100 text-red-800" },
 };
 
+const UPI_LINK = "upi://pay?pa=8978268398@ybl&pn=Mohammed-Jani&am=10&cu=INR";
 
 export default function PaymentsPageTe() {
     const { userData, firebaseUser, loading: authLoading } = useAuth();
@@ -209,7 +210,7 @@ export default function PaymentsPageTe() {
                                         </div>
                                         {payment.status === 'failed' && (
                                             <Button asChild className="w-full">
-                                                <Link href="/te/subscribe">ఇప్పుడే చెల్లించండి</Link>
+                                                <a href={UPI_LINK}>ఇప్పుడే చెల్లించండి</a>
                                             </Button>
                                         )}
                                     </CardContent>
@@ -256,7 +257,7 @@ export default function PaymentsPageTe() {
                                             <TableCell>
                                                 {payment.status === 'failed' && (
                                                     <Button asChild size="sm">
-                                                        <Link href="/te/subscribe">ఇప్పుడే చెల్లించండి</Link>
+                                                         <a href={UPI_LINK}>ఇప్పుడే చెల్లించండి</a>
                                                     </Button>
                                                 )}
                                             </TableCell>

@@ -106,7 +106,6 @@ export function DashboardHeader() {
     { href: '/en/dashboard', label: 'Dashboard' },
     { href: '/en/union-members', label: 'Union Members' },
     { href: '/en/payments', label: 'Payments' },
-    { href: '/en/subscribe', label: 'Subscribe' },
   ];
   
   const getInitials = (name: string | undefined) => {

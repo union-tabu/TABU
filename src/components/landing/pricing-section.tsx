@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,7 +30,7 @@ export function PricingSection() {
               </CardContent>
               <CardFooter>
                  <Button asChild size="lg" className="w-full">
-                    <Link href="/en/subscribe">Choose Monthly</Link>
+                    <Link href="/en/payments">Choose Monthly</Link>
                 </Button>
               </CardFooter>
             </Card>
@@ -47,7 +46,7 @@ export function PricingSection() {
               </CardContent>
               <CardFooter>
                  <Button asChild size="lg" className="w-full hover:bg-primary hover:text-primary-foreground" variant="outline">
-                    <Link href="/en/subscribe">Choose Annual</Link>
+                    <Link href="/en/payments">Choose Annual</Link>
                 </Button>
               </CardFooter>
             </Card>

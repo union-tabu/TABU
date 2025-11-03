@@ -106,7 +106,6 @@ export function DashboardHeaderTe() {
     { href: '/te/dashboard', label: 'డాష్‌బోర్డ్' },
     { href: '/te/union-members', label: 'యూనియన్ సభ్యులు' },
     { href: '/te/payments', label: 'చెల్లింపులు' },
-    { href: '/te/subscribe', label: 'సభ్యత్వం' },
   ];
   
   const getInitials = (name: string | undefined) => {

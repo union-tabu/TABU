@@ -26,6 +26,8 @@ const statusMap: { [key in PaymentStatus]: { text: string; className: string } }
   failed: { text: "Not Paid", className: "bg-red-100 text-red-800" },
 };
 
+const UPI_LINK = "upi://pay?pa=8978268398@ybl&pn=Mohammed-Jani&am=10&cu=INR";
+
 export default function PaymentsPage() {
     const { userData, firebaseUser, loading: authLoading } = useAuth();
     const [payments, setPayments] = useState<Payment[]>([]);
@@ -205,7 +207,7 @@ export default function PaymentsPage() {
                                         </div>
                                         {payment.status === 'failed' && (
                                             <Button asChild className="w-full">
-                                                <Link href="/en/subscribe">Pay Now</Link>
+                                                <a href={UPI_LINK}>Pay Now</a>
                                             </Button>
                                         )}
                                     </CardContent>
@@ -252,7 +254,7 @@ export default function PaymentsPage() {
                                             <TableCell>
                                                 {payment.status === 'failed' && (
                                                     <Button asChild size="sm">
-                                                        <Link href="/en/subscribe">Pay Now</Link>
+                                                        <a href={UPI_LINK}>Pay Now</a>
                                                     </Button>
                                                 )}
                                             </TableCell>

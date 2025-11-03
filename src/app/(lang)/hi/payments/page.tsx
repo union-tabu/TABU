@@ -30,6 +30,7 @@ const statusMap: { [key in PaymentStatus]: { text: string; className: string } }
   failed: { text: "भुगतान नहीं किया गया", className: "bg-red-100 text-red-800" },
 };
 
+const UPI_LINK = "upi://pay?pa=8978268398@ybl&pn=Mohammed-Jani&am=10&cu=INR";
 
 export default function PaymentsPageHi() {
     const { userData, firebaseUser, loading: authLoading } = useAuth();
@@ -208,7 +209,7 @@ export default function PaymentsPageHi() {
                                         </div>
                                          {payment.status === 'failed' && (
                                             <Button asChild className="w-full">
-                                                <Link href="/hi/subscribe">अभी भुगतान करें</Link>
+                                                <a href={UPI_LINK}>अभी भुगतान करें</a>
                                             </Button>
                                         )}
                                     </CardContent>
@@ -255,7 +256,7 @@ export default function PaymentsPageHi() {
                                             <TableCell>
                                                 {payment.status === 'failed' && (
                                                     <Button asChild size="sm">
-                                                        <Link href="/hi/subscribe">अभी भुगतान करें</Link>
+                                                        <a href={UPI_LINK}>अभी भुगतान करें</a>
                                                     </Button>
                                                 )}
                                             </TableCell>
