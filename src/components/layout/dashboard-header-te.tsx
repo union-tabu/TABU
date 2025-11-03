@@ -104,8 +104,8 @@ export function DashboardHeaderTe() {
 
   const navItems = [
     { href: '/te/dashboard', label: 'డాష్‌బోర్డ్' },
-    { href: '/te/union-members', label: 'యూనియన్ సభ్యులు' },
     { href: '/te/payments', label: 'చెల్లింపులు' },
+    { href: '/te/union-members', label: 'యూనియన్ సభ్యులు' },
   ];
   
   const getInitials = (name: string | undefined) => {

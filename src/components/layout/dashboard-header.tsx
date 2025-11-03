@@ -104,8 +104,8 @@ export function DashboardHeader() {
 
   const navItems = [
     { href: '/en/dashboard', label: 'Dashboard' },
-    { href: '/en/union-members', label: 'Union Members' },
     { href: '/en/payments', label: 'Payments' },
+    { href: '/en/union-members', label: 'Union Members' },
   ];
   
   const getInitials = (name: string | undefined) => {

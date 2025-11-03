@@ -104,8 +104,8 @@ export function DashboardHeaderHi() {
 
   const navItems = [
     { href: '/hi/dashboard', label: 'डैशबोर्ड' },
-    { href: '/hi/union-members', label: 'यूनियन सदस्य' },
     { href: '/hi/payments', label: 'भुगतान' },
+    { href: '/hi/union-members', label: 'यूनियन सदस्य' },
   ];
   
   const getInitials = (name: string | undefined) => {
