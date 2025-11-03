@@ -4,7 +4,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,6 @@ import { format, startOfMonth, addMonths, isBefore } from "date-fns";
 import type { Payment } from '@/types/payment';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Link from 'next/link';
 
 const PAYMENTS_PER_PAGE = 25;
 
@@ -109,6 +108,14 @@ export default function PaymentsPage() {
 
         fetchPayments();
     }, [firebaseUser, authLoading, userData]);
+    
+    const handleMarkPaid = (paymentId: string) => {
+        setPayments(prevPayments => 
+            prevPayments.map(p => 
+                p.id === paymentId ? { ...p, status: 'pending' } : p
+            )
+        );
+    };
 
     const filteredPayments = useMemo(() => {
         if (filterStatus === 'all') {
@@ -206,9 +213,14 @@ export default function PaymentsPage() {
                                             </Badge>
                                         </div>
                                         {payment.status === 'failed' && (
-                                            <Button asChild className="w-full">
-                                                <a href={UPI_LINK}>Pay Now</a>
-                                            </Button>
+                                            <div className="flex gap-2">
+                                                <Button asChild className="flex-1">
+                                                    <a href={UPI_LINK}>Pay</a>
+                                                </Button>
+                                                <Button variant="secondary" className="flex-1" onClick={() => handleMarkPaid(payment.id)}>
+                                                    Mark Paid
+                                                </Button>
+                                            </div>
                                         )}
                                     </CardContent>
                                 </Card>
@@ -253,9 +265,14 @@ export default function PaymentsPage() {
                                             </TableCell>
                                             <TableCell>
                                                 {payment.status === 'failed' && (
-                                                    <Button asChild size="sm">
-                                                        <a href={UPI_LINK}>Pay Now</a>
-                                                    </Button>
+                                                    <div className="flex gap-2">
+                                                        <Button asChild size="sm">
+                                                            <a href={UPI_LINK}>Pay</a>
+                                                        </Button>
+                                                        <Button variant="secondary" size="sm" onClick={() => handleMarkPaid(payment.id)}>
+                                                            Mark Paid
+                                                        </Button>
+                                                    </div>
                                                 )}
                                             </TableCell>
                                         </TableRow>
@@ -288,3 +305,5 @@ export default function PaymentsPage() {
         </div>
     );
 }
+
+    
