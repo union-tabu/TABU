@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
@@ -13,26 +13,31 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { format } from "date-fns";
 import { hi } from 'date-fns/locale';
 import type { Payment } from '@/types/payment';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from 'next/link';
 
 const PAYMENTS_PER_PAGE = 25;
+type PaymentStatus = 'success' | 'pending' | 'failed';
+
+const planMap: { [key: string]: string } = {
+    'monthly': 'मासिक',
+    'yearly': 'वार्षिक'
+};
+
+const statusMap: { [key in PaymentStatus]: { text: string; className: string } } = {
+  success: { text: "भुगतान किया गया", className: "bg-green-100 text-green-800" },
+  pending: { text: "लंबित", className: "bg-amber-100 text-amber-800" },
+  failed: { text: "भुगतान नहीं किया गया", className: "bg-red-100 text-red-800" },
+};
+
 
 export default function PaymentsPageHi() {
     const { firebaseUser, loading: authLoading } = useAuth();
     const [payments, setPayments] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
+    const [filterStatus, setFilterStatus] = useState<PaymentStatus | 'all'>('all');
     
-    const planMap: { [key: string]: string } = {
-        'monthly': 'मासिक',
-        'yearly': 'वार्षिक'
-    };
-    
-    const statusMap: { [key: string]: string } = {
-        'success': 'सफल',
-        'failed': 'विफल',
-        'pending': 'लंबित'
-    };
-
     useEffect(() => {
         const fetchPayments = async () => {
             if (firebaseUser) {
@@ -51,7 +56,6 @@ export default function PaymentsPageHi() {
                             createdAt: data.createdAt?.toDate()
                         } as Payment;
                     });
-                     // Sort payments by creation date on the client side
                     const sortedPayments = paymentsData.sort((a, b) => {
                         if (!a.createdAt) return 1;
                         if (!b.createdAt) return -1;
@@ -71,8 +75,15 @@ export default function PaymentsPageHi() {
         fetchPayments();
     }, [firebaseUser, authLoading]);
 
-    const totalPages = Math.ceil(payments.length / PAYMENTS_PER_PAGE);
-    const paginatedPayments = payments.slice(
+    const filteredPayments = useMemo(() => {
+        if (filterStatus === 'all') {
+            return payments;
+        }
+        return payments.filter(p => p.status === filterStatus);
+    }, [payments, filterStatus]);
+
+    const totalPages = Math.ceil(filteredPayments.length / PAYMENTS_PER_PAGE);
+    const paginatedPayments = filteredPayments.slice(
         (currentPage - 1) * PAYMENTS_PER_PAGE,
         currentPage * PAYMENTS_PER_PAGE
     );
@@ -95,22 +106,24 @@ export default function PaymentsPageHi() {
             <TableCell><Skeleton className="h-5 w-24" /></TableCell>
             <TableCell><Skeleton className="h-5 w-16" /></TableCell>
             <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+            <TableCell><Skeleton className="h-9 w-24" /></TableCell>
         </TableRow>
     );
 
     const renderMobileSkeleton = (key: number) => (
          <Card key={key} className="mb-4">
-            <CardHeader>
+            <CardHeader className='p-4'>
                 <div className="flex justify-between items-center">
                     <Skeleton className="h-6 w-1/4" />
                     <Skeleton className="h-6 w-1/5" />
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 pt-0 space-y-3">
                 <div className="flex justify-between items-center">
                     <Skeleton className="h-5 w-1/3" />
                     <Skeleton className="h-6 w-1/4 rounded-full" />
                 </div>
+                 <Skeleton className="h-9 w-full" />
             </CardContent>
         </Card>
     );
@@ -123,6 +136,15 @@ export default function PaymentsPageHi() {
                     <CardDescription>संघ के साथ अपने लेनदेन का इतिहास देखें।</CardDescription>
                 </CardHeader>
                 <CardContent>
+                     <Tabs defaultValue="all" onValueChange={(value) => setFilterStatus(value as any)} className="w-full mb-4">
+                        <TabsList>
+                            <TabsTrigger value="all">सभी</TabsTrigger>
+                            <TabsTrigger value="success">भुगतान किया गया</TabsTrigger>
+                            <TabsTrigger value="pending">लंबित</TabsTrigger>
+                            <TabsTrigger value="failed">भुगतान नहीं किया गया</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+
                      {/* Mobile Card View */}
                     <div className="md:hidden">
                          {loading ? (
@@ -136,7 +158,7 @@ export default function PaymentsPageHi() {
                                             <p className="font-bold text-lg">₹{payment.amount}</p>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="p-4 pt-0">
+                                    <CardContent className="p-4 pt-0 space-y-4">
                                         <div className="flex justify-between items-center text-sm">
                                              <p className="text-muted-foreground">
                                                 {payment.paymentDate 
@@ -144,16 +166,21 @@ export default function PaymentsPageHi() {
                                                     : (payment.createdAt ? format(payment.createdAt, "MMMM dd, yyyy", { locale: hi }) : 'N/A')}
                                             </p>
                                             <Badge variant={payment.status === 'success' ? 'default' : 'destructive'}
-                                                   className={payment.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                                                {statusMap[payment.status] || payment.status}
+                                                   className={statusMap[payment.status].className}>
+                                                {statusMap[payment.status].text}
                                             </Badge>
                                         </div>
+                                         {payment.status === 'failed' && (
+                                            <Button asChild className="w-full">
+                                                <Link href="/hi/subscribe">अभी भुगतान करें</Link>
+                                            </Button>
+                                        )}
                                     </CardContent>
                                 </Card>
                             ))
                         ) : (
                             <div className="text-center py-8 text-muted-foreground">
-                                कोई भुगतान इतिहास नहीं मिला।
+                                इस फ़िल्टर के लिए कोई भुगतान इतिहास नहीं मिला।
                             </div>
                         )}
                     </div>
@@ -167,6 +194,7 @@ export default function PaymentsPageHi() {
                                     <TableHead>दिनांक</TableHead>
                                     <TableHead>राशि</TableHead>
                                     <TableHead>स्थिति</TableHead>
+                                    <TableHead>कार्रवाई</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -184,16 +212,23 @@ export default function PaymentsPageHi() {
                                             <TableCell>₹{payment.amount}</TableCell>
                                             <TableCell>
                                                 <Badge variant={payment.status === 'success' ? 'default' : 'destructive'}
-                                                    className={payment.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                                                    {statusMap[payment.status] || payment.status}
+                                                    className={statusMap[payment.status].className}>
+                                                    {statusMap[payment.status].text}
                                                 </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                {payment.status === 'failed' && (
+                                                    <Button asChild size="sm">
+                                                        <Link href="/hi/subscribe">अभी भुगतान करें</Link>
+                                                    </Button>
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="text-center">
-                                            कोई भुगतान इतिहास नहीं मिला।
+                                        <TableCell colSpan={5} className="text-center py-8">
+                                            इस फ़िल्टर के लिए कोई भुगतान इतिहास नहीं मिला।
                                         </TableCell>
                                     </TableRow>
                                 )}

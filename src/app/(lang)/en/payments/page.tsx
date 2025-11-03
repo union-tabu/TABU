@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
@@ -13,14 +13,25 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { format } from "date-fns";
 import type { Payment } from '@/types/payment';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from 'next/link';
 
 const PAYMENTS_PER_PAGE = 25;
+
+type PaymentStatus = 'success' | 'pending' | 'failed';
+
+const statusMap: { [key in PaymentStatus]: { text: string; className: string } } = {
+  success: { text: "Paid", className: "bg-green-100 text-green-800" },
+  pending: { text: "Pending", className: "bg-amber-100 text-amber-800" },
+  failed: { text: "Not Paid", className: "bg-red-100 text-red-800" },
+};
 
 export default function PaymentsPage() {
     const { firebaseUser, loading: authLoading } = useAuth();
     const [payments, setPayments] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
+    const [filterStatus, setFilterStatus] = useState<PaymentStatus | 'all'>('all');
     const isMobile = useIsMobile();
 
     useEffect(() => {
@@ -37,12 +48,10 @@ export default function PaymentsPage() {
                         return {
                             id: doc.id,
                             ...data,
-                            // Convert Firestore Timestamp to JS Date
                             paymentDate: data.paymentDate?.toDate(),
                             createdAt: data.createdAt?.toDate()
                         } as Payment;
                     });
-                    // Sort payments by creation date on the client side
                     const sortedPayments = paymentsData.sort((a, b) => {
                         if (!a.createdAt) return 1;
                         if (!b.createdAt) return -1;
@@ -62,8 +71,15 @@ export default function PaymentsPage() {
         fetchPayments();
     }, [firebaseUser, authLoading]);
 
-    const totalPages = Math.ceil(payments.length / PAYMENTS_PER_PAGE);
-    const paginatedPayments = payments.slice(
+    const filteredPayments = useMemo(() => {
+        if (filterStatus === 'all') {
+            return payments;
+        }
+        return payments.filter(p => p.status === filterStatus);
+    }, [payments, filterStatus]);
+
+    const totalPages = Math.ceil(filteredPayments.length / PAYMENTS_PER_PAGE);
+    const paginatedPayments = filteredPayments.slice(
         (currentPage - 1) * PAYMENTS_PER_PAGE,
         currentPage * PAYMENTS_PER_PAGE
     );
@@ -86,22 +102,24 @@ export default function PaymentsPage() {
             <TableCell><Skeleton className="h-5 w-24" /></TableCell>
             <TableCell><Skeleton className="h-5 w-16" /></TableCell>
             <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+            <TableCell><Skeleton className="h-9 w-24" /></TableCell>
         </TableRow>
     );
 
     const renderMobileSkeleton = (key: number) => (
          <Card key={key} className="mb-4">
-            <CardHeader>
+            <CardHeader className='p-4'>
                 <div className="flex justify-between items-center">
                     <Skeleton className="h-6 w-1/4" />
                     <Skeleton className="h-6 w-1/5" />
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 pt-0 space-y-3">
                 <div className="flex justify-between items-center">
                     <Skeleton className="h-5 w-1/3" />
                     <Skeleton className="h-6 w-1/4 rounded-full" />
                 </div>
+                <Skeleton className="h-9 w-full" />
             </CardContent>
         </Card>
     );
@@ -114,6 +132,15 @@ export default function PaymentsPage() {
                     <CardDescription>View your transaction history with the union.</CardDescription>
                 </CardHeader>
                 <CardContent>
+                    <Tabs defaultValue="all" onValueChange={(value) => setFilterStatus(value as any)} className="w-full mb-4">
+                        <TabsList>
+                            <TabsTrigger value="all">All</TabsTrigger>
+                            <TabsTrigger value="success">Paid</TabsTrigger>
+                            <TabsTrigger value="pending">Pending</TabsTrigger>
+                            <TabsTrigger value="failed">Not Paid</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+
                      {/* Mobile Card View */}
                     <div className="md:hidden">
                          {loading ? (
@@ -127,7 +154,7 @@ export default function PaymentsPage() {
                                             <p className="font-bold text-lg">₹{payment.amount}</p>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="p-4 pt-0">
+                                    <CardContent className="p-4 pt-0 space-y-4">
                                         <div className="flex justify-between items-center text-sm">
                                              <p className="text-muted-foreground">
                                                 {payment.paymentDate 
@@ -135,16 +162,21 @@ export default function PaymentsPage() {
                                                     : (payment.createdAt ? format(payment.createdAt, "MMMM dd, yyyy") : 'N/A')}
                                             </p>
                                             <Badge variant={payment.status === 'success' ? 'default' : 'destructive'} 
-                                                   className={payment.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                                                {payment.status}
+                                                   className={statusMap[payment.status].className}>
+                                                {statusMap[payment.status].text}
                                             </Badge>
                                         </div>
+                                        {payment.status === 'failed' && (
+                                            <Button asChild className="w-full">
+                                                <Link href="/en/subscribe">Pay Now</Link>
+                                            </Button>
+                                        )}
                                     </CardContent>
                                 </Card>
                             ))
                         ) : (
                             <div className="text-center py-8 text-muted-foreground">
-                                No payment history found.
+                                No payment history found for this filter.
                             </div>
                         )}
                     </div>
@@ -158,6 +190,7 @@ export default function PaymentsPage() {
                                     <TableHead>Date</TableHead>
                                     <TableHead>Amount</TableHead>
                                     <TableHead>Status</TableHead>
+                                    <TableHead>Action</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -175,16 +208,23 @@ export default function PaymentsPage() {
                                             <TableCell>₹{payment.amount}</TableCell>
                                             <TableCell>
                                                 <Badge variant={payment.status === 'success' ? 'default' : 'destructive'} 
-                                                    className={payment.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                                                    {payment.status}
+                                                    className={statusMap[payment.status].className}>
+                                                    {statusMap[payment.status].text}
                                                 </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                {payment.status === 'failed' && (
+                                                    <Button asChild size="sm">
+                                                        <Link href="/en/subscribe">Pay Now</Link>
+                                                    </Button>
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="text-center">
-                                            No payment history found.
+                                        <TableCell colSpan={5} className="text-center py-8">
+                                            No payment history found for this filter.
                                         </TableCell>
                                     </TableRow>
                                 )}

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/context/auth-context';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
@@ -14,27 +14,32 @@ import { format } from "date-fns";
 import { te } from 'date-fns/locale';
 import type { Payment } from '@/types/payment';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import Link from 'next/link';
 
 const PAYMENTS_PER_PAGE = 25;
+type PaymentStatus = 'success' | 'pending' | 'failed';
+
+const planMap: { [key: string]: string } = {
+    'monthly': 'నెలవారీ',
+    'yearly': 'వార్షిక'
+};
+
+const statusMap: { [key in PaymentStatus]: { text: string; className: string } } = {
+  success: { text: "చెల్లించబడింది", className: "bg-green-100 text-green-800" },
+  pending: { text: "పెండింగ్‌లో ఉంది", className: "bg-amber-100 text-amber-800" },
+  failed: { text: "చెల్లించబడలేదు", className: "bg-red-100 text-red-800" },
+};
+
 
 export default function PaymentsPageTe() {
     const { firebaseUser, loading: authLoading } = useAuth();
     const [payments, setPayments] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
+    const [filterStatus, setFilterStatus] = useState<PaymentStatus | 'all'>('all');
     const isMobile = useIsMobile();
     
-    const planMap: { [key: string]: string } = {
-        'monthly': 'నెలవారీ',
-        'yearly': 'వార్షిక'
-    };
-    
-    const statusMap: { [key: string]: string } = {
-        'success': 'విజయం',
-        'failed': 'విఫలమైంది',
-        'pending': 'పెండింగ్‌లో ఉంది'
-    };
-
     useEffect(() => {
         const fetchPayments = async () => {
             if (firebaseUser) {
@@ -53,7 +58,6 @@ export default function PaymentsPageTe() {
                             createdAt: data.createdAt?.toDate()
                         } as Payment;
                     });
-                     // Sort payments by creation date on the client side
                     const sortedPayments = paymentsData.sort((a, b) => {
                         if (!a.createdAt) return 1;
                         if (!b.createdAt) return -1;
@@ -73,8 +77,15 @@ export default function PaymentsPageTe() {
         fetchPayments();
     }, [firebaseUser, authLoading]);
 
-    const totalPages = Math.ceil(payments.length / PAYMENTS_PER_PAGE);
-    const paginatedPayments = payments.slice(
+    const filteredPayments = useMemo(() => {
+        if (filterStatus === 'all') {
+            return payments;
+        }
+        return payments.filter(p => p.status === filterStatus);
+    }, [payments, filterStatus]);
+
+    const totalPages = Math.ceil(filteredPayments.length / PAYMENTS_PER_PAGE);
+    const paginatedPayments = filteredPayments.slice(
         (currentPage - 1) * PAYMENTS_PER_PAGE,
         currentPage * PAYMENTS_PER_PAGE
     );
@@ -97,22 +108,24 @@ export default function PaymentsPageTe() {
             <TableCell><Skeleton className="h-5 w-24" /></TableCell>
             <TableCell><Skeleton className="h-5 w-16" /></TableCell>
             <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+            <TableCell><Skeleton className="h-9 w-24" /></TableCell>
         </TableRow>
     );
 
     const renderMobileSkeleton = (key: number) => (
          <Card key={key} className="mb-4">
-            <CardHeader>
+            <CardHeader className='p-4'>
                 <div className="flex justify-between items-center">
                     <Skeleton className="h-6 w-1/4" />
                     <Skeleton className="h-6 w-1/5" />
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 pt-0 space-y-3">
                 <div className="flex justify-between items-center">
                     <Skeleton className="h-5 w-1/3" />
                     <Skeleton className="h-6 w-1/4 rounded-full" />
                 </div>
+                 <Skeleton className="h-9 w-full" />
             </CardContent>
         </Card>
     );
@@ -125,6 +138,14 @@ export default function PaymentsPageTe() {
                     <CardDescription>యూనియన్‌తో మీ లావాదేవీల చరిత్రను వీక్షించండి.</CardDescription>
                 </CardHeader>
                 <CardContent>
+                    <Tabs defaultValue="all" onValueChange={(value) => setFilterStatus(value as any)} className="w-full mb-4">
+                        <TabsList>
+                            <TabsTrigger value="all">అన్నీ</TabsTrigger>
+                            <TabsTrigger value="success">చెల్లించబడింది</TabsTrigger>
+                            <TabsTrigger value="pending">పెండింగ్‌లో ఉంది</TabsTrigger>
+                            <TabsTrigger value="failed">చెల్లించబడలేదు</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
                      {/* Mobile Card View */}
                     <div className="md:hidden">
                          {loading ? (
@@ -138,7 +159,7 @@ export default function PaymentsPageTe() {
                                             <p className="font-bold text-lg">₹{payment.amount}</p>
                                         </div>
                                     </CardHeader>
-                                    <CardContent className="p-4 pt-0">
+                                    <CardContent className="p-4 pt-0 space-y-4">
                                         <div className="flex justify-between items-center text-sm">
                                              <p className="text-muted-foreground">
                                                 {payment.paymentDate 
@@ -146,16 +167,21 @@ export default function PaymentsPageTe() {
                                                     : (payment.createdAt ? format(payment.createdAt, "MMMM dd, yyyy", { locale: te }) : 'N/A')}
                                             </p>
                                             <Badge variant={payment.status === 'success' ? 'default' : 'destructive'}
-                                                   className={payment.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                                                {statusMap[payment.status] || payment.status}
+                                                   className={statusMap[payment.status].className}>
+                                                {statusMap[payment.status].text}
                                             </Badge>
                                         </div>
+                                        {payment.status === 'failed' && (
+                                            <Button asChild className="w-full">
+                                                <Link href="/te/subscribe">ఇప్పుడే చెల్లించండి</Link>
+                                            </Button>
+                                        )}
                                     </CardContent>
                                 </Card>
                             ))
                         ) : (
                             <div className="text-center py-8 text-muted-foreground">
-                                చెల్లింపుల చరిత్ర కనుగొనబడలేదు.
+                                ఈ ఫిల్టర్ కోసం చెల్లింపు చరిత్ర కనుగొనబడలేదు.
                             </div>
                         )}
                     </div>
@@ -169,6 +195,7 @@ export default function PaymentsPageTe() {
                                     <TableHead>తేదీ</TableHead>
                                     <TableHead>మొత్తం</TableHead>
                                     <TableHead>స్థితి</TableHead>
+                                    <TableHead>చర్య</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -186,16 +213,23 @@ export default function PaymentsPageTe() {
                                             <TableCell>₹{payment.amount}</TableCell>
                                             <TableCell>
                                                 <Badge variant={payment.status === 'success' ? 'default' : 'destructive'}
-                                                    className={payment.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                                                    {statusMap[payment.status] || payment.status}
+                                                    className={statusMap[payment.status].className}>
+                                                    {statusMap[payment.status].text}
                                                 </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                {payment.status === 'failed' && (
+                                                    <Button asChild size="sm">
+                                                        <Link href="/te/subscribe">ఇప్పుడే చెల్లించండి</Link>
+                                                    </Button>
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="text-center">
-                                            చెల్లింపుల చరిత్ర కనుగొనబడలేదు.
+                                        <TableCell colSpan={5} className="text-center py-8">
+                                            ఈ ఫిల్టర్ కోసం చెల్లింపు చరిత్ర కనుగొనబడలేదు.
                                         </TableCell>
                                     </TableRow>
                                 )}
