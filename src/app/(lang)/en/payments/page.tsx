@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -42,7 +43,11 @@ export default function PaymentsPage() {
                         } as Payment;
                     });
                     // Sort payments by creation date on the client side
-                    const sortedPayments = paymentsData.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+                    const sortedPayments = paymentsData.sort((a, b) => {
+                        if (!a.createdAt) return 1;
+                        if (!b.createdAt) return -1;
+                        return b.createdAt.getTime() - a.createdAt.getTime();
+                    });
                     setPayments(sortedPayments);
                 } catch (error) {
                     console.error("Error fetching payments:", error);
@@ -127,7 +132,7 @@ export default function PaymentsPage() {
                                              <p className="text-muted-foreground">
                                                 {payment.paymentDate 
                                                     ? format(payment.paymentDate, "MMMM dd, yyyy") 
-                                                    : format(payment.createdAt, "MMMM dd, yyyy")}
+                                                    : (payment.createdAt ? format(payment.createdAt, "MMMM dd, yyyy") : 'N/A')}
                                             </p>
                                             <Badge variant={payment.status === 'success' ? 'default' : 'destructive'} 
                                                    className={payment.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
@@ -165,7 +170,7 @@ export default function PaymentsPage() {
                                             <TableCell>
                                                 {payment.paymentDate 
                                                     ? format(payment.paymentDate, "MMMM dd, yyyy") 
-                                                    : format(payment.createdAt, "MMMM dd, yyyy")}
+                                                    : (payment.createdAt ? format(payment.createdAt, "MMMM dd, yyyy") : 'N/A')}
                                             </TableCell>
                                             <TableCell>₹{payment.amount}</TableCell>
                                             <TableCell>
