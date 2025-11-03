@@ -9,8 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, CheckCircle, AlertTriangle } from "lucide-react";
 import Link from "next/link";
-import { PaymentButton } from "@/components/payment-button";
-import { differenceInMonths, startOfMonth } from 'date-fns';
 import { CashfreeMonthlyButton } from "@/components/cashfree-monthly-button";
 import { CashfreeAnnualButton } from "@/components/cashfree-annual-button";
 
@@ -18,10 +16,7 @@ type PlanType = 'monthly' | 'yearly';
 
 interface PlanDetails {
     plan: PlanType;
-    basePrice: number;
-    penalty: number;
     amount: number;
-    isLapsed: boolean;
 }
 
 function OrderSummaryContentTe() {
@@ -33,7 +28,6 @@ function OrderSummaryContentTe() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
-    const PENALTY_FEE = 500;
     const MONTHLY_PRICE = 100;
     const YEARLY_PRICE = 1200;
     const planMap: { [key: string]: string } = { 'monthly': 'నెలవారీ', 'yearly': 'వార్షిక' };
@@ -55,25 +49,9 @@ function OrderSummaryContentTe() {
         if (authLoading) return;
 
         try {
-            let isLapsed = false;
-            let penalty = 0;
+            const totalAmount = planParam === 'monthly' ? MONTHLY_PRICE : YEARLY_PRICE;
 
-            if (userData?.subscription?.status === 'pending') {
-                const now = new Date();
-                const gracePeriodStartDate = userData.subscription?.renewalDate
-                    ? new Date(userData.subscription.renewalDate.seconds * 1000)
-                    : new Date(userData.createdAt.seconds * 1000);
-                
-                if (differenceInMonths(startOfMonth(now), startOfMonth(gracePeriodStartDate)) >= 2) {
-                    isLapsed = true;
-                    penalty = PENALTY_FEE;
-                }
-            }
-            
-            const basePrice = planParam === 'monthly' ? MONTHLY_PRICE : YEARLY_PRICE;
-            const totalAmount = basePrice + penalty;
-
-            setPlanDetails({ plan: planParam, basePrice, penalty, amount: totalAmount, isLapsed });
+            setPlanDetails({ plan: planParam, amount: totalAmount });
             setError(null);
         } catch (err) {
             console.error('ధర వివరాలను గణించడంలో లోపం:', err);
@@ -102,7 +80,7 @@ function OrderSummaryContentTe() {
     
     if (!planDetails) return null;
 
-    const { plan, basePrice, penalty, amount } = planDetails;
+    const { plan, amount } = planDetails;
 
     return (
         <div className="mx-auto w-full max-w-lg">
@@ -118,22 +96,6 @@ function OrderSummaryContentTe() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4 text-lg">
-                    <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">సభ్యత్వ రుసుము:</span>
-                        <span className="font-semibold">₹{basePrice?.toLocaleString('en-IN')}</span>
-                    </div>
-                     {penalty > 0 && (
-                         <>
-                            <div className="flex justify-between items-center text-destructive">
-                                <span className="text-sm">పునఃప్రారంభ రుసుము:</span>
-                                <span className="font-semibold text-sm">₹{penalty.toLocaleString('en-IN')}</span>
-                            </div>
-                            <div className="text-xs text-muted-foreground bg-amber-50 p-3 rounded-lg border border-amber-200">
-                                <AlertTriangle className="inline-block w-4 h-4 mr-1" />
-                                మీ సభ్యత్వం 2 నెలల కంటే ఎక్కువ కాలం నిష్క్రియాత్మకంగా ఉన్నందున పునఃప్రారంభ రుసుము వర్తిస్తుంది.
-                            </div>
-                        </>
-                    )}
                     <div className="border-t pt-4 flex justify-between items-center font-bold text-xl">
                         <span>మొత్తం (INR):</span>
                         <span>₹{amount.toLocaleString('en-IN')}</span>

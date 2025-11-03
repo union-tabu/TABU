@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useAuth } from "@/context/auth-context";
@@ -6,14 +7,6 @@ import { DashboardHeader } from "@/components/layout/dashboard-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { UserCheck, Clock, AlertCircle, BadgeCheck } from "lucide-react";
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { addMonths, differenceInDays, startOfMonth, format } from 'date-fns';
 
 export default function DashboardPage() {
   const { userData, isAuthenticated, loading } = useAuth();
@@ -40,32 +33,6 @@ export default function DashboardPage() {
       setGreeting('Good evening');
     }
   }, []);
-
-  let daysLeft: number | null = null;
-  let expiryDate: Date | null = null;
-  let accountIsInactive = false;
-  const userStatus = userData?.subscription?.status || 'pending';
-
-  if (userData && userStatus === 'pending') {
-      const now = new Date();
-      // Determine the start date for the grace period calculation
-      const gracePeriodStartDate = userData.subscription?.renewalDate
-          ? new Date(userData.subscription.renewalDate.seconds * 1000) // For expired members
-          : new Date(userData.createdAt.seconds * 1000); // For new members
-
-      // Grace period ends at the start of the month, 2 months after the start date's month.
-      const calculatedExpiryDate = startOfMonth(addMonths(gracePeriodStartDate, 2));
-      const calculatedDaysLeft = differenceInDays(calculatedExpiryDate, now);
-      
-      if (calculatedDaysLeft > 0) {
-        daysLeft = calculatedDaysLeft;
-        expiryDate = calculatedExpiryDate;
-      } else {
-        // This means the grace period has passed
-        accountIsInactive = true;
-      }
-  }
-
 
   if (loading || !isAuthenticated || userData?.role === 'admin') {
     return (
@@ -102,39 +69,6 @@ export default function DashboardPage() {
           </div>
 
           <SubscriptionStatusCard />
-          
-          {daysLeft !== null && expiryDate && userStatus !== 'active' && (
-             <Card className="border-amber-500 bg-amber-50/50">
-              <CardHeader className="flex flex-row items-center gap-4 space-y-0 pb-2">
-                <Clock className="h-6 w-6 text-amber-600" />
-                <CardTitle className="text-amber-800">Subscription Grace Period</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-lg">
-                  You have <span className="font-bold">{daysLeft}</span> days left to subscribe before your account becomes inactive.
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                    Your grace period ends on {format(expiryDate, "MMMM dd, yyyy")}.
-                </p>
-                 <Button asChild size="sm" className="mt-4">
-                  <Link href="/en/subscribe">Subscribe Now</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {accountIsInactive && userStatus !== 'active' && (
-             <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Account Inactive</AlertTitle>
-              <AlertDescription className="flex justify-between items-center">
-                <p>Your grace period has ended. Please subscribe to reactivate your account and access all benefits.</p>
-                <Button asChild size="sm" variant="destructive">
-                  <Link href="/en/subscribe">Subscribe Now</Link>
-                </Button>
-              </AlertDescription>
-            </Alert>
-          )}
 
         </div>
       </main>

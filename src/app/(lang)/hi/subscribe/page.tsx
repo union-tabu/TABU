@@ -6,9 +6,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { SubscriptionStatusCard } from "@/components/dashboard/subscription-status-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import { differenceInMonths, startOfMonth } from 'date-fns';
 import { useRouter } from "next/navigation";
 
 export default function SubscribePageHi() {
@@ -46,24 +43,8 @@ export default function SubscribePageHi() {
     );
   }
   
-  let isLapsed = false;
-  const PENALTY_FEE = 500;
   const MONTHLY_PRICE = 100;
   const YEARLY_PRICE = 1200;
-
-  if (userData?.subscription?.status === 'pending') {
-    const now = new Date();
-    const gracePeriodStartDate = userData.subscription?.renewalDate
-        ? new Date(userData.subscription.renewalDate.seconds * 1000)
-        : new Date(userData.createdAt.seconds * 1000);
-
-    if (differenceInMonths(startOfMonth(now), startOfMonth(gracePeriodStartDate)) >= 2) {
-      isLapsed = true;
-    }
-  }
-
-  const monthlyAmount = isLapsed ? MONTHLY_PRICE + PENALTY_FEE : MONTHLY_PRICE;
-  const yearlyAmount = isLapsed ? YEARLY_PRICE + PENALTY_FEE : YEARLY_PRICE;
 
   return (
     <div className="flex flex-col items-center justify-center w-full space-y-8">
@@ -74,25 +55,14 @@ export default function SubscribePageHi() {
         </p>
       </div>
 
-       {isLapsed && (
-          <Alert variant="destructive" className="max-w-4xl w-full">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>पुनः सक्रियण शुल्क लागू</AlertTitle>
-            <AlertDescription>
-              आपका खाता दो महीने से अधिक समय से निष्क्रिय है। आपकी सदस्यता को पुनः सक्रिय करने के लिए ₹{PENALTY_FEE} का एकमुश्त शुल्क जोड़ा गया है।
-            </AlertDescription>
-          </Alert>
-        )}
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl">
         <Card className="flex flex-col">
           <CardHeader>
             <CardTitle>मासिक योजना</CardTitle>
           </CardHeader>
           <CardContent className="flex-grow">
-            <p className="text-4xl font-bold">₹{monthlyAmount}</p>
+            <p className="text-4xl font-bold">₹{MONTHLY_PRICE}</p>
             <p className="text-muted-foreground">प्रति माह</p>
-            {isLapsed && <p className="text-sm text-muted-foreground">(₹{MONTHLY_PRICE} योजना + ₹{PENALTY_FEE} शुल्क)</p>}
           </CardContent>
           <CardFooter>
             <Button size="lg" className="w-full" onClick={() => handlePlanSelection('monthly')}>
@@ -106,9 +76,8 @@ export default function SubscribePageHi() {
             <CardTitle>वार्षिक योजना</CardTitle>
           </CardHeader>
           <CardContent className="flex-grow">
-            <p className="text-4xl font-bold">₹{yearlyAmount}</p>
+            <p className="text-4xl font-bold">₹{YEARLY_PRICE}</p>
             <p className="text-muted-foreground">प्रति वर्ष</p>
-            {isLapsed && <p className="text-sm text-muted-foreground">(₹{YEARLY_PRICE} योजना + ₹{PENALTY_FEE} शुल्क)</p>}
           </CardContent>
           <CardFooter>
             <Button size="lg" className="w-full" onClick={() => handlePlanSelection('yearly')}>

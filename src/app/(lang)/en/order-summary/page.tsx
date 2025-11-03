@@ -9,8 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, CheckCircle, AlertTriangle } from "lucide-react";
 import Link from "next/link";
-import { PaymentButton } from "@/components/payment-button";
-import { differenceInMonths, startOfMonth } from 'date-fns';
 import { CashfreeMonthlyButton } from "@/components/cashfree-monthly-button";
 import { CashfreeAnnualButton } from "@/components/cashfree-annual-button";
 
@@ -18,10 +16,7 @@ type PlanType = 'monthly' | 'yearly';
 
 interface PlanDetails {
     plan: PlanType;
-    basePrice: number;
-    penalty: number;
     amount: number;
-    isLapsed: boolean;
 }
 
 function OrderSummaryContent() {
@@ -33,7 +28,6 @@ function OrderSummaryContent() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
-    const PENALTY_FEE = 500;
     const MONTHLY_PRICE = 100;
     const YEARLY_PRICE = 1200;
 
@@ -56,32 +50,11 @@ function OrderSummaryContent() {
         }
 
         try {
-            let isLapsed = false;
-            let penalty = 0;
-
-            if (userData?.subscription?.status === 'pending') {
-                const now = new Date();
-                const gracePeriodStartDate = userData.subscription?.renewalDate
-                    ? new Date(userData.subscription.renewalDate.seconds * 1000)
-                    : new Date(userData.createdAt.seconds * 1000);
-                
-                const monthsDiff = differenceInMonths(startOfMonth(now), startOfMonth(gracePeriodStartDate));
-                
-                if (monthsDiff >= 2) {
-                    isLapsed = true;
-                    penalty = PENALTY_FEE;
-                }
-            }
-            
-            const basePrice = planParam === 'monthly' ? MONTHLY_PRICE : YEARLY_PRICE;
-            const totalAmount = basePrice + penalty;
+            const totalAmount = planParam === 'monthly' ? MONTHLY_PRICE : YEARLY_PRICE;
 
             setPlanDetails({
                 plan: planParam,
-                basePrice,
-                penalty,
                 amount: totalAmount,
-                isLapsed
             });
 
             setError(null);
@@ -106,10 +79,6 @@ function OrderSummaryContent() {
                         <div className="flex justify-between">
                             <Skeleton className="h-5 w-1/4" />
                             <Skeleton className="h-5 w-1/3" />
-                        </div>
-                        <div className="flex justify-between">
-                            <Skeleton className="h-5 w-1/3" />
-                            <Skeleton className="h-5 w-1/4" />
                         </div>
                         <Skeleton className="h-px w-full" />
                         <div className="flex justify-between">
@@ -148,7 +117,7 @@ function OrderSummaryContent() {
         return null;
     }
 
-    const { plan, basePrice, penalty, amount } = planDetails;
+    const { plan, amount } = planDetails;
 
     return (
         <div className="mx-auto w-full max-w-lg">
@@ -166,24 +135,6 @@ function OrderSummaryContent() {
                 </CardHeader>
                 
                 <CardContent className="grid gap-4 text-lg">
-                    <div className="flex justify-between items-center">
-                        <span className="text-muted-foreground">Membership Fee:</span>
-                        <span className="font-semibold">₹{basePrice?.toLocaleString('en-IN')}</span>
-                    </div>
-                    
-                    {penalty > 0 && (
-                        <>
-                            <div className="flex justify-between items-center text-destructive">
-                                <span className="text-sm">Reactivation Fee:</span>
-                                <span className="font-semibold text-sm">₹{penalty.toLocaleString('en-IN')}</span>
-                            </div>
-                            <div className="text-xs text-muted-foreground bg-amber-50 dark:bg-amber-950/20 p-3 rounded-lg border border-amber-200 dark:border-amber-800">
-                                <AlertTriangle className="inline-block w-4 h-4 mr-1" />
-                                A reactivation fee applies because your subscription has been inactive for more than 2 months.
-                            </div>
-                        </>
-                    )}
-                    
                     <div className="border-t pt-4 flex justify-between items-center font-bold text-xl">
                         <span>Total Amount (INR):</span>
                         <span>₹{amount.toLocaleString('en-IN')}</span>
