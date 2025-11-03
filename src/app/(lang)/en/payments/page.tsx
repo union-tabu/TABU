@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format } from "date-fns";
+import { format, startOfMonth, addMonths, isBefore } from "date-fns";
 import type { Payment } from '@/types/payment';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,7 +27,7 @@ const statusMap: { [key in PaymentStatus]: { text: string; className: string } }
 };
 
 export default function PaymentsPage() {
-    const { firebaseUser, loading: authLoading } = useAuth();
+    const { userData, firebaseUser, loading: authLoading } = useAuth();
     const [payments, setPayments] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
@@ -36,14 +36,14 @@ export default function PaymentsPage() {
 
     useEffect(() => {
         const fetchPayments = async () => {
-            if (firebaseUser) {
+            if (firebaseUser && userData?.createdAt) {
                 try {
                     const q = query(
                         collection(db, "payments"), 
                         where("userId", "==", firebaseUser.uid)
                     );
                     const querySnapshot = await getDocs(q);
-                    const paymentsData = querySnapshot.docs.map(doc => {
+                    const existingPayments = querySnapshot.docs.map(doc => {
                         const data = doc.data();
                         return {
                             id: doc.id,
@@ -52,12 +52,49 @@ export default function PaymentsPage() {
                             createdAt: data.createdAt?.toDate()
                         } as Payment;
                     });
-                    const sortedPayments = paymentsData.sort((a, b) => {
-                        if (!a.createdAt) return 1;
-                        if (!b.createdAt) return -1;
-                        return b.createdAt.getTime() - a.createdAt.getTime();
+
+                    // --- Generate missing "not paid" records ---
+                    const generatedPayments: Payment[] = [];
+                    const joinDate = new Date(userData.createdAt.seconds * 1000);
+                    let currentMonth = startOfMonth(joinDate);
+                    const today = new Date();
+
+                    while (isBefore(currentMonth, startOfMonth(addMonths(today,1)))) {
+                        const year = currentMonth.getFullYear();
+                        const month = currentMonth.getMonth();
+
+                        const hasPaymentForMonth = existingPayments.some(p => {
+                            if (!p.createdAt && !p.paymentDate) return false;
+                            const paymentDate = p.paymentDate || p.createdAt;
+                            return paymentDate.getFullYear() === year && paymentDate.getMonth() === month && (p.status === 'success' || p.status === 'pending');
+                        });
+
+                        if (!hasPaymentForMonth) {
+                           generatedPayments.push({
+                                id: `gen-${year}-${month}`,
+                                userId: firebaseUser.uid,
+                                plan: userData.subscription?.plan || 'monthly',
+                                amount: 100, // Default to monthly amount, as this is for dues
+                                status: 'failed',
+                                createdAt: currentMonth,
+                                paymentDate: currentMonth, 
+                           } as Payment);
+                        }
+                        currentMonth = addMonths(currentMonth, 1);
+                    }
+                    
+                    const allPayments = [...existingPayments, ...generatedPayments];
+
+                    const sortedPayments = allPayments.sort((a, b) => {
+                        const dateA = a.paymentDate || a.createdAt;
+                        const dateB = b.paymentDate || b.createdAt;
+                        if (!dateA) return 1;
+                        if (!dateB) return -1;
+                        return dateB.getTime() - dateA.getTime();
                     });
+
                     setPayments(sortedPayments);
+
                 } catch (error) {
                     console.error("Error fetching payments:", error);
                 } finally {
@@ -69,7 +106,7 @@ export default function PaymentsPage() {
         };
 
         fetchPayments();
-    }, [firebaseUser, authLoading]);
+    }, [firebaseUser, authLoading, userData]);
 
     const filteredPayments = useMemo(() => {
         if (filterStatus === 'all') {
