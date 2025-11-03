@@ -141,9 +141,9 @@ export default function PaymentsPageTe() {
                     <Tabs defaultValue="all" onValueChange={(value) => setFilterStatus(value as any)} className="w-full mb-4">
                         <TabsList>
                             <TabsTrigger value="all">అన్నీ</TabsTrigger>
-                            <TabsTrigger value="success">చెల్లించబడింది</TabsTrigger>
-                            <TabsTrigger value="pending">పెండింగ్‌లో ఉంది</TabsTrigger>
                             <TabsTrigger value="failed">చెల్లించబడలేదు</TabsTrigger>
+                            <TabsTrigger value="pending">పెండింగ్‌లో ఉంది</TabsTrigger>
+                            <TabsTrigger value="success">చెల్లించబడింది</TabsTrigger>
                         </TabsList>
                     </Tabs>
                      {/* Mobile Card View */}

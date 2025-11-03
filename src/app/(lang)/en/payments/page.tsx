@@ -135,9 +135,9 @@ export default function PaymentsPage() {
                     <Tabs defaultValue="all" onValueChange={(value) => setFilterStatus(value as any)} className="w-full mb-4">
                         <TabsList>
                             <TabsTrigger value="all">All</TabsTrigger>
-                            <TabsTrigger value="success">Paid</TabsTrigger>
-                            <TabsTrigger value="pending">Pending</TabsTrigger>
                             <TabsTrigger value="failed">Not Paid</TabsTrigger>
+                            <TabsTrigger value="pending">Pending</TabsTrigger>
+                            <TabsTrigger value="success">Paid</TabsTrigger>
                         </TabsList>
                     </Tabs>
 

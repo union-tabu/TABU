@@ -139,9 +139,9 @@ export default function PaymentsPageHi() {
                      <Tabs defaultValue="all" onValueChange={(value) => setFilterStatus(value as any)} className="w-full mb-4">
                         <TabsList>
                             <TabsTrigger value="all">सभी</TabsTrigger>
-                            <TabsTrigger value="success">भुगतान किया गया</TabsTrigger>
-                            <TabsTrigger value="pending">लंबित</TabsTrigger>
                             <TabsTrigger value="failed">भुगतान नहीं किया गया</TabsTrigger>
+                            <TabsTrigger value="pending">लंबित</TabsTrigger>
+                            <TabsTrigger value="success">भुगतान किया गया</TabsTrigger>
                         </TabsList>
                     </Tabs>
 
