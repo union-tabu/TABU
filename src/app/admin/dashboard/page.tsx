@@ -20,9 +20,9 @@ type UserWithId = UserData & { id: string };
 export default function AdminDashboardPage() {
     const [stats, setStats] = useState({
         totalUsers: 0,
-        activeSubscriptions: 0,
         monthlyRevenue: 0,
         totalRevenue: 0,
+        paymentsThisMonthCount: 0,
     });
     const [revenueData, setRevenueData] = useState<any[]>([]);
     const [recentUsers, setRecentUsers] = useState<UserWithId[]>([]);
@@ -36,7 +36,6 @@ export default function AdminDashboardPage() {
                 const usersSnapshot = await getDocs(collection(db, 'users'));
                 const allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserData }));
                 const totalUsers = usersSnapshot.size;
-                const activeSubscriptions = allUsers.filter(u => u.subscription?.status === 'active').length;
                 
                 // Fetch all successful payments for revenue calculation
                 const paymentsQuery = query(collection(db, 'payments'), where('status', '==', 'success'));
@@ -52,14 +51,16 @@ export default function AdminDashboardPage() {
 
                 // Calculate monthly revenue from successful payments
                 const currentMonthStart = startOfMonth(new Date());
-                const monthlyRevenue = allPayments
-                    .filter(p => p.paymentDate && new Date(p.paymentDate) >= currentMonthStart)
-                    .reduce((acc, p) => acc + p.amount, 0);
+                const paymentsThisMonth = allPayments
+                    .filter(p => p.paymentDate && new Date(p.paymentDate) >= currentMonthStart);
+                
+                const monthlyRevenue = paymentsThisMonth.reduce((acc, p) => acc + p.amount, 0);
+                const paymentsThisMonthCount = paymentsThisMonth.length;
                 
                 // Calculate total revenue from successful payments
                 const totalRevenue = allPayments.reduce((acc, p) => acc + p.amount, 0);
 
-                setStats({ totalUsers, activeSubscriptions, monthlyRevenue, totalRevenue });
+                setStats({ totalUsers, monthlyRevenue, totalRevenue, paymentsThisMonthCount });
                 
                 // Process revenue chart data
                 const monthlyRevenueData: { [key: string]: number } = {};
@@ -144,14 +145,14 @@ export default function AdminDashboardPage() {
                                 <p className="text-xs text-muted-foreground">All registered members</p>
                             </CardContent>
                         </Card>
-                         <Card>
+                        <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                                <Wallet className="h-4 w-4 text-muted-foreground" />
+                                <CardTitle className="text-sm font-medium">Payments (this month)</CardTitle>
+                                <IndianRupee className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">₹{stats.totalRevenue.toLocaleString('en-IN')}</div>
-                                <p className="text-xs text-muted-foreground">From successful payments</p>
+                                <div className="text-2xl font-bold">{stats.paymentsThisMonthCount}</div>
+                                <p className="text-xs text-muted-foreground">Members who paid this month</p>
                             </CardContent>
                         </Card>
                         <Card>
@@ -267,4 +268,5 @@ export default function AdminDashboardPage() {
             </div>
         </div>
     );
-}
+
+    
