@@ -117,6 +117,14 @@ export default function PaymentsPage() {
         );
     };
 
+    const handleMarkUnpaid = (paymentId: string) => {
+        setPayments(prevPayments => 
+            prevPayments.map(p => 
+                p.id === paymentId ? { ...p, status: 'failed' } : p
+            )
+        );
+    };
+
     const filteredPayments = useMemo(() => {
         if (filterStatus === 'all') {
             return payments;
@@ -222,6 +230,11 @@ export default function PaymentsPage() {
                                                 </Button>
                                             </div>
                                         )}
+                                        {payment.status === 'pending' && (
+                                            <Button variant="secondary" className="w-full" onClick={() => handleMarkUnpaid(payment.id)}>
+                                                Mark Unpaid
+                                            </Button>
+                                        )}
                                     </CardContent>
                                 </Card>
                             ))
@@ -273,6 +286,11 @@ export default function PaymentsPage() {
                                                             Mark Paid
                                                         </Button>
                                                     </div>
+                                                )}
+                                                {payment.status === 'pending' && (
+                                                    <Button variant="secondary" size="sm" onClick={() => handleMarkUnpaid(payment.id)}>
+                                                        Mark Unpaid
+                                                    </Button>
                                                 )}
                                             </TableCell>
                                         </TableRow>

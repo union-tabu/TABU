@@ -119,6 +119,14 @@ export default function PaymentsPageHi() {
         );
     };
 
+    const handleMarkUnpaid = (paymentId: string) => {
+        setPayments(prevPayments => 
+            prevPayments.map(p => 
+                p.id === paymentId ? { ...p, status: 'failed' } : p
+            )
+        );
+    };
+
     const filteredPayments = useMemo(() => {
         if (filterStatus === 'all') {
             return payments;
@@ -224,6 +232,11 @@ export default function PaymentsPageHi() {
                                                 </Button>
                                             </div>
                                         )}
+                                        {payment.status === 'pending' && (
+                                            <Button variant="secondary" className="w-full" onClick={() => handleMarkUnpaid(payment.id)}>
+                                                भुगतान नहीं किया गया के रूप में चिह्नित करें
+                                            </Button>
+                                        )}
                                     </CardContent>
                                 </Card>
                             ))
@@ -275,6 +288,11 @@ export default function PaymentsPageHi() {
                                                             भुगतान के रूप में चिह्नित करें
                                                         </Button>
                                                     </div>
+                                                )}
+                                                {payment.status === 'pending' && (
+                                                    <Button variant="secondary" size="sm" onClick={() => handleMarkUnpaid(payment.id)}>
+                                                        भुगतान नहीं किया गया के रूप में चिह्नित करें
+                                                    </Button>
                                                 )}
                                             </TableCell>
                                         </TableRow>
