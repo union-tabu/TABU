@@ -242,7 +242,7 @@ export default function AdminDashboardPage() {
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Member</TableHead>
-                                        <TableHead>Status</TableHead>
+                                        <TableHead>Phone</TableHead>
                                         <TableHead>Joined</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -257,15 +257,12 @@ export default function AdminDashboardPage() {
                                                     </Avatar>
                                                     <div>
                                                         <div className="font-medium">{user.fullName}</div>
-                                                        <div className="text-sm text-muted-foreground">{user.profession || user.phone}</div>
+                                                        <div className="text-sm text-muted-foreground">{user.profession}</div>
                                                     </div>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
-                                                    className={`${user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} capitalize`}>
-                                                    {user.subscription?.status || 'pending'}
-                                                </Badge>
+                                                <div className="font-mono text-sm">{user.phone}</div>
                                             </TableCell>
                                             <TableCell className="text-sm text-muted-foreground">
                                                 {user.createdAt?.seconds ? format(user.createdAt.seconds * 1000, 'dd MMM, yyyy') : 'N/A'}
