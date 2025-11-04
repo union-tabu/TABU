@@ -121,12 +121,11 @@ export default function AdminPaymentsManagerPage() {
         setSelectedUsers([]); // Reset selection on month change
     }, [selectedMonth]);
 
-    const displayUsers = useMemo<DisplayUser[]>(() => {
+    const allDisplayUsers = useMemo<DisplayUser[]>(() => {
         const usersForMonth = allUsers
-            // Filter out users who joined after the selected month
             .filter(user => user.createdAt && new Date(user.createdAt.seconds * 1000) <= endOfMonth(selectedMonth));
 
-        let mappedUsers = usersForMonth.map(user => {
+        return usersForMonth.map(user => {
             const userPayment = payments.find(p => p.userId === user.id && p.status === 'success');
             return {
                 id: user.id,
@@ -137,13 +136,14 @@ export default function AdminPaymentsManagerPage() {
                 paymentId: userPayment?.id,
             };
         });
+    }, [allUsers, payments, selectedMonth]);
 
-        if (filterStatus !== 'all') {
-            mappedUsers = mappedUsers.filter(user => user.status === filterStatus);
+    const displayUsers = useMemo<DisplayUser[]>(() => {
+        if (filterStatus === 'all') {
+            return allDisplayUsers;
         }
-
-        return mappedUsers;
-    }, [allUsers, payments, selectedMonth, filterStatus]);
+        return allDisplayUsers.filter(user => user.status === filterStatus);
+    }, [allDisplayUsers, filterStatus]);
 
 
     const handleBulkUpdate = async (newStatus: PaymentStatus) => {
@@ -241,9 +241,9 @@ export default function AdminPaymentsManagerPage() {
                     <div className="flex justify-between items-center mb-4">
                         <Tabs defaultValue="all" onValueChange={(value) => setFilterStatus(value as any)} className="w-full md:w-auto">
                             <TabsList>
-                                <TabsTrigger value="all">All ({displayUsers.length})</TabsTrigger>
-                                <TabsTrigger value="paid">Paid ({displayUsers.filter(u => u.status === 'paid').length})</TabsTrigger>
-                                <TabsTrigger value="not-paid">Not Paid ({displayUsers.filter(u => u.status === 'not-paid').length})</TabsTrigger>
+                                <TabsTrigger value="all">All ({allDisplayUsers.length})</TabsTrigger>
+                                <TabsTrigger value="paid">Paid ({allDisplayUsers.filter(u => u.status === 'paid').length})</TabsTrigger>
+                                <TabsTrigger value="not-paid">Not Paid ({allDisplayUsers.filter(u => u.status === 'not-paid').length})</TabsTrigger>
                             </TabsList>
                         </Tabs>
                         {selectedUsers.length > 0 && (
