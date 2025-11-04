@@ -129,9 +129,9 @@ export default function AdminDashboardPage() {
             <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
 
             {/* Stat Cards */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {loading ? (
-                    Array.from({length: 4}).map((_, i) => renderStatCardSkeleton(i))
+                    Array.from({length: 3}).map((_, i) => renderStatCardSkeleton(i))
                 ) : (
                     <>
                         <Card>
@@ -142,16 +142,6 @@ export default function AdminDashboardPage() {
                             <CardContent>
                                 <div className="text-2xl font-bold">{stats.totalUsers}</div>
                                 <p className="text-xs text-muted-foreground">All registered members</p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Active Subscriptions</CardTitle>
-                                <Activity className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{stats.activeSubscriptions}</div>
-                                <p className="text-xs text-muted-foreground">Currently active and paid members</p>
                             </CardContent>
                         </Card>
                          <Card>
