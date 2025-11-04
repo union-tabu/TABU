@@ -6,17 +6,11 @@ import { db } from '@/lib/firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from "date-fns";
 import type { UserData } from '@/types/user';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import Image from 'next/image';
-import { UserCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 type UserWithId = UserData & { id: string };
@@ -27,9 +21,7 @@ export default function AdminUnionMembersPage() {
     const [users, setUsers] = useState<UserWithId[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterStatus, setFilterStatus] = useState('all');
     const [currentPage, setCurrentPage] = useState(1);
-    const isMobile = useIsMobile();
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -53,14 +45,11 @@ export default function AdminUnionMembersPage() {
     const filteredUsers = useMemo(() => {
         return users.filter(user => {
             const lowercasedSearchTerm = searchTerm.toLowerCase();
-            const matchesSearch = `${user.fullName}`.toLowerCase().includes(lowercasedSearchTerm) || 
-                                  user.phone.includes(searchTerm) ||
-                                  (user.unionId && user.unionId.toLowerCase().includes(lowercasedSearchTerm));
-            const status = user.subscription?.status || 'pending';
-            const matchesStatus = filterStatus === 'all' || status === filterStatus;
-            return matchesSearch && matchesStatus;
+            return `${user.fullName}`.toLowerCase().includes(lowercasedSearchTerm) || 
+                   user.phone.includes(searchTerm) ||
+                   (user.unionId && user.unionId.toLowerCase().includes(lowercasedSearchTerm));
         });
-    }, [users, searchTerm, filterStatus]);
+    }, [users, searchTerm]);
 
     const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
     const paginatedUsers = filteredUsers.slice((currentPage - 1) * USERS_PER_PAGE, currentPage * USERS_PER_PAGE);
@@ -97,7 +86,7 @@ export default function AdminUnionMembersPage() {
             <TableCell><Skeleton className="h-5 w-24" /></TableCell>
             <TableCell><Skeleton className="h-5 w-32" /></TableCell>
             <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-            <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
             <TableCell><Skeleton className="h-5 w-24" /></TableCell>
             <TableCell><Skeleton className="h-5 w-48" /></TableCell>
         </TableRow>
@@ -108,17 +97,7 @@ export default function AdminUnionMembersPage() {
             <h1 className="text-3xl font-bold tracking-tight">Union Members</h1>
             <Card>
                 <CardHeader>
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <Tabs defaultValue="all" onValueChange={(value) => { setFilterStatus(value); setCurrentPage(1); }} className="w-full md:w-auto">
-                           <ScrollArea className="w-full md:w-auto whitespace-nowrap">
-                                <TabsList>
-                                    <TabsTrigger value="all">All</TabsTrigger>
-                                    <TabsTrigger value="active">Active</TabsTrigger>
-                                    <TabsTrigger value="inactive">Inactive</TabsTrigger>
-                                    <TabsTrigger value="pending">Pending</TabsTrigger>
-                                </TabsList>
-                            </ScrollArea>
-                        </Tabs>
+                    <div className="flex flex-col md:flex-row justify-end items-start md:items-center gap-4">
                         <form onSubmit={handleSearch} className="flex gap-2 w-full md:w-auto">
                              <Input 
                                 placeholder="Search by Name, Phone, or ID..."
@@ -150,10 +129,6 @@ export default function AdminUnionMembersPage() {
                                                     <CardDescription>{user.phone}</CardDescription>
                                                 </div>
                                             </div>
-                                            <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
-                                                className={`${user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} capitalize shrink-0`}>
-                                                {user.subscription?.status || 'pending'}
-                                            </Badge>
                                         </div>
                                     </CardHeader>
                                     <CardContent className="text-sm text-muted-foreground space-y-2">
@@ -183,9 +158,9 @@ export default function AdminUnionMembersPage() {
                                     <TableHead>Name</TableHead>
                                     <TableHead>Phone</TableHead>
                                     <TableHead>Profession</TableHead>
-                                    <TableHead>Status</TableHead>
                                     <TableHead>Joined</TableHead>
                                     <TableHead>Referred By</TableHead>
+                                    <TableHead>Address</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -207,17 +182,12 @@ export default function AdminUnionMembersPage() {
                                             <TableCell>{user.phone}</TableCell>
                                             <TableCell>{user.profession || 'N/A'}</TableCell>
                                             <TableCell>
-                                                <Badge variant={user.subscription?.status === 'active' ? 'default' : 'destructive'} 
-                                                    className={`${user.subscription?.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} capitalize`}>
-                                                    {user.subscription?.status || 'pending'}
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell>
                                                 {user.createdAt?.seconds 
                                                     ? format(new Date(user.createdAt.seconds * 1000), "MMMM yyyy") 
                                                     : 'N/A'}
                                             </TableCell>
                                             <TableCell>{user.referredBy || 'N/A'}</TableCell>
+                                            <TableCell>{`${user.addressLine}, ${user.city}, ${user.state}`}</TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
