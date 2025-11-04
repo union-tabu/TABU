@@ -1,232 +1,343 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, query, getDocs, orderBy, getDoc, doc } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  getDocs,
+  orderBy,
+  where,
+  writeBatch,
+  doc,
+  serverTimestamp,
+  Timestamp,
+} from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format } from "date-fns";
+import { format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import type { Payment } from '@/types/payment';
 import type { UserData } from '@/types/user';
-import { useIsMobile } from '@/hooks/use-mobile';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
+import { 
+  DropdownMenu, 
+  DropdownMenuTrigger, 
+  DropdownMenuContent, 
+  DropdownMenuItem 
+} from '@/components/ui/dropdown-menu';
+import { Calendar as CalendarIcon, ChevronDown, Check, AlertCircle } from 'lucide-react';
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
 
-type PaymentWithUser = Payment & { userName: string; userPhone: string };
 
-const PAYMENTS_PER_PAGE = 25;
+type UserWithId = UserData & { id: string };
+type PaymentStatus = 'paid' | 'not-paid';
+type DisplayUser = {
+  id: string;
+  fullName: string;
+  phone: string;
+  photoURL?: string;
+  status: PaymentStatus;
+  paymentId?: string;
+};
 
-export default function AdminPaymentsPage() {
-    const [payments, setPayments] = useState<PaymentWithUser[]>([]);
+const getInitials = (name: string | undefined) => {
+    if (!name) return 'U';
+    const nameParts = name.split(' ');
+    const firstInitial = nameParts[0] ? nameParts[0][0] : '';
+    const lastInitial = nameParts.length > 1 ? nameParts[nameParts.length - 1][0] : '';
+    return `${firstInitial}${lastInitial}`.toUpperCase();
+}
+
+
+export default function AdminPaymentsManagerPage() {
+    const [allUsers, setAllUsers] = useState<UserWithId[]>([]);
+    const [payments, setPayments] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [filterStatus, setFilterStatus] = useState('all');
-    const [currentPage, setCurrentPage] = useState(1);
-    const isMobile = useIsMobile();
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [selectedMonth, setSelectedMonth] = useState<Date>(startOfMonth(new Date()));
+    const [filterStatus, setFilterStatus] = useState<'all' | PaymentStatus>('all');
+    const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+    const { toast } = useToast();
 
     useEffect(() => {
-        const fetchPayments = async () => {
+        const fetchData = async () => {
             setLoading(true);
             try {
-                // Fetch all payments
-                const paymentsQuery = query(collection(db, "payments"), orderBy("paymentDate", "desc"));
-                const paymentsSnapshot = await getDocs(paymentsQuery);
-                const paymentsData = paymentsSnapshot.docs.map(doc => ({
+                // Fetch all users
+                const usersQuery = query(collection(db, "users"), orderBy("createdAt", "desc"));
+                const usersSnapshot = await getDocs(usersQuery);
+                const usersData = usersSnapshot.docs.map(doc => ({
                     id: doc.id,
-                    ...doc.data(),
-                    paymentDate: doc.data().paymentDate?.toDate()
-                } as Payment));
-
-                // Fetch user data for each payment
-                const paymentsWithUsers = await Promise.all(paymentsData.map(async (payment) => {
-                    const userDocRef = doc(db, "users", payment.userId);
-                    const userDocSnap = await getDoc(userDocRef);
-                    const userData = userDocSnap.exists() ? userDocSnap.data() as UserData : null;
-                    return {
-                        ...payment,
-                        userName: userData?.fullName || 'N/A',
-                        userPhone: userData?.phone || 'N/A'
-                    };
+                    ...doc.data() as UserData,
                 }));
+                setAllUsers(usersData);
 
-                setPayments(paymentsWithUsers);
+                // Fetch payments for the selected month
+                await fetchPaymentsForMonth(selectedMonth);
+
             } catch (error) {
-                console.error("Error fetching payments:", error);
+                console.error("Error fetching initial data:", error);
+                toast({ title: "Error", description: "Could not fetch data.", variant: "destructive" });
             } finally {
                 setLoading(false);
             }
         };
-
-        fetchPayments();
+        fetchData();
     }, []);
 
-    const filteredPayments = useMemo(() => {
-        return payments.filter(payment => {
-            const lowercasedSearchTerm = searchTerm.toLowerCase();
-            const matchesSearch = (
-                payment.userName.toLowerCase().includes(lowercasedSearchTerm) ||
-                payment.userPhone.includes(lowercasedSearchTerm) ||
-                (payment.cf_order_id && payment.cf_order_id.toLowerCase().includes(lowercasedSearchTerm))
+    const fetchPaymentsForMonth = async (month: Date) => {
+        setLoading(true);
+        try {
+            const start = startOfMonth(month);
+            const end = endOfMonth(month);
+            const paymentsQuery = query(
+                collection(db, "payments"),
+                where("paymentDate", ">=", Timestamp.fromDate(start)),
+                where("paymentDate", "<=", Timestamp.fromDate(end))
             );
-            const matchesStatus = filterStatus === 'all' || payment.status === filterStatus;
-            return matchesSearch && matchesStatus;
+            const paymentsSnapshot = await getDocs(paymentsQuery);
+            const paymentsData = paymentsSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as Payment));
+            setPayments(paymentsData);
+        } catch (error) {
+            console.error(`Error fetching payments for ${format(month, 'MMMM yyyy')}:`, error);
+            toast({ title: "Error", description: "Could not fetch payments for the selected month.", variant: "destructive" });
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    useEffect(() => {
+        fetchPaymentsForMonth(selectedMonth);
+        setSelectedUsers([]); // Reset selection on month change
+    }, [selectedMonth]);
+
+    const displayUsers = useMemo<DisplayUser[]>(() => {
+        const usersForMonth = allUsers
+            // Filter out users who joined after the selected month
+            .filter(user => user.createdAt && new Date(user.createdAt.seconds * 1000) <= endOfMonth(selectedMonth));
+
+        let mappedUsers = usersForMonth.map(user => {
+            const userPayment = payments.find(p => p.userId === user.id && p.status === 'success');
+            return {
+                id: user.id,
+                fullName: user.fullName,
+                phone: user.phone,
+                photoURL: user.photoURL,
+                status: userPayment ? 'paid' : 'not-paid',
+                paymentId: userPayment?.id,
+            };
         });
-    }, [payments, searchTerm, filterStatus]);
 
-    const totalPages = Math.ceil(filteredPayments.length / PAYMENTS_PER_PAGE);
-    const paginatedPayments = filteredPayments.slice((currentPage - 1) * PAYMENTS_PER_PAGE, currentPage * PAYMENTS_PER_PAGE);
+        if (filterStatus !== 'all') {
+            mappedUsers = mappedUsers.filter(user => user.status === filterStatus);
+        }
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        setCurrentPage(1);
+        return mappedUsers;
+    }, [allUsers, payments, selectedMonth, filterStatus]);
+
+
+    const handleBulkUpdate = async (newStatus: PaymentStatus) => {
+        if (selectedUsers.length === 0) return;
+        setIsUpdating(true);
+        
+        try {
+            const batch = writeBatch(db);
+            const monthStr = format(selectedMonth, 'yyyy-MM');
+
+            for (const userId of selectedUsers) {
+                const user = allUsers.find(u => u.id === userId);
+                if (!user) continue;
+
+                // Unique ID for this user and month to avoid duplicates
+                const paymentId = `monthly-${userId}-${monthStr}`;
+                const paymentRef = doc(db, 'payments', paymentId);
+                
+                if (newStatus === 'paid') {
+                     batch.set(paymentRef, {
+                        userId: userId,
+                        plan: 'monthly',
+                        amount: 100,
+                        status: 'success',
+                        createdAt: serverTimestamp(),
+                        paymentDate: Timestamp.fromDate(selectedMonth),
+                        cf_order_id: `manual_${Date.now()}`,
+                     }, { merge: true });
+                } else { // 'not-paid'
+                    // If a payment record exists, delete it to mark as not paid
+                    batch.delete(paymentRef);
+                }
+            }
+
+            await batch.commit();
+            toast({
+                title: 'Update Successful',
+                description: `${selectedUsers.length} user(s) have been marked as ${newStatus}.`
+            });
+            
+            // Refresh data
+            await fetchPaymentsForMonth(selectedMonth);
+
+        } catch (error) {
+            console.error("Error updating statuses:", error);
+            toast({ title: 'Update Failed', description: 'An error occurred during the bulk update.', variant: 'destructive' });
+        } finally {
+            setIsUpdating(false);
+            setSelectedUsers([]);
+        }
     };
 
-    const renderDesktopSkeleton = (key: number) => (
-        <TableRow key={key}>
-            <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-            <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-            <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-            <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-            <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-        </TableRow>
-    );
 
-    const renderMobileSkeleton = (key: number) => (
-        <Card key={key} className="mb-4">
-            <CardHeader>
-                <Skeleton className="h-6 w-3/4 mb-2" />
-                <Skeleton className="h-4 w-1/2" />
-            </CardHeader>
-            <CardContent>
-                <div className="flex justify-between items-center">
-                    <Skeleton className="h-5 w-1/3" />
-                    <Skeleton className="h-6 w-1/4 rounded-full" />
-                </div>
-            </CardContent>
-        </Card>
-    );
+    const handleSelectAll = (checked: boolean | 'indeterminate') => {
+        if (checked === true) {
+            setSelectedUsers(displayUsers.map(u => u.id));
+        } else {
+            setSelectedUsers([]);
+        }
+    };
 
+    const isAllSelected = displayUsers.length > 0 && selectedUsers.length === displayUsers.length;
+    
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight">All Payments</h1>
             <Card>
-                <CardHeader>
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <Tabs defaultValue="all" onValueChange={(value) => { setFilterStatus(value); setCurrentPage(1); }} className="w-full md:w-auto">
-                            <TabsList>
-                                <TabsTrigger value="all">All</TabsTrigger>
-                                <TabsTrigger value="success">Success</TabsTrigger>
-                                <TabsTrigger value="failed">Failed</TabsTrigger>
-                            </TabsList>
-                        </Tabs>
-                        <form onSubmit={handleSearch} className="flex gap-2 w-full md:w-auto">
-                             <Input 
-                                placeholder="Search Name, Phone, or Order ID..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="flex-grow md:w-64"
-                            />
-                            <Button type="submit">Search</Button>
-                        </form>
+                <CardHeader className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                     <div>
+                        <CardTitle>Monthly Payments</CardTitle>
+                        <CardDescription>Manage member payment status for the selected month.</CardDescription>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className="w-[200px] justify-start text-left font-normal">
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {format(selectedMonth, 'MMMM yyyy')}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0">
+                                <Calendar
+                                    mode="single"
+                                    selected={selectedMonth}
+                                    onSelect={(month) => setSelectedMonth(month || new Date())}
+                                    captionLayout="dropdown-buttons"
+                                    fromYear={2024}
+                                    toYear={new Date().getFullYear() + 1}
+                                    initialFocus
+                                />
+                            </PopoverContent>
+                        </Popover>
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {/* Mobile Card View */}
-                    <div className="md:hidden">
-                        {loading ? (
-                            Array.from({ length: 5 }).map((_, i) => renderMobileSkeleton(i))
-                        ) : paginatedPayments.length > 0 ? (
-                            paginatedPayments.map((payment) => (
-                                <Card key={payment.id} className="mb-4">
-                                    <CardHeader className="p-4">
-                                        <div className="flex justify-between items-center">
-                                            <div>
-                                                <CardTitle className="text-lg">{payment.userName}</CardTitle>
-                                                <CardDescription>{payment.userPhone}</CardDescription>
-                                            </div>
-                                            <p className="font-bold text-lg">₹{payment.amount}</p>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="p-4 pt-0">
-                                        <div className="flex justify-between items-center text-sm">
-                                            <p className="text-muted-foreground">
-                                                {payment.paymentDate ? format(payment.paymentDate, "MMMM dd, yyyy") : 'N/A'}
-                                            </p>
-                                            <Badge variant={payment.status === 'success' ? 'default' : 'destructive'}
-                                                   className={payment.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                                                {payment.status}
-                                            </Badge>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))
-                        ) : (
-                            <div className="text-center py-8 text-muted-foreground">
-                                No payment history found.
-                            </div>
+                    <div className="flex justify-between items-center mb-4">
+                        <Tabs defaultValue="all" onValueChange={(value) => setFilterStatus(value as any)} className="w-full md:w-auto">
+                            <TabsList>
+                                <TabsTrigger value="all">All ({displayUsers.length})</TabsTrigger>
+                                <TabsTrigger value="paid">Paid ({displayUsers.filter(u => u.status === 'paid').length})</TabsTrigger>
+                                <TabsTrigger value="not-paid">Not Paid ({displayUsers.filter(u => u.status === 'not-paid').length})</TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                        {selectedUsers.length > 0 && (
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" disabled={isUpdating}>
+                                        Actions ({selectedUsers.length})
+                                        <ChevronDown className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onSelect={() => handleBulkUpdate('paid')}>
+                                        <Check className="mr-2 h-4 w-4" />
+                                        Mark as Paid
+                                    </DropdownMenuItem>
+                                     <DropdownMenuItem onSelect={() => handleBulkUpdate('not-paid')} className="text-red-600">
+                                        <AlertCircle className="mr-2 h-4 w-4" />
+                                        Mark as Not Paid
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         )}
                     </div>
-                    
-                    {/* Desktop Table View */}
-                    <div className="hidden md:block">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Member</TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>Plan</TableHead>
-                                    <TableHead>Amount</TableHead>
-                                    <TableHead>Status</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {loading ? (
-                                    Array.from({ length: 10 }).map((_, i) => renderDesktopSkeleton(i))
-                                ) : paginatedPayments.length > 0 ? (
-                                    paginatedPayments.map((payment) => (
-                                        <TableRow key={payment.id}>
-                                            <TableCell>
-                                                <div className="font-medium">{payment.userName}</div>
-                                                <div className="text-sm text-muted-foreground">{payment.userPhone}</div>
-                                            </TableCell>
-                                            <TableCell>
-                                                {payment.paymentDate ? format(payment.paymentDate, "MMMM dd, yyyy") : 'N/A'}
-                                            </TableCell>
-                                            <TableCell className="capitalize">{payment.plan}</TableCell>
-                                            <TableCell>₹{payment.amount}</TableCell>
-                                            <TableCell>
-                                                <Badge variant={payment.status === 'success' ? 'default' : 'destructive'}
-                                                       className={payment.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                                                    {payment.status}
-                                                </Badge>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={5} className="text-center">
-                                            No payment history found.
+
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[50px]">
+                                    <Checkbox
+                                        checked={isAllSelected}
+                                        onCheckedChange={handleSelectAll}
+                                        aria-label="Select all"
+                                    />
+                                </TableHead>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Phone</TableHead>
+                                <TableHead>Status</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                             {loading ? (
+                                Array.from({ length: 10 }).map((_, i) => (
+                                    <TableRow key={i}>
+                                        <TableCell><Skeleton className="h-5 w-5" /></TableCell>
+                                        <TableCell><Skeleton className="h-8 w-40" /></TableCell>
+                                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                                        <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+                                    </TableRow>
+                                ))
+                            ) : displayUsers.length > 0 ? (
+                                displayUsers.map((user) => (
+                                    <TableRow key={user.id} data-state={selectedUsers.includes(user.id) && "selected"}>
+                                        <TableCell>
+                                            <Checkbox
+                                                checked={selectedUsers.includes(user.id)}
+                                                onCheckedChange={(checked) => {
+                                                    setSelectedUsers(
+                                                        checked
+                                                            ? [...selectedUsers, user.id]
+                                                            : selectedUsers.filter((id) => id !== user.id)
+                                                    );
+                                                }}
+                                                aria-label={`Select ${user.fullName}`}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                             <div className="flex items-center gap-3">
+                                                <Avatar className="h-9 w-9">
+                                                    <AvatarImage src={user.photoURL} alt={user.fullName} />
+                                                    <AvatarFallback>{getInitials(user.fullName)}</AvatarFallback>
+                                                </Avatar>
+                                                <span className="font-medium">{user.fullName}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="font-mono">{user.phone}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={user.status === 'paid' ? 'default' : 'destructive'}
+                                                   className={user.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
+                                                {user.status === 'paid' ? 'Paid' : 'Not Paid'}
+                                            </Badge>
                                         </TableCell>
                                     </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={4} className="h-24 text-center">
+                                        No members to display for this filter.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
                 </CardContent>
             </Card>
-            {totalPages > 1 && (
-                <div className="flex justify-center items-center gap-4 mt-6">
-                    <Button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</Button>
-                    <span className="text-sm text-muted-foreground">
-                        Page {currentPage} of {totalPages}
-                    </span>
-                    <Button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</Button>
-                </div>
-            )}
         </div>
     );
 }
