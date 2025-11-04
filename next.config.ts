@@ -10,6 +10,26 @@ const nextConfig: NextConfig = {
         destination: '/en/terms-and-conditions',
         permanent: true,
       },
+      {
+        source: '/dashboard',
+        destination: '/en/dashboard',
+        permanent: false, // Use false as these are temporary until links are updated
+      },
+      {
+        source: '/profile',
+        destination: '/en/profile',
+        permanent: false,
+      },
+      {
+        source: '/payments',
+        destination: '/en/payments',
+        permanent: false,
+      },
+      {
+        source: '/union-members',
+        destination: '/en/union-members',
+        permanent: false,
+      },
     ]
   },
   typescript: {
