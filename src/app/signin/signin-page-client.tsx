@@ -49,7 +49,7 @@ export default function SigninPageClient({ resetSuccess }: { resetSuccess: boole
   useEffect(() => {
     // If user is already authenticated, redirect to dashboard
     if (!loading && isAuthenticated) {
-      router.replace('/dashboard');
+      router.replace('/en/dashboard');
     }
   }, [isAuthenticated, loading, router]);
 

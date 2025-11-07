@@ -1,3 +1,4 @@
+
 // src/app/login/page.tsx
 "use client";
 
@@ -49,7 +50,7 @@ function LoginPageClient({ resetSuccess }: { resetSuccess: boolean }) {
   useEffect(() => {
     // If user is already authenticated, redirect to dashboard
     if (!loading && isAuthenticated) {
-      router.replace('/dashboard');
+      router.replace('/en/dashboard');
     }
   }, [isAuthenticated, loading, router]);
 
