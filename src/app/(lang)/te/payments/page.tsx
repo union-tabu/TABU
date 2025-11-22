@@ -15,6 +15,7 @@ import { te } from 'date-fns/locale';
 import type { Payment } from '@/types/payment';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PaymentQRModal } from '@/components/payment-qr-modal';
 
 const PAYMENTS_PER_PAGE = 25;
 type PaymentStatus = 'success' | 'pending' | 'failed';
@@ -30,14 +31,13 @@ const statusMap: { [key in PaymentStatus]: { text: string; className: string } }
   failed: { text: "చెల్లించబడలేదు", className: "bg-red-100 text-red-800" },
 };
 
-const UPI_LINK = "upi://pay?pa=ramchanndar987-1@okhdfcbank&pn=T.A.B.U&am=10&cu=INR";
-
 export default function PaymentsPageTe() {
     const { userData, firebaseUser, loading: authLoading } = useAuth();
     const [payments, setPayments] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [filterStatus, setFilterStatus] = useState<PaymentStatus | 'all'>('all');
+    const [isQrModalOpen, setIsQrModalOpen] = useState(false);
     const isMobile = useIsMobile();
     
     useEffect(() => {
@@ -184,6 +184,14 @@ export default function PaymentsPageTe() {
 
     return (
         <div className="space-y-6">
+            <PaymentQRModal
+                isOpen={isQrModalOpen}
+                onClose={() => setIsQrModalOpen(false)}
+                title="UPI QR కోడ్‌తో చెల్లించండి"
+                description="చెల్లింపు చేయడానికి ఏదైనా UPI యాప్‌తో QR కోడ్‌ను స్కాన్ చేయండి. చెల్లించిన తర్వాత, 'చెల్లించినట్లుగా గుర్తించండి' క్లిక్ చేయండి."
+                downloadButtonText="QR డౌన్‌లోడ్ చేయండి"
+                closeButtonText="మూసివేయండి"
+            />
             <Card>
                 <CardHeader>
                     <CardTitle>చెల్లింపులు</CardTitle>
@@ -225,8 +233,8 @@ export default function PaymentsPageTe() {
                                         </div>
                                         {payment.status === 'failed' && (
                                             <div className="flex gap-2">
-                                                <Button asChild className="flex-1">
-                                                     <a href={UPI_LINK}>చెల్లించండి</a>
+                                                <Button className="flex-1" onClick={() => setIsQrModalOpen(true)}>
+                                                     చెల్లించండి
                                                 </Button>
                                                 <Button variant="secondary" className="flex-1" onClick={() => handleMarkPaid(payment.id)}>
                                                     చెల్లించినట్లుగా గుర్తించండి
@@ -282,8 +290,8 @@ export default function PaymentsPageTe() {
                                             <TableCell>
                                                 {payment.status === 'failed' && (
                                                     <div className="flex gap-2">
-                                                        <Button asChild size="sm">
-                                                             <a href={UPI_LINK}>చెల్లించండి</a>
+                                                        <Button size="sm" onClick={() => setIsQrModalOpen(true)}>
+                                                             చెల్లించండి
                                                         </Button>
                                                         <Button variant="secondary" size="sm" onClick={() => handleMarkPaid(payment.id)}>
                                                             చెల్లించినట్లుగా గుర్తించండి
@@ -326,5 +334,3 @@ export default function PaymentsPageTe() {
         </div>
     );
 }
-
-    

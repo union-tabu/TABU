@@ -14,6 +14,7 @@ import { format, startOfMonth, addMonths, isBefore } from "date-fns";
 import { hi } from 'date-fns/locale';
 import type { Payment } from '@/types/payment';
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PaymentQRModal } from '@/components/payment-qr-modal';
 
 const PAYMENTS_PER_PAGE = 25;
 type PaymentStatus = 'success' | 'pending' | 'failed';
@@ -29,14 +30,13 @@ const statusMap: { [key in PaymentStatus]: { text: string; className: string } }
   failed: { text: "भुगतान नहीं किया गया", className: "bg-red-100 text-red-800" },
 };
 
-const UPI_LINK = "upi://pay?pa=ramchanndar987-1@okhdfcbank&pn=T.A.B.U&am=10&cu=INR";
-
 export default function PaymentsPageHi() {
     const { userData, firebaseUser, loading: authLoading } = useAuth();
     const [payments, setPayments] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [filterStatus, setFilterStatus] = useState<PaymentStatus | 'all'>('all');
+    const [isQrModalOpen, setIsQrModalOpen] = useState(false);
     
     useEffect(() => {
         const fetchPayments = async () => {
@@ -182,6 +182,14 @@ export default function PaymentsPageHi() {
 
     return (
         <div className="space-y-6">
+            <PaymentQRModal
+                isOpen={isQrModalOpen}
+                onClose={() => setIsQrModalOpen(false)}
+                title="UPI QR कोड से भुगतान करें"
+                description="भुगतान करने के लिए किसी भी UPI ऐप से QR कोड को स्कैन करें। भुगतान करने के बाद, 'भुगतान के रूप में चिह्नित करें' पर क्लिक करें।"
+                downloadButtonText="QR डाउनलोड करें"
+                closeButtonText="बंद करें"
+            />
             <Card>
                 <CardHeader>
                     <CardTitle>भुगतान</CardTitle>
@@ -224,8 +232,8 @@ export default function PaymentsPageHi() {
                                         </div>
                                          {payment.status === 'failed' && (
                                             <div className="flex gap-2">
-                                                <Button asChild className="flex-1">
-                                                    <a href={UPI_LINK}>भुगतान करें</a>
+                                                <Button className="flex-1" onClick={() => setIsQrModalOpen(true)}>
+                                                    भुगतान करें
                                                 </Button>
                                                 <Button variant="secondary" className="flex-1" onClick={() => handleMarkPaid(payment.id)}>
                                                     भुगतान के रूप में चिह्नित करें
@@ -281,8 +289,8 @@ export default function PaymentsPageHi() {
                                             <TableCell>
                                                 {payment.status === 'failed' && (
                                                      <div className="flex gap-2">
-                                                        <Button asChild size="sm">
-                                                            <a href={UPI_LINK}>भुगतान करें</a>
+                                                        <Button size="sm" onClick={() => setIsQrModalOpen(true)}>
+                                                            भुगतान करें
                                                         </Button>
                                                         <Button variant="secondary" size="sm" onClick={() => handleMarkPaid(payment.id)}>
                                                             भुगतान के रूप में चिह्नित करें
@@ -325,5 +333,3 @@ export default function PaymentsPageHi() {
         </div>
     );
 }
-
-    

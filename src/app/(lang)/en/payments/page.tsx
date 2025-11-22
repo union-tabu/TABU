@@ -14,6 +14,7 @@ import { format, startOfMonth, addMonths, isBefore } from "date-fns";
 import type { Payment } from '@/types/payment';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PaymentQRModal } from '@/components/payment-qr-modal';
 
 const PAYMENTS_PER_PAGE = 25;
 
@@ -25,14 +26,13 @@ const statusMap: { [key in PaymentStatus]: { text: string; className: string } }
   failed: { text: "Not Paid", className: "bg-red-100 text-red-800" },
 };
 
-const UPI_LINK = "upi://pay?pa=ramchanndar987-1@okhdfcbank&pn=T.A.B.U&am=10&cu=INR";
-
 export default function PaymentsPage() {
     const { userData, firebaseUser, loading: authLoading } = useAuth();
     const [payments, setPayments] = useState<Payment[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [filterStatus, setFilterStatus] = useState<PaymentStatus | 'all'>('all');
+    const [isQrModalOpen, setIsQrModalOpen] = useState(false);
     const isMobile = useIsMobile();
 
     useEffect(() => {
@@ -180,6 +180,14 @@ export default function PaymentsPage() {
 
     return (
         <div className="space-y-6">
+            <PaymentQRModal
+                isOpen={isQrModalOpen}
+                onClose={() => setIsQrModalOpen(false)}
+                title="Pay with UPI QR Code"
+                description="Scan the QR code with any UPI app to make the payment. After paying, click 'Mark Paid'."
+                downloadButtonText="Download QR"
+                closeButtonText="Close"
+            />
             <Card>
                 <CardHeader>
                     <CardTitle>Payments</CardTitle>
@@ -222,8 +230,8 @@ export default function PaymentsPage() {
                                         </div>
                                         {payment.status === 'failed' && (
                                             <div className="flex gap-2">
-                                                <Button asChild className="flex-1">
-                                                    <a href={UPI_LINK}>Pay</a>
+                                                <Button className="flex-1" onClick={() => setIsQrModalOpen(true)}>
+                                                    Pay
                                                 </Button>
                                                 <Button variant="secondary" className="flex-1" onClick={() => handleMarkPaid(payment.id)}>
                                                     Mark Paid
@@ -279,8 +287,8 @@ export default function PaymentsPage() {
                                             <TableCell>
                                                 {payment.status === 'failed' && (
                                                     <div className="flex gap-2">
-                                                        <Button asChild size="sm">
-                                                            <a href={UPI_LINK}>Pay</a>
+                                                        <Button size="sm" onClick={() => setIsQrModalOpen(true)}>
+                                                            Pay
                                                         </Button>
                                                         <Button variant="secondary" size="sm" onClick={() => handleMarkPaid(payment.id)}>
                                                             Mark Paid
@@ -323,5 +331,3 @@ export default function PaymentsPage() {
         </div>
     );
 }
-
-    
